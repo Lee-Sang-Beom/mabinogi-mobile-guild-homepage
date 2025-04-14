@@ -33,16 +33,20 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
+    async signIn(
+      {
+        // user, account, profile, email, credentials
+      }
+    ) {
       return true;
     },
     async jwt({
       token,
       user,
-      account,
-      profile,
+      // account,
+      // profile,
       trigger,
-      isNewUser,
+      // isNewUser,
       session,
     }: {
       token: JWT;

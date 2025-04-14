@@ -109,14 +109,21 @@ export default function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setTheme("light");
+                    window.location.reload();
+                  }}
+                >
                   라이트 모드
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setTheme("dark");
+                    window.location.reload();
+                  }}
+                >
                   다크 모드
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}>
-                  시스템 설정
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

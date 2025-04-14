@@ -123,11 +123,11 @@ export default function Hero() {
             <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-purple-600 rounded-2xl blur opacity-30"></div>
             <div className="relative aspect-[16/9] overflow-hidden rounded-xl shadow-2xl">
               <img
-                src="/images/bg-mabinogi-mobile-02.jpg"
+                src="/images/bg-mabinogi-mobile-03.jpg"
                 alt="마비노기 모바일 길드 스크린샷"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent"></div>
               <div className="absolute bottom-0 left-0 right-0 p-6">
                 <h3 className="font-cinzel text-2xl font-bold text-white mb-2">
                   판타지 세계의 모험
