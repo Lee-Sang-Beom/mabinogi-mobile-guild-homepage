@@ -1,15 +1,16 @@
-import NextAuth from "next-auth";
-import { GenderType, UserAuthType } from "../common/commonType";
+import {GuildRoleType, JobType} from "@/shared/types/common";
 
 declare module "next-auth" {
   interface User {
-    id: string; // 유저 ID (유저 닉네임)
-    password: string; // 유저 pswd
-    authType: UserAuthType; // 유저 권한
-    job: string; // 게임 내 직업
-    gender: GenderType; // 성별
-    useYn: "Y" | "N"; // 사용 여부
-    userBirth: string; // 생년월일
+    docId: string; // 문서 ID
+    id: string; // 유저 아이디
+    password: string; // 유저 비밀번호
+    role: GuildRoleType; // 유저 길드 내 등급
+    job: JobType; // 유저 직업
+    mngDt: string; // 관리날짜 (등록일, 수정일)
+    isHaveEventBadge: boolean; // 이벤트 당첨 및 뱃지 보유여부
+    approvalJoin: boolean; // 회원가입 승인여부
+    isWithdrawn: boolean; // 탈퇴여부
   }
 
   interface Session {

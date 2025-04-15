@@ -124,7 +124,7 @@ export default function Hero() {
             <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-purple-600 rounded-2xl blur opacity-30"></div>
             <div className="relative aspect-[16/9] overflow-hidden rounded-xl shadow-2xl">
               <Image
-                src="/images/bg-mabinogi-mobile-sky-user.jpg"
+                src="/images/bg-mabinogi-mobile-bonfire.jpg"
                 alt="마비노기 모바일 길드 스크린샷"
                 fill
                 className="object-cover"

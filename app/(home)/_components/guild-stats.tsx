@@ -5,9 +5,9 @@ import { useRef } from "react";
 import { Users, Award, Calendar, Clock } from "lucide-react";
 
 const stats = [
-  { name: "활동 길드원", value: "120+", icon: Users },
-  { name: "길드 레벨", value: "45", icon: Award },
-  { name: "설립일", value: "2023.05", icon: Calendar },
+  { name: "활동 길드원", value: "30+", icon: Users },
+  { name: "길드 레벨", value: "3", icon: Award },
+  { name: "설립일", value: "2025.03", icon: Calendar },
   { name: "주간 활동 시간", value: "80시간+", icon: Clock },
 ];
 
