@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
+import Image from "next/image";
 
 export default function Hero() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -122,10 +123,11 @@ export default function Hero() {
           <div className="relative">
             <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-purple-600 rounded-2xl blur opacity-30"></div>
             <div className="relative aspect-[16/9] overflow-hidden rounded-xl shadow-2xl">
-              <img
+              <Image
                 src="/images/bg-mabinogi-mobile-03.jpg"
                 alt="마비노기 모바일 길드 스크린샷"
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent"></div>
               <div className="absolute bottom-0 left-0 right-0 p-6">
