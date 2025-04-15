@@ -25,7 +25,7 @@ export async function loginCollectionUser(
       };
     }
 
-    if (existingUser.useYn === "Y") {
+    if (existingUser.approvalJoinYn === "Y") {
       return {
         success: true,
         message: "로그인이 성공하였습니다.",

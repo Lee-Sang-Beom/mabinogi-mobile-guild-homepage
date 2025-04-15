@@ -137,7 +137,8 @@
 }
 
 .font-sans {
-  font-family: var(--font-noto-sans-kr), sans-serif;
+  /*font-family: var(--font-noto-sans-kr), sans-serif;*/
+  font-family:"Noto Sans KR", sans-serif;
 }
 
 /* ========== 숫자형 input에 대한 화살표 제거 ========== */
@@ -162,9 +163,9 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 *::-webkit-scrollbar-thumb {
   background: linear-gradient(
-    to bottom,
-    var(--color-cyan-400),
-    var(--color-blue-500)
+          to bottom,
+          var(--color-cyan-400),
+          var(--color-blue-500)
   ); /* 스크롤바 배경 */
   border-radius: 4px;
 }

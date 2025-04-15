@@ -1,4 +1,4 @@
-import {GuildRoleType, JobType} from "@/shared/types/common";
+import {GuildRoleType, JobType, YnFlag} from "@/shared/types/common";
 
 declare module "next-auth" {
   interface User {
@@ -8,9 +8,8 @@ declare module "next-auth" {
     role: GuildRoleType; // 유저 길드 내 등급
     job: JobType; // 유저 직업
     mngDt: string; // 관리날짜 (등록일, 수정일)
-    isHaveEventBadge: boolean; // 이벤트 당첨 및 뱃지 보유여부
-    approvalJoin: boolean; // 회원가입 승인여부
-    isWithdrawn: boolean; // 탈퇴여부
+    isHaveEventBadge: YnFlag; // 이벤트 당첨 및 뱃지 보유여부
+    approvalJoinYn: YnFlag; // 회원가입 승인여부
   }
 
   interface Session {
