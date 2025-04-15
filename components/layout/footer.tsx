@@ -9,7 +9,7 @@ export default function Footer() {
     { title: "길드 소개", href: "/#about" },
     { title: "길드 특징", href: "/#features" },
     { title: "길드 활동", href: "/#activities" },
-    { title: "길드 가입", href: "/register" },
+    { title: "길드 가입", href: "/join" },
     { title: "로그인", href: "/login" },
     { title: "공지사항", href: "/announcements" },
   ];

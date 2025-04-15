@@ -6,6 +6,7 @@ import NextAuthProvider from "@/provider/next-auth-provider";
 import { ThemeProvider } from "next-themes";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import { Toaster } from "sonner";
 
 const notoSansKR = Noto_Sans_KR({
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default function RootLayout({
                 <main>{children}</main>
                 <Footer />
               </div>
+              <Toaster position="top-center" richColors />
             </ThemeProvider>
           </NextAuthProvider>
         </ReactQueryProvider>

@@ -157,11 +157,7 @@ export default function MobileMenu({
                       variant="outline"
                       className="w-full text-white border-white hover:bg-white/10"
                     >
-                      <Link
-                        href="/register"
-                        onClick={onClose}
-                        className="w-full"
-                      >
+                      <Link href="/join" onClick={onClose} className="w-full">
                         회원가입
                       </Link>
                     </Button>

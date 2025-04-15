@@ -91,7 +91,7 @@ export default function Hero() {
               size="lg"
               className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-cinzel"
             >
-              <Link href="/register">길드 가입하기</Link>
+              <Link href="/join">길드 가입하기</Link>
             </Button>
             <Link
               href="#about"

@@ -81,7 +81,8 @@
   --sidebar-ring: oklch(0.795 0.184 86.047);
 }
 
-.dark, :root[data-theme="dark"] {
+.dark,
+:root[data-theme="dark"] {
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
@@ -94,8 +95,9 @@
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
   /*--muted-foreground: oklch(0.705 0.015 286.067); !* Dark 모드에서 매우 밝은 색 *!*/
-  --muted-foreground: oklch(0.905 0.015 286.067); /* Dark 모드에서 매우 밝은 색 */
-
+  --muted-foreground: oklch(
+    0.905 0.015 286.067
+  ); /* Dark 모드에서 매우 밝은 색 */
 
   --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.985 0 0);
@@ -118,7 +120,6 @@
   --sidebar-ring: oklch(0.554 0.135 66.442);
 }
 
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -138,7 +139,7 @@
 
 .font-sans {
   /*font-family: var(--font-noto-sans-kr), sans-serif;*/
-  font-family:"Noto Sans KR", sans-serif;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 /* ========== 숫자형 input에 대한 화살표 제거 ========== */
@@ -163,9 +164,9 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 *::-webkit-scrollbar-thumb {
   background: linear-gradient(
-          to bottom,
-          var(--color-cyan-400),
-          var(--color-blue-500)
+    to bottom,
+    var(--color-cyan-400),
+    var(--color-blue-500)
   ); /* 스크롤바 배경 */
   border-radius: 4px;
 }

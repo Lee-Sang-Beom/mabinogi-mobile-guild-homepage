@@ -2,9 +2,13 @@ import { db } from "@/shared/firestore";
 import { ApiResponse } from "@/shared/types/api";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { User } from "next-auth";
+import { z } from "zod";
+import { joinFormSchema } from "../(no-auth)/join/schema";
+import { addCollectionUser } from "@/service/user/user-service";
 
 /**
- * 사용자 정보를 ID/PW로 조회
+ * @name getCollectionUserByIdAndPassword
+ * @description 사용자 정보를 ID/PW로 조회
  */
 export async function getCollectionUserByIdAndPassword(
   id: string,
@@ -21,7 +25,8 @@ export async function getCollectionUserByIdAndPassword(
 }
 
 /**
- * Firestore에서 특정 ID를 가진 유저를 조회
+ * @name getUserById
+ * @description Firestore에서 특정 ID를 가진 유저를 조회
  */
 export async function getUserById(id: string): Promise<User | null> {
   try {
@@ -36,3 +41,12 @@ export async function getUserById(id: string): Promise<User | null> {
     throw new Error("Failed to fetch user by ID");
   }
 }
+
+/**
+ * @name apiAddUser
+ * @description 프론트에서 호출할 API
+ */
+export const apiAddUser = async (data: z.infer<typeof joinFormSchema>) => {
+  const response = await addCollectionUser(data);
+  return response;
+};
