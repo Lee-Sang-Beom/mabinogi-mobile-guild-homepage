@@ -38,9 +38,9 @@ export default function IntroAnimation({ onComplete }: IntroAnimationProps) {
         >
           {/* 파비콘 이미지 */}
           <motion.img
-            src="/images/mabinogi-mobile-favicon.png"
-            alt="파비콘"
-            className="absolute left-1/2 transform -translate-x-1/2"
+            src="/images/favicon-mabinogi-mobile.png"
+            alt="마비노기 모바일 파비콘 아이콘"
+            className="absolute left-1/2 transform -translate-x-1/2 z-0"
             initial={{ opacity: 0, rotate: 0, scale: 1, top: "40%" }}
             animate={
               step === 3
@@ -53,7 +53,7 @@ export default function IntroAnimation({ onComplete }: IntroAnimationProps) {
                   }
             }
             transition={{ duration: 1.5, ease: "easeInOut" }}
-            style={{ position: "absolute", width: "220px", height: "220px" }}
+            style={{ position: "absolute", width: "180px", height: "180px" }}
           />
 
           <AnimatePresence mode="wait">
@@ -64,7 +64,7 @@ export default function IntroAnimation({ onComplete }: IntroAnimationProps) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="text-center p-8"
+                className="text-center p-8 z-10"
               />
             )}
 
@@ -75,9 +75,9 @@ export default function IntroAnimation({ onComplete }: IntroAnimationProps) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className="text-center p-8"
+                className="text-center p-8 z-10"
               >
-                <p className="text-2xl md:text-4xl font-bold mb-4">
+                <p className="text-2xl md:text-4xl font-bold mb-4 z-10">
                   우리가 그리는 마비노기 모바일의 세계로 이동합니다
                 </p>
               </motion.div>
@@ -90,9 +90,9 @@ export default function IntroAnimation({ onComplete }: IntroAnimationProps) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="text-center p-8"
+                className="text-center p-8 z-10"
               >
-                <p className="text-3xl md:text-5xl font-bold">준비되셨나요?</p>
+                <p className="text-3xl md:text-5xl font-bold z-10">준비되셨나요?</p>
               </motion.div>
             )}
           </AnimatePresence>

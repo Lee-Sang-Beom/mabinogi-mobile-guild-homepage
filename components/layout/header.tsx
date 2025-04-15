@@ -184,7 +184,7 @@ export default function Header() {
               </span>
             </motion.div>
             <span className="font-cinzel text-xl font-bold text-primary">
-              마비노기 길드
+              럭키비키
             </span>
           </Link>
         </div>

@@ -14,8 +14,11 @@ const notoSansKR = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "마비노기 모바일 길드",
-  description: "마비노기 모바일 판타지 길드 커뮤니티",
+  title: "럭키비키",
+  description: "마비노기 모바일 럭키비키 길드 커뮤니티",
+  icons: {
+    icon: "/images/favicon-mabinogi-mobile.png", // public 폴더 기준 경로
+  },
 };
 
 export default function RootLayout({
@@ -24,9 +27,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning>
       <body
-        className={`${notoSansKR.variable} font-sans min-h-screen bg-background text-foreground bg-[url('/images/bg-mabinogi-mobile-01.jpg')] bg-fixed bg-cover bg-center`}
+        className={`${notoSansKR.variable} font-sans min-h-screen bg-background text-foreground bg-[url('/images/bg-mabinogi-mobile-main.jpg')] bg-fixed bg-cover bg-center`}
       >
         <ReactQueryProvider>
           <NextAuthProvider>
