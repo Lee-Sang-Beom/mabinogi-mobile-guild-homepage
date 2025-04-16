@@ -55,7 +55,7 @@ export default function NotFound() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.9, duration: 0.8 }}
-                    className="text-muted-foreground mb-8"
+                    className="text-white/80 mb-8"
                 >
                     {/*찾으시는 페이지가 존재하지 않거나 이동되었을 수 있습니다.*/}
                     {/*<br />*/}
@@ -85,7 +85,7 @@ export default function NotFound() {
                 transition={{ delay: 1.5, duration: 1 }}
                 className="absolute bottom-8 text-sm text-muted-foreground"
             >
-                © 마비노기 모바일 길드 커뮤니티
+                © 마비노기 모바일 럭키비키 커뮤니티
             </motion.div>
         </div>
     )
