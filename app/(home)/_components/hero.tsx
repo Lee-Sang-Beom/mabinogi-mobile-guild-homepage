@@ -89,9 +89,9 @@ export default function Hero() {
           >
             <Button
               size="lg"
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-cinzel"
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-cinzel px-0"
             >
-              <Link href="/join">길드 가입하기</Link>
+              <Link href="/join" className={"px-6"}>길드 가입하기</Link>
             </Button>
             <Link
               href="#about"

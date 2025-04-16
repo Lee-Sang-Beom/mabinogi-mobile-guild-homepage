@@ -78,7 +78,7 @@ export default function JoinForm() {
     } else {
       form.clearErrors("confirmPassword");
     }
-  }, [password, confirmPassword]); // password, confirmPassword 값이 변경될 때마다 실행
+  }, [form, password, confirmPassword]); // password, confirmPassword 값이 변경될 때마다 실행
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">

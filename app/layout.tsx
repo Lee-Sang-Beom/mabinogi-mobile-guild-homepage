@@ -40,7 +40,7 @@ export default function RootLayout({
                             defaultTheme="dark"
                             enableSystem
                         >
-                            <div className="min-h-screen backdrop-blur-sm backdrop-brightness-50">
+                            <div className="min-h-screen backdrop-blur-sm backdrop-brightness-80">
                                 <Header/>
                                 <main>{children}</main>
                                 <Footer/>

@@ -28,7 +28,8 @@ const activities = [
     description:
         "새로운 길드원을 정착을 위해 모두가 빠르게 적응할 수 있도록 노력합니다.",
     images: [
-      "/images/(home)/img-support-new-guild-member.png",
+      "/images/(home)/img-support-new-guild-member-1.png",
+      "/images/(home)/img-support-new-guild-member-2.png",
     ],
   },
 ]
@@ -191,9 +192,9 @@ export default function GuildActivities() {
                     <p className="text-muted-foreground mb-6">{activity.description}</p>
                     <Button
                         variant="outline"
-                        className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                        className="border-primary text-primary hover:bg-primary hover:text-primary-foreground px-0"
                     >
-                      <Link href="/community">자세히 보기</Link>
+                      <Link href="/community" className={"px-3"}>자세히 보기</Link>
                     </Button>
                   </div>
                 </motion.div>
