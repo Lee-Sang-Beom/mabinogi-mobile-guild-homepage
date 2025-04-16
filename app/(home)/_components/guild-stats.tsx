@@ -22,7 +22,7 @@ export default function GuildStats() {
   const y = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [100, 0, 0, 100]);
 
   return (
-    <section className="py-16 relative overflow-hidden" ref={containerRef}>
+    <section id="about" className="py-16 relative overflow-hidden" ref={containerRef}>
       <motion.div className="absolute inset-0 -z-10" style={{ opacity }}>
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/50 to-background"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-amber-500/10 blur-3xl"></div>

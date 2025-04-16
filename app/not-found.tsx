@@ -73,7 +73,7 @@ export default function NotFound() {
                     <Link href="/">
                         <Button size="lg" className="gap-2">
                             <Home className="w-4 h-4" />
-                            길드로 돌아가기
+                            홈으로 돌아가기
                         </Button>
                     </Link>
                 </motion.div>

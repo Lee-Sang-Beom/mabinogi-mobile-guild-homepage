@@ -324,21 +324,21 @@ export default function Header() {
 
           {isLoggedIn ? (
             <div className="hidden lg:flex gap-2">
-              <Button variant="outline">
-                <Link href="/profile">프로필</Link>
+              <Button variant="outline" className={'p-0'}>
+                <Link href="/profile" className={"p-3"}>프로필</Link>
               </Button>
               <Button
                 variant="destructive"
                 onClick={handleLogout}
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 "
               >
                 <LogOut className="h-4 w-4" />
                 로그아웃
               </Button>
             </div>
           ) : (
-            <Button variant="default" className="hidden lg:flex">
-              <Link href="/login">로그인</Link>
+            <Button variant="default" className="hidden lg:flex p-0">
+              <Link href="/login" className={"p-3"}>로그인</Link>
             </Button>
           )}
 
