@@ -1,0 +1,92 @@
+"use client"
+
+import {Button} from "@/components/ui/button"
+import {motion} from "framer-motion"
+import Link from "next/link"
+import {useEffect, useState} from "react"
+import {Compass, Home, MapPin} from "lucide-react"
+
+export default function NotFound() {
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+        // 스크롤 방지
+        document.body.style.overflow = "hidden"
+
+        return () => {
+            document.body.style.overflow = ""
+        }
+    }, [])
+
+    if (!mounted) return null
+
+    return (
+        <div className="fixed inset-0 w-screen h-screen flex flex-col items-center justify-center bg-black/90 text-white z-50 p-4">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="text-center max-w-2xl"
+            >
+                <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.8 }}
+                    className="mb-6"
+                >
+                    <div className="relative mx-auto w-32 h-32 mb-4">
+                        <Compass className="w-32 h-32 text-primary animate-pulse" />
+                        <MapPin className="w-12 h-12 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                    </div>
+                    <h1 className="text-7xl font-bold text-primary mb-2">404</h1>
+                </motion.div>
+
+                <motion.h2
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6, duration: 0.8 }}
+                    className="text-2xl md:text-3xl font-bold mb-4"
+                >
+                    길을 잃으셨나요?
+                </motion.h2>
+
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.9, duration: 0.8 }}
+                    className="text-muted-foreground mb-8"
+                >
+                    {/*찾으시는 페이지가 존재하지 않거나 이동되었을 수 있습니다.*/}
+                    {/*<br />*/}
+                    {/*마비노기 모바일에서 <span className={"font-semibold"}>럭키비키</span>와 함께하는 새로운 모험을 시작하세요.*/}
+                    현재 이 페이지는 개발중입니다!
+                    <br />
+                    하루빨리 <span className={"font-semibold"}>럭키비키</span>와 함께할 수 있는 공간을 만들 수 있도록 노력하겠습니다.
+                </motion.p>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.2, duration: 0.8 }}
+                >
+                    <Link href="/">
+                        <Button size="lg" className="gap-2">
+                            <Home className="w-4 h-4" />
+                            길드로 돌아가기
+                        </Button>
+                    </Link>
+                </motion.div>
+            </motion.div>
+
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.5, duration: 1 }}
+                className="absolute bottom-8 text-sm text-muted-foreground"
+            >
+                © 마비노기 모바일 길드 커뮤니티
+            </motion.div>
+        </div>
+    )
+}

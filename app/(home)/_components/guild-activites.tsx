@@ -8,22 +8,22 @@ import Link from "next/link";
 
 const activities = [
   {
-    title: "주간 레이드",
+    title: "도전! 어비스 타임어택 올클리어",
     description:
-      "매주 토요일 저녁, 길드원들과 함께 도전하는 고난이도 레이드. 전략을 세우고 협력하여 강력한 보스를 물리치세요.",
-    image: "/images/bg-mabinogi-mobile-sky-user.jpg",
+      "잘 모르더라도, 스펙이 조금 낮더라도 OK! 모두가 함께 어비스 컨텐츠에서 최고의 보상을 받을 수 있도록 지원합니다.",
+    image: "/images/(home)/img-challenge-the-abyss.png",
   },
   {
-    title: "길드 대전",
+    title: "도전! 레이드",
     description:
-      "다른 길드와의 경쟁을 통해 우리 길드의 실력을 증명하세요. 승리하면 특별한 보상이 기다립니다.",
-    image: "/images/bg-mabinogi-mobile-sky-user.jpg",
+      "레이드 신규 컨텐츠에 대한 근거없이 폭주하는 자신감, 그리고 도전과 열망이 가득합니다.",
+    image: "/images/(home)/img-prepare-raid.jpeg",
   },
   {
     title: "신규 길드원 지원",
     description:
-      "새로운 길드원을 위한 특별 지원 프로그램. 장비, 아이템, 가이드를 제공하여 빠르게 적응할 수 있도록 돕습니다.",
-    image: "/images/bg-mabinogi-mobile-sky-user.jpg",
+      "새로운 길드원 정착을 위해 모두가 빠르게 적응할 수 있도록 노력합니다.",
+    image: "/images/(home)/img-support-new-guild-member.png",
   },
 ];
 
