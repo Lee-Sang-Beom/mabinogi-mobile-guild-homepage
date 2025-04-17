@@ -2,7 +2,6 @@ import { Account, AuthOptions, Profile, Session, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AdapterUser } from "next-auth/adapters";
 import { JWT } from "next-auth/jwt";
-import { ApiResponse } from "@/shared/types/api";
 import { loginCollectionUser } from "@/service/user/user-service";
 
 export const authOptions: AuthOptions = {
@@ -15,29 +14,22 @@ export const authOptions: AuthOptions = {
       },
       async authorize(
         credentials: Record<"id" | "password", string> | undefined
-      ) {
+      ): Promise<User | null> {
         if (!credentials) return null;
+        const res = await loginCollectionUser(credentials);
 
-        const res: ApiResponse<User | null> = await loginCollectionUser(
-          credentials
-        );
-
-        if (res.success && res.data) {
-          // 성공 시 메시지와 유저 객체 반환
-          return res.data;
+        if (!res.success || !res.data) {
+          throw new Error(res.message || "로그인 실패");
         }
 
-        // 실패 시 메시지만 반환
-        throw new Error(res.message || "로그인 중 오류가 발생했습니다.");
+        return res.data;
       },
     }),
   ],
   callbacks: {
-    async signIn(
-      {
-        // user, account, profile, email, credentials
-      }
-    ) {
+    async signIn({
+                   // user, account, profile, email, credentials
+    }) {
       return true;
     },
     async jwt({
@@ -77,6 +69,6 @@ export const authOptions: AuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 1 * 60 * 60, // 1시간 세션
+    maxAge: 8 * 60 * 60, // 1시간 세션
   },
 };

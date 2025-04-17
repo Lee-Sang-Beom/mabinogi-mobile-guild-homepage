@@ -8,6 +8,7 @@ import { joinFormSchema } from "@/app/(no-auth)/join/schema";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/shared/firestore";
 import moment from "moment";
+
 /**
  * @name loginCollectionUser
  * @description 로그인 처리 (비즈니스 로직)
@@ -39,12 +40,12 @@ export async function loginCollectionUser(
       return {
         success: false,
         message:
-          "로그인이 승인된 문파원이 아닙니다. 문파 관리자에게 문의해주세요.",
+          "로그인이 승인된 길드원이 아닙니다. 길드 관리자에게 문의해주세요.",
         data: null,
       };
     }
   } catch (e) {
-    console.error("Login error: ", e);
+    console.error("로그인 중 오류 발생: ", e);
     return {
       success: false,
       message: "로그인 중 오류가 발생했습니다.",
@@ -93,13 +94,11 @@ export async function checkDuplicateId(id: string): Promise<boolean> {
     );
     const subUserSnapshot = await getDocs(subUserQuery);
 
-    if (!subUserSnapshot.empty) {
-      return true; // collection_sub_user에 동일한 ID가 존재
-    }
+    return !subUserSnapshot.empty; // collection_sub_user에 동일한 ID가 존재하면 true
 
-    return false; // 중복된 ID가 없음
+     // 중복된 ID가 없음
   } catch (e) {
-    console.error("Error checking duplicate ID: ", e);
+    console.error("중복된 아이디 검증 중 오류 발생: ", e);
     throw new Error("Failed to check duplicate ID");
   }
 }
@@ -124,7 +123,9 @@ export async function addCollectionUser(
       };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...rest } = data;
+
     // 비밀번호 암호화 후 필요 데이터 삽입
     const userWithEncryptedPassword = {
       ...rest,
@@ -146,7 +147,7 @@ export async function addCollectionUser(
       data: docRef.id,
     };
   } catch (e) {
-    console.error("Error adding user: ", e);
+    console.error("회원가입 중 오류 발생: ", e);
     return {
       success: false,
       message: "회원가입 중 오류가 발생했습니다.",

@@ -33,22 +33,23 @@ export default function RootLayout({
     <body
       className={`${notoSansKR.variable} font-sans min-h-screen bg-background text-foreground bg-[url('/images/bg-mabinogi-mobile-main.jpg')] bg-fixed bg-cover bg-center`}
     >
-    <ReactQueryProvider>
-      <NextAuthProvider>
-        <ThemeProvider
-          attribute="data-theme"
-          defaultTheme="dark"
-          enableSystem
-        >
-          <div className="min-h-screen backdrop-blur-sm backdrop-brightness-80">
-            <Header />
-            <main>{children}</main>
-            <Footer />
-          </div>
-          <Toaster position="top-center" richColors />
-        </ThemeProvider>
-      </NextAuthProvider>
-    </ReactQueryProvider>
+    <NextAuthProvider>
+      <ReactQueryProvider>
+          <ThemeProvider
+            attribute="data-theme"
+            defaultTheme="dark"
+            enableSystem
+          >
+            <div className="min-h-screen backdrop-blur-sm backdrop-brightness-80">
+              <Header />
+              <main>{children}</main>
+              <Footer />
+            </div>
+            <Toaster position="top-center" richColors />
+          </ThemeProvider>
+      </ReactQueryProvider>
+    </NextAuthProvider>
+
     </body>
     </html>
   )
