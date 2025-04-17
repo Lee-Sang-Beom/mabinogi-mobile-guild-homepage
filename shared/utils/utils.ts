@@ -23,3 +23,17 @@ export function verifyPassword(
 ): boolean {
   return bcrypt.compareSync(plainPassword, hashedPassword);
 }
+
+/**
+ * @name clearCache
+ * @description 브라우저의 캐시를 삭제하는 함수
+ */
+export const clearCache = () => {
+  if ("caches" in window) {
+    caches.keys().then((cacheNames) => {
+      cacheNames.forEach((cacheName) => {
+        caches.delete(cacheName);
+      });
+    });
+  }
+};

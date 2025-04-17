@@ -1,137 +1,27 @@
 "use client";
 
-import { useState, useEffect, ReactNode } from "react";
-import Link from "next/link";
-import { useTheme } from "next-themes";
-import { motion } from "framer-motion";
-import {
-  MoonIcon,
-  SunIcon,
-  Menu,
-  LogOut,
-  LayoutDashboard,
-  Users,
-  BarChart,
-  Briefcase,
-  FileText,
-  Settings,
-  Info,
-  Bell,
-  RefreshCw,
-  UserCog,
-  UserPlus,
-  Calendar,
-  ImageIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useTheme } from 'next-themes'
+import { motion } from 'framer-motion'
+import { LogOut, Menu, MoonIcon, SunIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
   DropdownMenuPortal,
+  DropdownMenuSub,
   DropdownMenuSubContent,
-} from "@/components/ui/dropdown-menu";
-import { usePathname } from "next/navigation";
-import MobileMenu from "./mobile-menu";
-
-export interface MenuItem {
-  name: string;
-  href: string;
-  icon?: ReactNode;
-  submenu?: MenuItem[]; // 재귀적으로 서브메뉴 포함 가능
-}
-
-// 메뉴 구조 정의
-const loggedInMenuStructure: MenuItem[] = [
-  {
-    name: "대시보드",
-    href: "/dashboard",
-    icon: <LayoutDashboard className="h-4 w-4 mr-2" />,
-  },
-  {
-    name: "일정관리",
-    href: "/schedule",
-    icon: <Calendar className="h-4 w-4 mr-2" />,
-  },
-  {
-    name: "길드원 정보",
-    href: "/members",
-    icon: <Users className="h-4 w-4 mr-2" />,
-    submenu: [
-      {
-        name: "직급별 분포",
-        href: "/members?tab=rank",
-        icon: <BarChart className="h-4 w-4 mr-2" />,
-      },
-      {
-        name: "직업별 분포",
-        href: "/members?tab=job",
-        icon: <Briefcase className="h-4 w-4 mr-2" />,
-      },
-    ],
-  },
-  // 게시판 메뉴 수정 - href를 첫 번째 서브메뉴 항목으로 변경
-  {
-    name: "게시판",
-    href: "/community",
-    icon: <FileText className="h-4 w-4 mr-2" />,
-    submenu: [
-      {
-        name: "커뮤니티",
-        href: "/community",
-        icon: <ImageIcon className="h-4 w-4 mr-2" />,
-        submenu: [
-          {
-            name: "아트워크",
-            href: "/community?tab=artwork",
-            icon: <ImageIcon className="h-4 w-4 mr-2" />,
-          },
-          {
-            name: "정보(팁)",
-            href: "/community?tab=tips",
-            icon: <Info className="h-4 w-4 mr-2" />,
-          },
-        ],
-      },
-      {
-        name: "공지사항",
-        href: "/announcements",
-        icon: <Bell className="h-4 w-4 mr-2" />,
-      },
-      {
-        name: "업데이트",
-        href: "/updates",
-        icon: <RefreshCw className="h-4 w-4 mr-2" />,
-      },
-    ],
-  },
-  {
-    name: "서비스 관리",
-    href: "/admin",
-    icon: <Settings className="h-4 w-4 mr-2" />,
-    submenu: [
-      {
-        name: "길드원 관리",
-        href: "/admin",
-        icon: <UserCog className="h-4 w-4 mr-2" />,
-      },
-      {
-        name: "회원가입 관리",
-        href: "/admin?tab=applications",
-        icon: <UserPlus className="h-4 w-4 mr-2" />,
-      },
-    ],
-  },
-];
-
-const loggedOutMenuStructure: MenuItem[] = [
-  { name: "소개", href: "/#about" },
-  { name: "특징", href: "/#features" },
-  { name: "길드 활동", href: "/#activities" },
-];
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { usePathname, useRouter } from 'next/navigation'
+import MobileMenu from './mobile-menu'
+import { signOut, useSession } from 'next-auth/react'
+import { clearCache } from '@/shared/utils/utils'
+import { toast } from 'sonner'
+import { loggedInMenuStructure, loggedOutMenuStructure } from '@/shared/constants/menu'
 
 export default function Header() {
   const [mounted, setMounted] = useState(false);
@@ -139,23 +29,28 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const session = useSession();
+  const router = useRouter()
 
   // Simulate checking login status
   useEffect(() => {
-    // This would be replaced with actual auth check
-    const checkLoginStatus = () => {
-      const token = localStorage.getItem("token");
-      setIsLoggedIn(!!token);
-    };
-
-    checkLoginStatus();
-  }, [pathname]);
+    if(session.status === "authenticated" && session.data?.user) {
+      setIsLoggedIn(true)
+    } else {
+      setIsLoggedIn(false)
+    }
+  }, [session]);
 
   useEffect(() => setMounted(true), []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/";
+  const handleLogout = async() => {
+    await signOut({
+      redirect: false,
+    });
+
+    toast.success('로그아웃이 완료되었습니다.')
+    clearCache();
+    router.push("/login");
   };
 
   const navItems = isLoggedIn ? loggedInMenuStructure : loggedOutMenuStructure;
@@ -173,7 +68,7 @@ export default function Header() {
       >
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-            <span className="sr-only">마비노기 모바일 길드</span>
+            <span className="sr-only">럭키비키 길드</span>
             <motion.div
               className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center"
               whileHover={{ scale: 1.1, rotate: 5 }}
@@ -205,7 +100,7 @@ export default function Header() {
                             : "text-foreground hover:text-primary"
                         }`}
                       >
-                        {item.icon}
+                        {item.icon && <item.icon className="h-4 w-4 mr-2" />}
                         {item.name}
                         <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
                       </button>
@@ -215,7 +110,7 @@ export default function Header() {
                         subItem.submenu ? (
                           <DropdownMenuSub key={subItem.name}>
                             <DropdownMenuSubTrigger className="flex items-center gap-2">
-                              {subItem.icon}
+                              {subItem.icon && <subItem.icon className="h-4 w-4 mr-2" />}
                               {subItem.name}
                             </DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
@@ -229,7 +124,8 @@ export default function Header() {
                                       href={subSubItem.href}
                                       className="flex items-center w-full"
                                     >
-                                      {subSubItem.icon}
+                                      {subItem.icon && <subItem.icon className="h-4 w-4 mr-2" />}
+
                                       {subSubItem.name}
                                     </Link>
                                   </DropdownMenuItem>
@@ -243,7 +139,8 @@ export default function Header() {
                               href={subItem.href}
                               className="flex items-center w-full"
                             >
-                              {subItem.icon}
+                              {subItem.icon && <subItem.icon className="h-4 w-4 mr-2" />}
+
                               {subItem.name}
                             </Link>
                           </DropdownMenuItem>
@@ -261,7 +158,7 @@ export default function Header() {
                         : "text-foreground hover:text-primary"
                     }`}
                   >
-                    {item.icon}
+                    {item.icon && <item.icon className="h-4 w-4 mr-2" />}
                     {item.name}
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
                   </Link>

@@ -1,12 +1,11 @@
-"use client"
+'use client'
 
-import { motion } from "framer-motion"
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Shield, Users, Trophy, Sword, Bell, Calendar } from "lucide-react"
-import Link from "next/link"
+import { motion } from 'framer-motion'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Bell, Calendar, Shield, Sword, Trophy, Users } from 'lucide-react'
+import Link from 'next/link'
 
 // Mock data
 const guildEvents = [
@@ -30,35 +29,28 @@ const guildRanking = [
 ]
 
 export default function Dashboard() {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-
-
-  }, [])
-
-  if (!mounted) return null
 
   return (
-    <div className="min-h-[calc(100vh-200px)] py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-[calc(100vh-200px)] py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
       {/* Animated background elements */}
-      <motion.div
-        className="absolute left-1/4 top-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-purple-500/10 to-blue-500/10 blur-3xl"
-        animate={{
-          x: [0, 50, 0],
-          y: [0, 30, 0],
-        }}
-        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 20, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute right-1/4 bottom-1/4 -z-10 h-[350px] w-[350px] rounded-full bg-gradient-to-br from-amber-500/10 to-red-500/10 blur-3xl"
-        animate={{
-          x: [0, -30, 0],
-          y: [0, 50, 0],
-        }}
-        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 25, ease: "easeInOut", delay: 2 }}
-      />
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-purple-500/10 to-blue-500/10 blur-3xl"
+          animate={{
+            x: [0, 20, 0],
+            y: [0, 15, 0],
+          }}
+          transition={{ repeat: Number.POSITIVE_INFINITY, duration: 20, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 left-1/2 -translate-x-1/2 h-[350px] w-[350px] rounded-full bg-gradient-to-br from-amber-500/10 to-red-500/10 blur-3xl"
+          animate={{
+            x: [0, -15, 0],
+            y: [0, 25, 0],
+          }}
+          transition={{ repeat: Number.POSITIVE_INFINITY, duration: 25, ease: "easeInOut", delay: 2 }}
+        />
+      </div>
 
       <div className="max-w-7xl mx-auto">
         <motion.div
@@ -75,7 +67,7 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-2">마비노기 모바일 길드의 최신 정보와 활동을 확인하세요.</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -263,7 +255,7 @@ export default function Dashboard() {
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
@@ -273,21 +265,33 @@ export default function Dashboard() {
               <CardTitle className="font-cinzel">빠른 링크</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center">
-                  <Users className="h-5 w-5 mb-2" />
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <Button
+                  variant="outline"
+                  className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center text-sm sm:text-base"
+                >
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 mb-1 sm:mb-2" />
                   <span>길드원 정보</span>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center">
-                  <Bell className="h-5 w-5 mb-2" />
+                <Button
+                  variant="outline"
+                  className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center text-sm sm:text-base"
+                >
+                  <Bell className="h-4 w-4 sm:h-5 sm:w-5 mb-1 sm:mb-2" />
                   <span>공지사항</span>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center">
-                  <Sword className="h-5 w-5 mb-2" />
+                <Button
+                  variant="outline"
+                  className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center text-sm sm:text-base"
+                >
+                  <Sword className="h-4 w-4 sm:h-5 sm:w-5 mb-1 sm:mb-2" />
                   <span>길드 전투</span>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center">
-                  <Trophy className="h-5 w-5 mb-2" />
+                <Button
+                  variant="outline"
+                  className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center text-sm sm:text-base"
+                >
+                  <Trophy className="h-4 w-4 sm:h-5 sm:w-5 mb-1 sm:mb-2" />
                   <span>업적</span>
                 </Button>
               </div>
