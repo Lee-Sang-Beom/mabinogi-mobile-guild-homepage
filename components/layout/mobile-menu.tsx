@@ -307,7 +307,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLo
                         variant="outline"
                         className="w-full text-foreground border-white/20 hover:bg-white/50 hover:border-white/40 h-12 text-lg"
                       >
-                        <Link href="/register" onClick={onClose} className="w-full">
+                        <Link href="/join" onClick={onClose} className="w-full">
                           회원가입
                         </Link>
                       </Button>

@@ -48,7 +48,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
       {/* Animated background elements */}
       <motion.div
         className="absolute left-1/4 top-1/4 -z-10 h-[300px] w-[300px] rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 blur-3xl"
