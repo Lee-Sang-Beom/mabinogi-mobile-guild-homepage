@@ -1,0 +1,222 @@
+import { ApiResponse } from '@/shared/types/api'
+import { encryptPassword, verifyPassword } from '@/shared/utils/utils'
+import { User } from 'next-auth'
+import { z } from 'zod'
+import { joinFormSchema } from '@/app/(no-auth)/join/schema'
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { db } from '@/shared/firestore'
+import moment from 'moment'
+import { forgotPasswordStep1FormSchema } from '@/app/(no-auth)/forgot-password/schema'
+
+
+class UserService {
+  /**
+   * @name getUserById
+   * @description Firestore에서 특정 ID를 가진 유저를 조회
+   */
+  async getUserById(id: string): Promise<User | null> {
+    try {
+      const snapshot = await getDocs(
+        query(collection(db, "collection_user"), where("id", "==", id))
+      );
+
+      // 문서가 없으면 null 반환
+      if (snapshot.empty) return null;
+
+      // 문서가 있으면 데이터 반환
+      const doc = snapshot.docs[0];
+      return { docId: doc.id, ...doc.data() } as User;
+    } catch (e) {
+      console.error("유저의 아이디를 조회하는 도중에 오류가 발생했습니다. ", e);
+      throw new Error("유저의 아이디를 조회하는 도중에 오류가 발생했습니다.");
+    }
+  }
+
+  /**
+   * @name getCollectionUserByIdAndPassword
+   * @description ID/PW 기반 사용자 인증 처리
+   */
+  async getCollectionUserByIdAndPassword(id: string, password: string): Promise<User | null> {
+    const user = await this.getUserById(id);
+    return user && verifyPassword(password, user.password) ? user : null;
+  }
+
+  /**
+   * @name checkDuplicateId
+   * @param id 유저 ID
+   * @description ID가 collection_user 또는 collection_sub_user에 존재하는지 확인
+   * @returns 중복 여부 (true = 중복, false = 중복 아님)
+   */
+  async checkDuplicateId(id: string): Promise<boolean> {
+    const checkCollection = async (collectionName: string) => {
+      const q = query(collection(db, collectionName), where("id", "==", id));
+      const snapshot = await getDocs(q);
+      return !snapshot.empty;
+    };
+
+    try {
+      return (await checkCollection("collection_user")) || (await checkCollection("collection_sub_user"));
+    } catch (e) {
+      console.error("중복된 아이디 검증 중 오류가 발생했습니다. ", e);
+      throw new Error("중복된 아이디 검증 중 오류가 발생했습니다.");
+    }
+  }
+
+  /**
+   * @name join
+   * @param data 회원가입 유저 정보
+   * @description 회원가입
+   */
+  async join(data: z.infer<typeof joinFormSchema>): Promise<ApiResponse<string | null>> {
+    try {
+      // ID 중복 확인
+      if (await this.checkDuplicateId(data.id)) {
+        return {
+          success: false,
+          message: "이미 같은 닉네임을 가진 회원이 존재합니다.",
+          data: null,
+        };
+      }
+
+      // confirmPassword 제외하고 나머지 데이터 추출
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { confirmPassword, ...rest } = data;
+
+      // 비밀번호 암호화 후 필요 데이터 설정
+      const userWithEncryptedPassword = {
+        ...rest,
+        password: encryptPassword(rest.password),
+        mngDt: moment().format("YYYY-MM-DD"),
+        isHaveEventBadge: "N",
+        approvalJoinYn: "N",
+      };
+
+      // Firestore에 유저 추가
+      const docRef = await addDoc(collection(db, "collection_user"), userWithEncryptedPassword);
+
+      return {
+        success: true,
+        message: "회원가입이 완료되었습니다.",
+        data: docRef.id,
+      };
+    } catch (e) {
+      console.error("회원가입 중 오류가 발생했습니다. ", e);
+      return {
+        success: false,
+        message: "회원가입 중 오류가 발생했습니다.",
+        data: null,
+      };
+    }
+  }
+
+  /**
+   * @name getCollectionUserByDetails
+   * @param data 비밀번호 찾기를 위해 입력한 유저 정보
+   * @description 비밀번호 찾기 (실질적 쿼리 발생)
+   */
+  private async getCollectionUserByDetails(
+    data: z.infer<typeof forgotPasswordStep1FormSchema>
+  ): Promise<User | null> {
+    try {
+      const q = query(
+        collection(db, "collection_user"),
+        where("id", "==", data.id),
+        where("job", "==", data.job),
+        where("role", "==", data.role),
+        where("otp", "==", data.otp)
+      );
+
+      const snapshot  = await getDocs(q);
+      if (snapshot.empty) return null;
+
+      const doc = snapshot.docs[0];
+      return { docId: doc.id, ...doc.data() } as User;
+    } catch (e) {
+      console.error("비밀번호 찾기를 위한 대상 유저 조회 중 오류가 발생했습니다.: ", e);
+      throw new Error("비밀번호 찾기를 위한 대상 유저 조회 중 오류가 발생했습니다.");
+    }
+  }
+  /**
+   * @name findUserForPasswordReset
+   * @param values 비밀번호 찾기를 위해 입력한 유저 정보
+   * @description 비밀번호 찾기
+   */
+  async findUserForPasswordReset(
+    values: z.infer<typeof forgotPasswordStep1FormSchema>
+  ): Promise<ApiResponse<User | null>> {
+    try {
+      const existingUser = await this.getCollectionUserByDetails(values);
+      if (!existingUser) {
+        // 동일 유저가 존재하지 않으면, 회원가입조차 안되었다는 뜻
+        return {
+          success: false,
+          message: "조회된 사용자가 없습니다.",
+          data: null,
+        };
+      } else {
+        return {
+          success: true,
+          message:
+            "요청한 정보에 대한 사용자가 조회되어, 다음 단계로 이동합니다.",
+          data: existingUser,
+        };
+      }
+    } catch (e) {
+      console.error('error is ', e)
+      return {
+        success: false,
+        message: "비밀번호 찾기 과정 중 오류가 발생했습니다.",
+        data: null,
+      };
+    }
+  }
+
+
+  /**
+   * @name modifyPasswordCollectionUser
+   * @description 개인정보 중 패스워드를 수정
+   * @param password
+   * @param user
+   */
+  async modifyPasswordCollectionUser(
+    password: string,
+    user: User
+  ): Promise<ApiResponse<string | null>> {
+    try {
+      const { id, job, role, otp } = user;
+      
+      // step1: 바꾸려고하는 유저 한번 더 검사
+      const existingUser = await this.getCollectionUserByDetails({ id, job, role, otp });
+      if (!existingUser) {
+        return {
+          success: false,
+          message: "현재 변경하기를 희망하는 유저 정보를 찾지 못했습니다.",
+          data: null,
+        };
+      }
+
+      // 업데이트
+      const updatedUser = {
+        ...user,
+        password: encryptPassword(password),
+      };
+      await updateDoc(doc(db, "collection_user", existingUser.docId), updatedUser);
+
+      return {
+        success: true,
+        message: "새 비밀번호 설정이 완료되었습니다.",
+        data: existingUser.docId,
+      };
+    } catch (e) {
+      console.error("Error modify user: ", e);
+      return {
+        success: false,
+        message: "새 비밀번호를 설정하는 과정에서 오류가 발생했습니다.",
+        data: null,
+      };
+    }
+  }
+}
+
+// 싱글톤 인스턴스 생성하여 export
+export const userService = new UserService();

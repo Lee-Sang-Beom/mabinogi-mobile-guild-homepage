@@ -5,6 +5,7 @@ declare module "next-auth" {
     docId: string; // 문서 ID
     id: string; // 유저 아이디
     password: string; // 유저 비밀번호
+    otp: string; // otp 6글자
     role: GuildRoleType; // 유저 길드 내 등급
     job: JobType; // 유저 직업
     mngDt: string; // 관리날짜 (등록일, 수정일)

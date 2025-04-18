@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,13 +10,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
 import { loginFormSchema } from '@/app/(no-auth)/login/schema'
-import { login } from '@/service/auth-service'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useLoginMutation } from '@/app/(no-auth)/login/hooks/use-login-user'
 
 export default function LoginPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const router = useRouter()
+  const { mutate: loginUser, isPending: isSubmitting } = useLoginMutation();
 
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
@@ -28,23 +24,7 @@ export default function LoginPage() {
   })
 
   async function onSubmit(values: z.infer<typeof loginFormSchema>) {
-    setIsSubmitting(true);
-
-    try {
-      const res = await login(values);
-
-      if (res?.ok) {
-        toast.success("로그인이 완료되었습니다.");
-        router.push('/dashboard');
-      } else {
-        toast.error(res?.error || "로그인에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("Login error: ", error);
-      toast.error("알 수 없는 오류가 발생했습니다.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    loginUser(values);
   }
 
   return (
@@ -69,7 +49,7 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md">
         <motion.div
-          className="relative bg-background/80 backdrop-blur-sm p-8 border border-primary/10 rounded-3xl shadow-2xl"
+          className="relative bg-background/40 backdrop-blur-sm p-8 border border-primary/10 rounded-3xl shadow-2xl"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}

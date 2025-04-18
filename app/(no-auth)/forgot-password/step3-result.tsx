@@ -22,7 +22,7 @@ export default function Step3Result({ success, onReset }: Step3Props) {
       {success ? (
         <>
           <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
-          <h3 className="text-xl font-bold text-white mb-2">비밀번호 변경 완료</h3>
+          <h3 className="text-xl font-bold text-foreground mb-2">비밀번호 변경 완료</h3>
           <p className="text-gray-400 text-center mb-6">
             비밀번호가 성공적으로 변경되었습니다.
             <br />새 비밀번호로 로그인해주세요.
@@ -34,7 +34,7 @@ export default function Step3Result({ success, onReset }: Step3Props) {
       ) : (
         <>
           <XCircle className="h-16 w-16 text-red-500 mb-4" />
-          <h3 className="text-xl font-bold text-white mb-2">비밀번호 변경 실패</h3>
+          <h3 className="text-xl font-bold text-foreground mb-2">비밀번호 변경 실패</h3>
           <p className="text-gray-400 text-center mb-6">
             입력하신 정보와 일치하는 계정을 찾을 수 없습니다.
             <br />

@@ -10,6 +10,9 @@ export const joinFormSchema = z
       message: "비밀번호는 최소 6자 이상이어야 합니다.",
     }),
     confirmPassword: z.string(),
+    otp: z
+      .string()
+      .length(6, { message: "OTP는 6자리여야 합니다." }), // OTP는 정확히 6자리로 검사
     job: z.enum(
       JobTypeOptions.map((job) => job.value) as [JobType, ...JobType[]], // Ensuring it's a tuple of literal types
       {

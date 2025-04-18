@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -18,42 +18,36 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { usePathname, useRouter } from 'next/navigation'
 import MobileMenu from './mobile-menu'
-import { signOut, useSession } from 'next-auth/react'
-import { clearCache } from '@/shared/utils/utils'
-import { toast } from 'sonner'
+import { useSession } from 'next-auth/react'
 import { loggedInMenuStructure, loggedOutMenuStructure } from '@/shared/constants/menu'
+import { authService } from '@/service/auth-service'
 
 export default function Header() {
-  const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const session = useSession();
+  const [mounted, setMounted] = useState(false)
+  const { theme, setTheme } = useTheme()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const session = useSession()
   const router = useRouter()
 
   // Simulate checking login status
   useEffect(() => {
-    if(session.status === "authenticated" && session.data?.user) {
+    if (session.status === 'authenticated' && session.data?.user) {
       setIsLoggedIn(true)
     } else {
       setIsLoggedIn(false)
     }
-  }, [session]);
+  }, [session])
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => setMounted(true), [])
 
-  const handleLogout = async() => {
-    await signOut({
-      redirect: false,
-    });
+  const handleLogout = async () => {
+    await authService.logout()
+    router.push('/login')
+  }
 
-    toast.success('로그아웃이 완료되었습니다.')
-    clearCache();
-    router.push("/login");
-  };
-
-  const navItems = isLoggedIn ? loggedInMenuStructure : loggedOutMenuStructure;
+  const navItems = isLoggedIn ? loggedInMenuStructure : loggedOutMenuStructure
 
   return (
     <motion.header
@@ -72,7 +66,7 @@ export default function Header() {
             <motion.div
               className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center"
               whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 10 }}
             >
               <span className="font-cinzel text-white text-xl font-bold">
                 M
@@ -96,13 +90,14 @@ export default function Header() {
                       <button
                         className={`text-sm font-semibold leading-6 transition-colors relative group flex items-center ${
                           pathname.startsWith(item.href)
-                            ? "text-primary"
-                            : "text-foreground hover:text-primary"
+                            ? 'text-primary'
+                            : 'text-foreground hover:text-primary'
                         }`}
                       >
                         {item.icon && <item.icon className="h-4 w-4 mr-2" />}
                         {item.name}
-                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
+                        <span
+                          className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-56">
@@ -144,7 +139,7 @@ export default function Header() {
                               {subItem.name}
                             </Link>
                           </DropdownMenuItem>
-                        )
+                        ),
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -154,15 +149,16 @@ export default function Header() {
                     href={item.href}
                     className={`text-sm font-semibold leading-6 transition-colors relative group flex items-center ${
                       pathname === item.href
-                        ? "text-primary"
-                        : "text-foreground hover:text-primary"
+                        ? 'text-primary'
+                        : 'text-foreground hover:text-primary'
                     }`}
                   >
                     {item.icon && <item.icon className="h-4 w-4 mr-2" />}
                     {item.name}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
+                    <span
+                      className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
                   </Link>
-                )
+                ),
               )}
             </>
           ) : (
@@ -174,12 +170,13 @@ export default function Header() {
                   href={item.href}
                   className={`text-sm font-semibold leading-6 transition-colors relative group ${
                     pathname === item.href
-                      ? "text-primary"
-                      : "text-foreground hover:text-primary"
+                      ? 'text-primary'
+                      : 'text-foreground hover:text-primary'
                   }`}
                 >
                   {item.name}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
+                  <span
+                    className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
                 </Link>
               ))}
             </>
@@ -191,7 +188,7 @@ export default function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  {theme === "dark" ? (
+                  {theme === 'dark' ? (
                     <SunIcon className="h-5 w-5" />
                   ) : (
                     <MoonIcon className="h-5 w-5" />
@@ -201,16 +198,16 @@ export default function Header() {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() => {
-                    setTheme("dark");
-                    location.reload();
+                    setTheme('dark')
+                    location.reload()
                   }}
                 >
                   다크 모드
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setTheme("light");
-                    location.reload();
+                    setTheme('light')
+                    location.reload()
                   }}
                 >
                   라이트 모드
@@ -222,7 +219,7 @@ export default function Header() {
           {isLoggedIn ? (
             <div className="hidden lg:flex gap-2">
               <Button variant="outline" className={'p-0'}>
-                <Link href="/profile" className={"p-3"}>프로필</Link>
+                <Link href="/profile" className={'p-3'}>프로필</Link>
               </Button>
               <Button
                 variant="destructive"
@@ -235,7 +232,7 @@ export default function Header() {
             </div>
           ) : (
             <Button variant="default" className="hidden lg:flex p-0">
-              <Link href="/login" className={"p-3"}>로그인</Link>
+              <Link href="/login" className={'p-3'}>로그인</Link>
             </Button>
           )}
 
@@ -258,5 +255,5 @@ export default function Header() {
         onLogout={handleLogout}
       />
     </motion.header>
-  );
+  )
 }

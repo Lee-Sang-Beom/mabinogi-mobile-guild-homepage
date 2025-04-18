@@ -1,44 +1,38 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Eye, EyeOff, Check, X } from "lucide-react"
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { Button } from '@/components/ui/button'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Check, Eye, EyeOff, X } from 'lucide-react'
+import { forgotPasswordStep2FormSchema } from '@/app/(no-auth)/forgot-password/schema'
+import { User } from 'next-auth'
+import { useFindPasswordStep2 } from '@/app/(no-auth)/forgot-password/hooks/use-find-password-step2'
 
-const passwordSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, { message: "비밀번호는 최소 8자 이상이어야 합니다." })
-      .regex(/[A-Z]/, { message: "비밀번호는 최소 하나의 대문자를 포함해야 합니다." })
-      .regex(/[a-z]/, { message: "비밀번호는 최소 하나의 소문자를 포함해야 합니다." })
-      .regex(/[0-9]/, { message: "비밀번호는 최소 하나의 숫자를 포함해야 합니다." })
-      .regex(/[^A-Za-z0-9]/, { message: "비밀번호는 최소 하나의 특수문자를 포함해야 합니다." }),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "비밀번호가 일치하지 않습니다.",
-    path: ["confirmPassword"],
-  })
 
 type Step2Props = {
-  onSuccess: () => void
-  onFailure: () => void
+  onSuccessAction: () => void
+  onFailureAction: () => void
+  user: User
 }
 
-export default function Step2NewPassword({ onSuccess, onFailure }: Step2Props) {
-  console.log('onFailure ', onFailure)
+export default function Step2NewPassword({ user, onSuccessAction, onFailureAction }: Step2Props) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const { mutate: changePassword } = useFindPasswordStep2(
+    user,
+    onSuccessAction,
+    onFailureAction,
+    () => setIsSubmitting(false),
+  )
 
-  const form = useForm<z.infer<typeof passwordSchema>>({
-    resolver: zodResolver(passwordSchema),
+  const form = useForm<z.infer<typeof forgotPasswordStep2FormSchema>>({
+    resolver: zodResolver(forgotPasswordStep2FormSchema),
     defaultValues: {
       password: "",
       confirmPassword: "",
@@ -47,18 +41,16 @@ export default function Step2NewPassword({ onSuccess, onFailure }: Step2Props) {
 
   const validatePassword = (password: string) => {
     const minLength = password.length >= 8
-    const hasUppercase = /[A-Z]/.test(password)
     const hasLowercase = /[a-z]/.test(password)
     const hasNumber = /[0-9]/.test(password)
     const hasSpecial = /[^A-Za-z0-9]/.test(password)
 
     return {
       minLength,
-      hasUppercase,
       hasLowercase,
       hasNumber,
       hasSpecial,
-      isValid: minLength && hasUppercase && hasLowercase && hasNumber && hasSpecial,
+      isValid: minLength  && hasLowercase && hasNumber && hasSpecial,
     }
   }
 
@@ -67,26 +59,16 @@ export default function Step2NewPassword({ onSuccess, onFailure }: Step2Props) {
   const confirmPassword = form.watch("confirmPassword")
   const passwordsMatch = password === confirmPassword && confirmPassword !== ""
 
-  function onSubmit(values: z.infer<typeof passwordSchema>) {
-    console.log('valus is ', values)
-    setIsSubmitting(true)
-
-    // 여기서는 데모를 위해 간단한 로직을 사용합니다.
-    // 실제로는 서버에 요청을 보내 비밀번호를 변경해야 합니다.
-    setTimeout(() => {
-      // 데모 목적으로 항상 성공으로 처리합니다.
-      // 실제 구현에서는 이 부분을 서버 요청으로 대체해야 합니다.
-      onSuccess()
-      setIsSubmitting(false)
-    }, 1500)
-  }
-
   const ValidationItem = ({ isValid, text }: { isValid: boolean; text: string }) => (
     <div className="flex items-center space-x-2">
       {isValid ? <Check className="h-4 w-4 text-green-500" /> : <X className="h-4 w-4 text-red-500" />}
       <span className={`text-xs ${isValid ? "text-green-500" : "text-red-500"}`}>{text}</span>
     </div>
   )
+
+  function onSubmit(values: z.infer<typeof forgotPasswordStep2FormSchema>) {
+    changePassword(values)
+  }
 
   return (
     <motion.div
@@ -102,14 +84,13 @@ export default function Step2NewPassword({ onSuccess, onFailure }: Step2Props) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300">새 비밀번호</FormLabel>
+                <FormLabel className="text-foreground">새 비밀번호</FormLabel>
                 <div className="relative">
                   <FormControl>
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="새 비밀번호"
                       {...field}
-                      className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 pr-10"
                     />
                   </FormControl>
                   <button
@@ -125,7 +106,6 @@ export default function Step2NewPassword({ onSuccess, onFailure }: Step2Props) {
                 {password && (
                   <div className="mt-2 space-y-1">
                     <ValidationItem isValid={passwordValidation.minLength} text="8자 이상" />
-                    <ValidationItem isValid={passwordValidation.hasUppercase} text="대문자 포함" />
                     <ValidationItem isValid={passwordValidation.hasLowercase} text="소문자 포함" />
                     <ValidationItem isValid={passwordValidation.hasNumber} text="숫자 포함" />
                     <ValidationItem isValid={passwordValidation.hasSpecial} text="특수문자 포함" />
@@ -140,14 +120,13 @@ export default function Step2NewPassword({ onSuccess, onFailure }: Step2Props) {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-300">새 비밀번호 확인</FormLabel>
+                <FormLabel className="text-foreground">새 비밀번호 확인</FormLabel>
                 <div className="relative">
                   <FormControl>
                     <Input
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="새 비밀번호 확인"
                       {...field}
-                      className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 pr-10"
                     />
                   </FormControl>
                   <button

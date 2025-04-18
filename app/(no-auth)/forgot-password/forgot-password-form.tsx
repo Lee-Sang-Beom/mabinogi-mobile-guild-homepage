@@ -5,16 +5,19 @@ import { motion, AnimatePresence } from "framer-motion"
 import Step1VerifyIdentity from '@/app/(no-auth)/forgot-password/step1-verify-identity'
 import Step2NewPassword from '@/app/(no-auth)/forgot-password/step2-new-password'
 import Step3Result from "./step3-result"
+import { User } from 'next-auth'
 
 export default function ForgotPasswordPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [verificationSuccess, setVerificationSuccess] = useState(false)
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false)
+  const [user, setUser] = useState<User | null>(null);
 
   // 본인확인 성공 시 호출되는 함수
-  const handleVerificationSuccess = () => {
+  const handleVerificationSuccess = (user: User) => {
     setVerificationSuccess(true)
     setCurrentStep(2)
+    setUser(user)
   }
 
   // 본인확인 실패 시 호출되는 함수
@@ -45,11 +48,12 @@ export default function ForgotPasswordPage() {
   useEffect(() => {
     console.log('verificationSuccess is ', verificationSuccess)
   }, [verificationSuccess])
+
   return (
-    <div className="overflow-x-hidden min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black py-12 px-4 sm:px-6 lg:px-8">
+    <div className="overflow-x-hidden min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background/50 to-background  py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">비밀번호 찾기</h2>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">비밀번호 찾기</h2>
           <p className="mt-2 text-center text-sm text-gray-400">
             {currentStep === 1
               ? "본인확인을 위해 회원가입 시 입력한 정보를 입력해주세요."
@@ -68,9 +72,9 @@ export default function ForgotPasswordPage() {
               key={step}
               className={`w-8 h-8 rounded-full flex items-center justify-center ${
                 currentStep === step
-                  ? "bg-amber-500 text-white"
+                  ? "bg-amber-500 text-foreground"
                   : currentStep > step
-                    ? "bg-green-500 text-white"
+                    ? "bg-green-500 text-foreground"
                     : "bg-gray-700 text-gray-400"
               }`}
             >
@@ -85,22 +89,26 @@ export default function ForgotPasswordPage() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="mt-8"
         >
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-purple-600 rounded-lg blur opacity-25"></div>
-            <div className="relative bg-gray-800 p-6 rounded-lg shadow-xl">
+          <div
+            className="relative">
+            <div
+              className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-purple-600 rounded-3xl blur opacity-20"></div>
+            <div
+              className="relative bg-gradient-to-b from-background via-background/50 to-background p-6 rounded-lg shadow-xl">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
                   <Step1VerifyIdentity
-                    onSuccess={handleVerificationSuccess}
-                    onFailure={handleVerificationFailure}
+                    onSuccessAction={handleVerificationSuccess}
+                    onFailureAction={handleVerificationFailure}
                     key="step1"
                   />
                 )}
                 {currentStep === 2 && (
                   <Step2NewPassword
-                    onSuccess={handlePasswordChangeSuccess}
-                    onFailure={handlePasswordChangeFailure}
+                    onSuccessAction={handlePasswordChangeSuccess}
+                    onFailureAction={handlePasswordChangeFailure}
                     key="step2"
+                    user={user!}
                   />
                 )}
                 {currentStep === 3 && <Step3Result success={passwordChangeSuccess} onReset={handleReset} key="step3" />}

@@ -17,9 +17,6 @@ export default withAuth(
 
     const isLoggedIn = !!token;
 
-    console.log('isLoggedIn? ', isLoggedIn)
-    console.log('pathname? ', pathname)
-
     // 로그인한 사용자가 접근하면 대시보드로 리다이렉트되는 페이지들
     const noAuthNeededPages = ["/login", "/join", "/forgot-password"];
     const isNoAuthNeededPage = noAuthNeededPages.includes(pathname);

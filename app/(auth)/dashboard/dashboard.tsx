@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Bell, Calendar, Shield, Sword, Trophy, Users } from 'lucide-react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { useEffect } from 'react'
 
 // Mock data
 const guildEvents = [
@@ -29,6 +31,11 @@ const guildRanking = [
 ]
 
 export default function Dashboard() {
+
+  const user = useSession()
+  useEffect(() => {
+    console.log('dashboard login user', user)
+  },[user])
 
   return (
     <div className="min-h-[calc(100vh-200px)] py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">

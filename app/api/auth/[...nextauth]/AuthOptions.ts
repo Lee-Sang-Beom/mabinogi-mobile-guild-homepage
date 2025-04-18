@@ -2,7 +2,7 @@ import { Account, AuthOptions, Profile, Session, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AdapterUser } from "next-auth/adapters";
 import { JWT } from "next-auth/jwt";
-import { loginCollectionUser } from "@/service/user/user-service";
+import { authService } from '@/service/auth-service'
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -16,7 +16,7 @@ export const authOptions: AuthOptions = {
         credentials: Record<"id" | "password", string> | undefined
       ): Promise<User | null> {
         if (!credentials) return null;
-        const res = await loginCollectionUser(credentials);
+        const res = await authService.login(credentials);
 
         if (!res.success || !res.data) {
           throw new Error(res.message || "로그인 실패");
