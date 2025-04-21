@@ -7,10 +7,10 @@ import { CheckCircle, XCircle } from "lucide-react"
 
 type Step3Props = {
   success: boolean
-  onReset: () => void
+  onResetAction: () => void
 }
 
-export default function Step3Result({ success, onReset }: Step3Props) {
+export default function Step3Result({ success, onResetAction }: Step3Props) {
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -40,7 +40,7 @@ export default function Step3Result({ success, onReset }: Step3Props) {
             <br />
             정보를 다시 확인하고 시도해주세요.
           </p>
-          <Button onClick={onReset} className="w-full bg-amber-600 hover:bg-amber-700 text-white">
+          <Button onClick={onResetAction} className="w-full bg-amber-600 hover:bg-amber-700 text-white">
             다시 시도하기
           </Button>
         </>

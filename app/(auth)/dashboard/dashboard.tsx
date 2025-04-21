@@ -1,41 +1,108 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useAnimation, useInView } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Bell, Calendar, Shield, Sword, Trophy, Users } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ArrowRight, Bell, BookOpen, ImageIcon, Shield, Sparkles, Sword, Trophy, Users } from 'lucide-react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
-import { useEffect } from 'react'
+import Image from 'next/image'
+import { GuildMemberBubble } from './_components/guild-member-bubble'
+import { JobClassChart } from './_components/job-class-chart'
+import { getJobClassColor, JobClassIcons } from './job-class-utils'
+import { JobTypeOptions } from '@/shared/constants/game'
+
+
+interface Member {
+  id: number
+  name: string
+  level: number
+  jobClass: string
+  joinDate: string
+  avatar: string
+  contribution: number
+}
 
 // Mock data
-const guildEvents = [
-  { id: 1, title: "주간 레이드", date: "2023-09-30", time: "20:00", type: "raid" },
-  { id: 2, title: "길드 대전", date: "2023-10-05", time: "21:00", type: "pvp" },
-  { id: 3, title: "신규 길드원 환영회", date: "2023-10-07", time: "19:00", type: "social" },
-]
+const guildInfo = {
+  name: "럭키비키",
+  level: 45,
+  memberCount: 120,
+  maxMembers: 150,
+  website: "https://luckyviki.com",
+}
 
-const announcements = [
-  { id: 1, title: "길드 레벨 50 달성!", date: "2023-09-25", priority: "high" },
-  { id: 2, title: "신규 길드 시스템 업데이트", date: "2023-09-20", priority: "medium" },
-  { id: 3, title: "길드 기부 이벤트 안내", date: "2023-09-15", priority: "low" },
-]
+const latestAnnouncement = {
+  id: 1,
+  title: "길드 레벨 50 달성 이벤트!",
+  content:
+    "길드원 여러분, 곧 길드 레벨 50을 달성합니다! 이를 기념하여 특별 이벤트를 준비했습니다. 자세한 내용은 공지사항을 확인해주세요.",
+  date: "2023-09-25",
+  author: "길드마스터",
+}
 
-const guildRanking = [
-  { rank: 1, name: "드래곤슬레이어", points: 12500 },
-  { rank: 2, name: "나이트메어", points: 11200 },
-  { rank: 3, name: "크리스탈가드", points: 10800 },
-  { rank: 4, name: "마비노기 길드", points: 9700 },
-  { rank: 5, name: "판타지워리어", points: 8900 },
-]
+const latestUpdate = {
+  id: 1,
+  title: "홈페이지 업데이트 안내",
+  content: "길드 홈페이지가 새롭게 업데이트되었습니다. 새로운 기능과 디자인으로 더 나은 경험을 제공합니다.",
+  date: "2023-09-20",
+  version: "v2.5.0",
+}
+
+const latestArtwork = {
+  id: 1,
+  title: "길드 마스코트 일러스트",
+  description: "우리 길드의 마스코트 '비키'의 새로운 일러스트입니다.",
+  author: "아트디렉터",
+  date: "2023-09-18",
+  imageUrl: "/placeholder.svg?height=300&width=400",
+}
+
+// Generate mock data for guild members with the new job types
+const generateGuildMembers = () => {
+  return Array.from({ length: 30 }, (_, i) => {
+    const randomJobIndex = Math.floor(Math.random() * JobTypeOptions.length)
+    const jobClass = JobTypeOptions[randomJobIndex].name
+
+    return {
+      id: i + 1,
+      name: `길드원${i + 1}`,
+      level: Math.floor(Math.random() * 50) + 50,
+      jobClass,
+      joinDate: `2023-${Math.floor(Math.random() * 9) + 1}-${Math.floor(Math.random() * 28) + 1}`,
+      avatar: `/placeholder.svg?height=100&width=100&text=멤버${i + 1}`,
+      contribution: Math.floor(Math.random() * 1000) + 100,
+    }
+  })
+}
+
+const guildMembers = generateGuildMembers()
 
 export default function Dashboard() {
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null)
+  const containerRef = useRef(null)
+  const isInView = useInView(containerRef, { once: false, amount: 0.2 })
+  const controls = useAnimation()
 
-  const user = useSession()
   useEffect(() => {
-    console.log('dashboard login user', user)
-  },[user])
+    if (isInView) {
+      controls.start("visible")
+    }
+  }, [isInView, controls])
+
+  const fadeInUpVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    }),
+  }
 
   return (
     <div className="min-h-[calc(100vh-200px)] py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
@@ -59,7 +126,7 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto" ref={containerRef}>
         <motion.div
           className="mb-8"
           initial={{ opacity: 0, y: 20 }}
@@ -67,47 +134,79 @@ export default function Dashboard() {
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-3xl font-bold text-foreground font-cinzel">
-            <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
-              길드 대시보드
-            </span>
+            <motion.span
+              className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600"
+              animate={{
+                backgroundPosition: ["0% 0%", "100% 100%"],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Number.POSITIVE_INFINITY,
+                repeatType: "reverse",
+              }}
+            >
+              {guildInfo.name} 길드 대시보드
+            </motion.span>
           </h1>
-          <p className="text-muted-foreground mt-2">마비노기 모바일 길드의 최신 정보와 활동을 확인하세요.</p>
+          <p className="text-muted-foreground mt-2">길드의 최신 정보와 활동을 확인하세요.</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full">
-              <CardHeader className="pb-2">
+          <motion.div custom={0} initial="hidden" animate={controls} variants={fadeInUpVariants}>
+            <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full overflow-hidden group">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-amber-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                animate={{
+                  opacity: [0, 0.5, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Number.POSITIVE_INFINITY,
+                  repeatType: "reverse",
+                }}
+              />
+              <CardHeader className="pb-2 relative z-10">
                 <CardTitle className="flex items-center gap-2 text-lg font-cinzel">
                   <Shield className="h-5 w-5 text-primary" />
                   길드 정보
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="space-y-2">
                   <div className="flex justify-between">
+                    <span className="text-muted-foreground">길드명</span>
+                    <span className="font-medium">{guildInfo.name}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-muted-foreground">길드 레벨</span>
-                    <span className="font-medium">45</span>
+                    <span className="font-medium">{guildInfo.level}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">길드원 수</span>
-                    <span className="font-medium">120/150</span>
+                    <span className="font-medium">
+                      {guildInfo.memberCount}/{guildInfo.maxMembers}
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">길드 자금</span>
-                    <span className="font-medium">1,250,000 골드</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">길드 랭킹</span>
-                    <span className="font-medium">4위</span>
+                    <span className="text-muted-foreground">홈페이지</span>
+                    <span className="font-medium">{guildInfo.website}</span>
                   </div>
                   <div className="pt-4">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Link href="/members">길드원 목록 보기</Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full group-hover:bg-primary/10 transition-colors duration-300"
+                    >
+                      <Link href="/members" className="flex items-center justify-center w-full">
+                        길드 정보 상세보기
+                        <motion.span
+                          animate={{ x: [0, 5, 0] }}
+                          transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1.5 }}
+                          className="ml-2"
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </motion.span>
+                      </Link>
                     </Button>
                   </div>
                 </div>
@@ -115,40 +214,54 @@ export default function Dashboard() {
             </Card>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full">
-              <CardHeader className="pb-2">
+          <motion.div custom={1} initial="hidden" animate={controls} variants={fadeInUpVariants}>
+            <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full overflow-hidden group">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                animate={{
+                  opacity: [0, 0.5, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Number.POSITIVE_INFINITY,
+                  repeatType: "reverse",
+                  delay: 0.5,
+                }}
+              />
+              <CardHeader className="pb-2 relative z-10">
                 <CardTitle className="flex items-center gap-2 text-lg font-cinzel">
                   <Bell className="h-5 w-5 text-primary" />
                   공지사항
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="space-y-4">
-                  {announcements.map((announcement) => (
-                    <div key={announcement.id} className="flex items-start gap-3">
-                      <div
-                        className={`w-2 h-2 rounded-full mt-2 ${
-                          announcement.priority === "high"
-                            ? "bg-red-500"
-                            : announcement.priority === "medium"
-                              ? "bg-amber-500"
-                              : "bg-green-500"
-                        }`}
-                      />
-                      <div>
-                        <p className="font-medium">{announcement.title}</p>
-                        <p className="text-xs text-muted-foreground">{announcement.date}</p>
-                      </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full mt-2 bg-red-500" />
+                    <div>
+                      <p className="font-medium">{latestAnnouncement.title}</p>
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{latestAnnouncement.content}</p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {latestAnnouncement.date} by {latestAnnouncement.author}
+                      </p>
                     </div>
-                  ))}
+                  </div>
                   <div className="pt-2">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Link href="/announcements">모든 공지 보기</Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full group-hover:bg-primary/10 transition-colors duration-300"
+                    >
+                      <Link href="/announcements" className="flex items-center justify-center w-full">
+                        모든 공지 보기
+                        <motion.span
+                          animate={{ x: [0, 5, 0] }}
+                          transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1.5 }}
+                          className="ml-2"
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </motion.span>
+                      </Link>
                     </Button>
                   </div>
                 </div>
@@ -156,50 +269,56 @@ export default function Dashboard() {
             </Card>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full">
-              <CardHeader className="pb-2">
+          <motion.div custom={2} initial="hidden" animate={controls} variants={fadeInUpVariants}>
+            <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full overflow-hidden group">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                animate={{
+                  opacity: [0, 0.5, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Number.POSITIVE_INFINITY,
+                  repeatType: "reverse",
+                  delay: 1,
+                }}
+              />
+              <CardHeader className="pb-2 relative z-10">
                 <CardTitle className="flex items-center gap-2 text-lg font-cinzel">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  다가오는 이벤트
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  최신 업데이트
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <div className="space-y-4">
-                  {guildEvents.map((event) => (
-                    <div key={event.id} className="flex items-start gap-3">
-                      <div
-                        className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                          event.type === "raid"
-                            ? "bg-red-500/10 text-red-500"
-                            : event.type === "pvp"
-                              ? "bg-amber-500/10 text-amber-500"
-                              : "bg-green-500/10 text-green-500"
-                        }`}
-                      >
-                        {event.type === "raid" ? (
-                          <Sword className="h-5 w-5" />
-                        ) : event.type === "pvp" ? (
-                          <Trophy className="h-5 w-5" />
-                        ) : (
-                          <Users className="h-5 w-5" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium">{event.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {event.date} {event.time}
-                        </p>
-                      </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                      <Sparkles className="h-5 w-5" />
                     </div>
-                  ))}
+                    <div>
+                      <p className="font-medium">{latestUpdate.title}</p>
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{latestUpdate.content}</p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {latestUpdate.date} - {latestUpdate.version}
+                      </p>
+                    </div>
+                  </div>
                   <div className="pt-2">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Link href="/events">모든 이벤트 보기</Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full group-hover:bg-primary/10 transition-colors duration-300"
+                    >
+                      <Link href="/updates" className="flex items-center justify-center w-full">
+                        모든 업데이트 보기
+                        <motion.span
+                          animate={{ x: [0, 5, 0] }}
+                          transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1.5 }}
+                          className="ml-2"
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </motion.span>
+                      </Link>
                     </Button>
                   </div>
                 </div>
@@ -208,140 +327,202 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl mb-8">
-            <CardHeader>
-              <CardTitle className="font-cinzel">길드 활동</CardTitle>
-              <CardDescription>최근 길드 활동과 업적을 확인하세요.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="ranking">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="ranking">길드 랭킹</TabsTrigger>
-                  <TabsTrigger value="achievements">업적</TabsTrigger>
-                  <TabsTrigger value="contributions">기여도</TabsTrigger>
-                </TabsList>
-                <TabsContent value="ranking">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-12 gap-4 font-medium text-muted-foreground">
-                      <div className="col-span-2">순위</div>
-                      <div className="col-span-6">길드명</div>
-                      <div className="col-span-4 text-right">점수</div>
-                    </div>
-                    {guildRanking.map((guild) => (
-                      <div
-                        key={guild.rank}
-                        className={`grid grid-cols-12 gap-4 p-3 rounded-lg ${
-                          guild.name === "마비노기 길드" ? "bg-primary/10 font-medium" : ""
-                        }`}
-                      >
-                        <div className="col-span-2">{guild.rank}</div>
-                        <div className="col-span-6">{guild.name}</div>
-                        <div className="col-span-4 text-right">{guild.points.toLocaleString()}</div>
-                      </div>
-                    ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
+          <motion.div custom={3} initial="hidden" animate={controls} variants={fadeInUpVariants}>
+            <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full overflow-hidden group">
+              <CardHeader className="pb-2 relative z-10">
+                <CardTitle className="flex items-center gap-2 text-lg font-cinzel">
+                  <ImageIcon className="h-5 w-5 text-primary" />
+                  최신 아트워크
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="relative z-10 flex flex-col justify-between overflow-hidden ">
+                <div className="space-y-4 flex-grow">
+                  <div className="relative overflow-hidden rounded-lg aspect-video">
+                    <Image
+                      src={
+                        // latestArtwork.imageUrl ||
+                        "/images/bg-mabinogi-mobile-main.jpg"}
+                      alt={latestArtwork.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
                   </div>
-                </TabsContent>
-                <TabsContent value="achievements">
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">업적 데이터를 불러오는 중...</p>
+                  <div>
+                    <h3 className="font-medium">{latestArtwork.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{latestArtwork.description}</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      by {latestArtwork.author} • {latestArtwork.date}
+                    </p>
                   </div>
-                </TabsContent>
-                <TabsContent value="contributions">
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">기여도 데이터를 불러오는 중...</p>
+                  <div className="pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full group-hover:bg-primary/10 transition-colors duration-300"
+                    >
+                      <Link href="/artwork" className="flex items-center justify-center w-full">
+                        모든 아트워크 보기
+                        <motion.span
+                          animate={{ x: [0, 5, 0] }}
+                          transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1.5 }}
+                          className="ml-2"
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </motion.span>
+                      </Link>
+                    </Button>
                   </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </motion.div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl">
-            <CardHeader>
-              <CardTitle className="font-cinzel">빠른 링크</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                <Button
-                  variant="outline"
-                  className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center text-sm sm:text-base"
-                >
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5 mb-1 sm:mb-2" />
-                  <span>길드원 정보</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center text-sm sm:text-base"
-                >
-                  <Bell className="h-4 w-4 sm:h-5 sm:w-5 mb-1 sm:mb-2" />
-                  <span>공지사항</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center text-sm sm:text-base"
-                >
-                  <Sword className="h-4 w-4 sm:h-5 sm:w-5 mb-1 sm:mb-2" />
-                  <span>길드 전투</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center text-sm sm:text-base"
-                >
-                  <Trophy className="h-4 w-4 sm:h-5 sm:w-5 mb-1 sm:mb-2" />
-                  <span>업적</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div custom={4} initial="hidden" animate={controls} variants={fadeInUpVariants}>
+            <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full overflow-hidden group ">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-green-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                animate={{
+                  opacity: [0, 0.5, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Number.POSITIVE_INFINITY,
+                  repeatType: "reverse",
+                  delay: 2,
+                }}
+              />
+              <CardHeader className="pb-2 relative z-10">
+                <CardTitle className="flex items-center gap-2 text-lg font-cinzel">
+                  <Users className="h-5 w-5 text-primary" />
+                  직업별 길드원 분포
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <div className="h-[400px] w-full">
+                  <JobClassChart />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
-          <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl">
-            <CardHeader>
-              <CardTitle className="font-cinzel">내 캐릭터 정보</CardTitle>
+        <motion.div custom={5} initial="hidden" animate={controls} variants={fadeInUpVariants} className="mb-8">
+          <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl overflow-hidden">
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center gap-2 text-lg font-cinzel">
+                <Trophy className="h-5 w-5 text-primary" />
+                길드원 소개
+              </CardTitle>
+              <CardDescription>
+                {guildInfo.name} 길드의 멤버들을 만나보세요. 멤버를 클릭하면 상세 정보를 볼 수 있습니다.
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Shield className="h-8 w-8 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg">용사의이름</h3>
-                  <p className="text-muted-foreground">레벨 85 전사</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">길드 기여도</span>
-                  <span className="font-medium">1,250 포인트</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">길드 랭크</span>
-                  <span className="font-medium">부길드장</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">가입일</span>
-                  <span className="font-medium">2023.05.15</span>
-                </div>
-                <div className="pt-4">
-                  <Button variant="outline" size="sm" className="w-full">
-                    <Link href="/profile">프로필 관리</Link>
-                  </Button>
-                </div>
+            <CardContent className="relative z-10 pb-8">
+              <div className="relative h-[500px] w-full rounded-lg bg-gradient-to-br from-background/50 to-background/80 p-4 overflow-hidden border border-primary/10">
+                {/* Guild name in the center */}
+                <motion.div
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
+                  animate={{
+                    scale: [1, 1.05, 1],
+                    rotate: [0, 2, 0, -2, 0],
+                  }}
+                  transition={{
+                    duration: 8,
+                    repeat: Number.POSITIVE_INFINITY,
+                    repeatType: "reverse",
+                  }}
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    <motion.div
+                      className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 font-cinzel"
+                      animate={{
+                        backgroundPosition: ["0% 0%", "100% 100%"],
+                      }}
+                      transition={{
+                        duration: 5,
+                        repeat: Number.POSITIVE_INFINITY,
+                        repeatType: "reverse",
+                      }}
+                    >
+                      {guildInfo.name}
+                    </motion.div>
+                    <motion.div
+                      className="text-sm text-muted-foreground mt-1"
+                      animate={{ opacity: [0.7, 1, 0.7] }}
+                      transition={{
+                        duration: 3,
+                        repeat: Number.POSITIVE_INFINITY,
+                        repeatType: "reverse",
+                      }}
+                    >
+                      함께하는 길드원들
+                    </motion.div>
+                  </div>
+                </motion.div>
+
+                {/* Guild members bubbles */}
+                <GuildMemberBubble
+                  members={guildMembers}
+                  setSelectedMemberAction={setSelectedMember}
+                />
               </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
+
+      {/* Member detail dialog */}
+      <Dialog open={!!selectedMember} onOpenChange={(open) => !open && setSelectedMember(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>길드원 정보</DialogTitle>
+            <DialogDescription>{selectedMember?.name}의 상세 정보입니다.</DialogDescription>
+          </DialogHeader>
+          {selectedMember && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div
+                  className="relative h-16 w-16 rounded-full overflow-hidden flex items-center justify-center bg-background/80 border-2"
+                  style={{ borderColor: getJobClassColor(selectedMember.jobClass) }}
+                >
+                  {/* Use the appropriate icon based on job class */}
+                  {(() => {
+                    const IconComponent = JobClassIcons[selectedMember.jobClass] || Sword
+                    return (
+                      <IconComponent
+                        className="h-10 w-10"
+                        style={{ color: getJobClassColor(selectedMember.jobClass) }}
+                      />
+                    )
+                  })()}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">{selectedMember.name}</h3>
+                  <p className="text-muted-foreground">
+                    레벨 {selectedMember.level} {selectedMember.jobClass}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">길드 기여도</span>
+                  <span className="font-medium">{selectedMember.contribution} 포인트</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">가입일</span>
+                  <span className="font-medium">{selectedMember.joinDate}</span>
+                </div>
+              </div>
+              <div className="pt-4">
+                <Button variant="outline" size="sm" className="w-full">
+                  <Link href={`/members/${selectedMember.id}`}>프로필 상세보기</Link>
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

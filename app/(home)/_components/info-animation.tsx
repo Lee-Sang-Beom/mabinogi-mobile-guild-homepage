@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface IntroAnimationProps {
-  onComplete: () => void;
+  onCompleteAction: () => void;
 }
 
-export default function IntroAnimation({ onComplete }: IntroAnimationProps) {
+export default function IntroAnimation({ onCompleteAction }: IntroAnimationProps) {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export default function IntroAnimation({ onComplete }: IntroAnimationProps) {
     const timer1 = setTimeout(() => setStep(1), 1000); // 첫 번째 텍스트
     const timer2 = setTimeout(() => setStep(2), 3500); // 두 번째 텍스트
     const timer3 = setTimeout(() => setStep(3), 6000); // 이미지 애니메이션 (회전 및 사라짐)
-    const timer4 = setTimeout(() => onComplete(), 8000); // 컴포넌트 제거
+    const timer4 = setTimeout(() => onCompleteAction(), 8000); // 컴포넌트 제거
 
     return () => {
       clearTimeout(timer1);
@@ -24,7 +24,7 @@ export default function IntroAnimation({ onComplete }: IntroAnimationProps) {
       clearTimeout(timer3);
       clearTimeout(timer4);
     };
-  }, [onComplete]);
+  }, [onCompleteAction]);
 
   return (
     <AnimatePresence>

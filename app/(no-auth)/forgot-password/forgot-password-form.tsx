@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
                     user={user!}
                   />
                 )}
-                {currentStep === 3 && <Step3Result success={passwordChangeSuccess} onReset={handleReset} key="step3" />}
+                {currentStep === 3 && <Step3Result success={passwordChangeSuccess} onResetAction={handleReset} key="step3" />}
               </AnimatePresence>
             </div>
           </div>

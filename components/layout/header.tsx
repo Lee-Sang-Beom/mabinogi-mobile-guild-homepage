@@ -249,10 +249,10 @@ export default function Header() {
 
       <MobileMenu
         isOpen={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
+        onCloseAction={() => setIsMenuOpen(false)}
         navItems={navItems}
         isLoggedIn={isLoggedIn}
-        onLogout={handleLogout}
+        onLogoutAction={handleLogout}
       />
     </motion.header>
   )

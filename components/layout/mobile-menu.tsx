@@ -9,10 +9,10 @@ import { MenuItem } from "@/shared/types/menu"
 
 interface MobileMenuProps {
   isOpen: boolean
-  onClose: () => void
+  onCloseAction: () => void
   navItems: MenuItem[]
   isLoggedIn: boolean
-  onLogout: () => void
+  onLogoutAction: () => void
 }
 
 // 애니메이션 변수 정의
@@ -62,7 +62,7 @@ const buttonVariants: Variants = {
   tap: { scale: 0.95 },
 }
 
-export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLogout }: MobileMenuProps) {
+export default function MobileMenu({ isOpen, onCloseAction, navItems, isLoggedIn, onLogoutAction }: MobileMenuProps) {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
   const menuRef = useRef<HTMLDivElement>(null)
   const [scrollPosition, setScrollPosition] = useState(0)
@@ -132,7 +132,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLo
               </motion.div>
             </button>
           ) : (
-            <Link href={item.href} className="flex items-center text-xl font-bold w-full" onClick={onClose}>
+            <Link href={item.href} className="flex items-center text-xl font-bold w-full" onClick={onCloseAction}>
               {item.icon && (
                 <item.icon className="mr-3 text-amber-400 h-4 w-4" />
               )}
@@ -177,7 +177,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLo
                         <Link
                           href={subItem.href}
                           className="flex items-center text-lg font-medium text-white w-full"
-                          onClick={onClose}
+                          onClick={onCloseAction}
                         >
                           {subItem.icon && (
                             <subItem.icon className="mr-3 text-amber-400 h-4 w-4" />
@@ -193,7 +193,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLo
                               key={subSubItem.name}
                               href={subSubItem.href}
                               className="flex items-center text-base text-white py-1"
-                              onClick={onClose}
+                              onClick={onCloseAction}
                             >
                               {subItem.icon && (
                                 <subItem.icon className="mr-3 text-amber-400 h-4 w-4" />
@@ -230,7 +230,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLo
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={onCloseAction}
           />
 
           <div
@@ -252,7 +252,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLo
                 variants={buttonVariants}
                 whileHover="hover"
                 whileTap="tap"
-                onClick={onClose}
+                onClick={onCloseAction}
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
               >
                 <X className="h-6 w-6" />
@@ -274,7 +274,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLo
                         variant="outline"
                         className="w-full text-foreground border-white/20 hover:bg-white/50 hover:border-white/40 h-12 text-lg"
                       >
-                        <Link href="/profile" onClick={onClose} className="w-full">
+                        <Link href="/profile" onClick={onCloseAction} className="w-full">
                           프로필
                         </Link>
                       </Button>
@@ -284,8 +284,8 @@ export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLo
                         variant="destructive"
                         className="w-full flex items-center justify-center gap-2 h-12 text-lg"
                         onClick={() => {
-                          onLogout()
-                          onClose()
+                          onLogoutAction()
+                          onCloseAction()
                         }}
                       >
                         <LogOut className="h-5 w-5" />
@@ -297,7 +297,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLo
                   <div className="flex flex-col gap-4">
                     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
                       <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white h-12 text-lg">
-                        <Link href="/login" onClick={onClose} className="w-full">
+                        <Link href="/login" onClick={onCloseAction} className="w-full">
                           로그인
                         </Link>
                       </Button>
@@ -307,7 +307,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, isLoggedIn, onLo
                         variant="outline"
                         className="w-full text-foreground border-white/20 hover:bg-white/50 hover:border-white/40 h-12 text-lg"
                       >
-                        <Link href="/join" onClick={onClose} className="w-full">
+                        <Link href="/join" onClick={onCloseAction} className="w-full">
                           회원가입
                         </Link>
                       </Button>

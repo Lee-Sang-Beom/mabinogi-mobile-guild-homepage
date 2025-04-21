@@ -35,7 +35,7 @@ export default function Home() {
 
   return (
     <>
-      {showIntro && <IntroAnimation onComplete={handleIntroComplete} />}
+      {showIntro && <IntroAnimation onCompleteAction={handleIntroComplete} />}
       <div className={showIntro ? "invisible" : "visible"}>
         <Hero />
         <GuildFeatures />
