@@ -195,8 +195,22 @@ export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMem
 
   const handleMemberClick = (member: Member) => setSelectedMemberAction(member)
 
+  useEffect(() => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (containerRef.current && containerRef.current.contains(e.target as Node)) {
+        e.preventDefault()
+      }
+    }
+
+    containerRef.current?.addEventListener('touchmove', handleTouchMove, { passive: false })
+
+    return () => {
+      containerRef.current?.removeEventListener('touchmove', handleTouchMove)
+    }
+  }, [])
+
   return (
-    <div ref={containerRef} className="relative w-full h-full overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full overflow-hidden touch-none">
       <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
         <defs>
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -220,7 +234,7 @@ export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMem
           <div
             {...bindDrag(index)}
             key={member.id}
-            className="absolute z-10 cursor-pointer"
+            className="absolute z-10 cursor-pointer  touch-none"
             style={{ transform: `translate(${pos.x}px, ${pos.y}px) scale(${pos.scale}) rotate(${pos.rotation}deg)` }}
           >
             <motion.div
