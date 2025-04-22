@@ -146,12 +146,12 @@ export function JobClassChart({ data = jobDistributionData }: JobClassChartProps
             wrapperStyle={{ fontSize: "10px", marginTop: "10px" }}
             formatter={(value) => <span className="text-xs">{value}</span>}
           />
-          <text x="50%" y="33%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground font-medium">
+          <text x="50%" y="35%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground font-medium">
             총 길드원
           </text>
           <text
             x="50%"
-            y="40%"
+            y="45%"
             textAnchor="middle"
             dominantBaseline="middle"
             className="fill-foreground text-lg font-bold"
