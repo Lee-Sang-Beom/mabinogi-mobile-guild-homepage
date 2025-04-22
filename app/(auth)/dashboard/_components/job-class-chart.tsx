@@ -1,9 +1,18 @@
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { ChartContainer } from '@/components/ui/chart';
+import {
+  Legend,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts'
+import { ChartContainer } from '@/components/ui/chart'
 import { useState } from 'react'
-import { useGetJobDistributionList } from '@/app/(auth)/dashboard/hooks/use-get-job-distribution-list';
-import { jobCategoryMap } from '@/shared/constants/game';
-import { useTheme } from 'next-themes';
+import { useGetJobDistributionList } from '@/app/(auth)/dashboard/hooks/use-get-job-distribution-list'
+import { jobCategoryMap } from '@/shared/constants/game'
+import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 
 interface ChartDataItem {
@@ -23,7 +32,7 @@ export function JobClassChart() {
     if (!mapping) return null;
     return {
       name: item.job,
-      value: item.totalCount,
+      value: item.representCount,
       color: mapping.color,
     };
   }).filter((d): d is ChartDataItem => d !== null) ?? [];
@@ -46,25 +55,25 @@ export function JobClassChart() {
 
   return (
     <ChartContainer className="h-full w-full" config={chartConfig}>
-      <ResponsiveContainer width="100%" height="400px" minWidth={320}>
-        <RadarChart outerRadius="80%" width={500} height={400} data={chartData}>
+      <ResponsiveContainer width="100%" height="320px" minWidth={280}>
+        <RadarChart outerRadius="80%" width={320} height={400} data={chartData}>
           <PolarGrid
             stroke={theme.theme === "light" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)"}
           />
           <PolarAngleAxis
             dataKey="name"
             tick={{
-              fill: theme.theme === "light" ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.5)",
-              fontSize: 12,
-              fontWeight: 600
+              fill: theme.theme === "light" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)",
+              stroke: theme.theme === "light" ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.4)",
+              fontSize: 11,
             }}
           />
           <PolarRadiusAxis angle={30} domain={[0, 'dataMax']} tick={false} axisLine={false} />
           <Radar
             name="직업분포"
             dataKey="value"
-            stroke={theme.theme === "light" ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.5)"}  // 선택된 아이템 색상
-            fill={theme.theme === "light" ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.5)"}
+            stroke={theme.theme === "light" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)"}  // 선택된 아이템 색상
+            fill={theme.theme === "light" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)"}
             fillOpacity={1}
             strokeWidth={1}  // 선택된 아이템 두께
             onMouseEnter={onRadarEnter}

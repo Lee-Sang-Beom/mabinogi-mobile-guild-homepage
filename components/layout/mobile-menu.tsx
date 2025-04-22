@@ -246,7 +246,7 @@ export default function MobileMenu({ isOpen, onCloseAction, navItems, isLoggedIn
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
                   <span className="font-cinzel text-white text-xl font-bold">M</span>
                 </div>
-                <span className="font-cinzel text-xl font-bold text-white">마비노기 길드</span>
+                <span className="font-cinzel text-xl font-bold text-white">럭키비키</span>
               </div>
               <motion.button
                 variants={buttonVariants}

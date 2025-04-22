@@ -27,36 +27,36 @@ interface Member {
 // Mock data
 const guildInfo = {
   name: "럭키비키",
-  level: 45,
-  memberCount: 120,
-  maxMembers: 150,
-  website: "https://luckyviki.com",
+  level: 3,
+  memberCount: 25,
+  maxMembers: 25,
+  regDt: "2025-03-25",
 }
 
 const latestAnnouncement = {
   id: 1,
-  title: "길드 레벨 50 달성 이벤트!",
+  title: "길드 홈페이지 추가",
   content:
-    "길드원 여러분, 곧 길드 레벨 50을 달성합니다! 이를 기념하여 특별 이벤트를 준비했습니다. 자세한 내용은 공지사항을 확인해주세요.",
-  date: "2023-09-25",
+    "럭키비키의 길드 홈페이지가 추가되었습니다!",
+  date: "2025-04-22",
   author: "길드마스터",
 }
 
 const latestUpdate = {
   id: 1,
   title: "홈페이지 업데이트 안내",
-  content: "길드 홈페이지가 새롭게 업데이트되었습니다. 새로운 기능과 디자인으로 더 나은 경험을 제공합니다.",
-  date: "2023-09-20",
-  version: "v2.5.0",
+  content: "길드 홈페이지의 랜딩 페이지와 로그인/회원가입/비밀번호 찾기 기능이 추가되었습니다.",
+  date: "2025-04-22",
+  version: "v1.0",
 }
 
 const latestArtwork = {
   id: 1,
-  title: "길드 마스코트 일러스트",
-  description: "우리 길드의 마스코트 '비키'의 새로운 일러스트입니다.",
-  author: "아트디렉터",
-  date: "2023-09-18",
-  imageUrl: "/placeholder.svg?height=300&width=400",
+  title: "사격장 개꿀팁",
+  description: "사격장에서 쉽게 상품을 얻을 수 있는 방법이 있다고?!",
+  author: "호냥이",
+  date: "2025-04-22",
+  imageUrl: "/images/(test)/img-test-dashboard-artwork.png",
 }
 
 // Generate mock data for guild members with the new job types
@@ -192,8 +192,8 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">홈페이지</span>
-                    <span className="font-medium">{guildInfo.website}</span>
+                    <span className="text-muted-foreground">길드 생성일</span>
+                    <span className="font-medium">{guildInfo.regDt}</span>
                   </div>
                   <div className="pt-4">
                     <Button
@@ -342,14 +342,12 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="relative z-10 flex flex-col justify-between overflow-hidden ">
                 <div className="space-y-4 flex-grow">
-                  <div className="relative overflow-hidden rounded-lg aspect-video">
+                  <div className="relative overflow-hidden rounded-lg aspect-video bg-black">
                     <Image
-                      src={
-                        // latestArtwork.imageUrl ||
-                        "/images/bg-mabinogi-mobile-main.jpg"}
+                      src={latestArtwork.imageUrl}
                       alt={latestArtwork.title}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="object-contain transition-transform duration-500"
                     />
                   </div>
                   <div>
@@ -365,7 +363,7 @@ export default function Dashboard() {
                       size="sm"
                       className="w-full group-hover:bg-primary/10 transition-colors duration-300"
                     >
-                      <Link href="/artwork" className="flex items-center justify-center w-full">
+                      <Link href="/community?tab=artwork" className="flex items-center justify-center w-full">
                         모든 아트워크 보기
                         <motion.span
                           animate={{ x: [0, 5, 0] }}
@@ -399,7 +397,7 @@ export default function Dashboard() {
               <CardHeader className="pb-2 relative z-10">
                 <CardTitle className="flex items-center gap-2 text-lg font-cinzel">
                   <Users className="h-5 w-5 text-primary" />
-                  직업별 길드원 분포
+                  직업별 길드원 분포 (대표 캐릭터 기준)
                 </CardTitle>
               </CardHeader>
               <CardContent className="relative z-10">
