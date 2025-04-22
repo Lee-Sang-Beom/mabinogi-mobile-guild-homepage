@@ -7,6 +7,8 @@ import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'fireb
 import { db } from '@/shared/firestore'
 import moment from 'moment'
 import { forgotPasswordStep1FormSchema } from '@/app/(no-auth)/forgot-password/schema'
+import { DashboardJobDistributionResponse } from '@/app/(auth)/dashboard/types'
+import { jobTypeOptions } from '@/shared/constants/game'
 
 
 class UserService {
@@ -136,6 +138,7 @@ class UserService {
       throw new Error("비밀번호 찾기를 위한 대상 유저 조회 중 오류가 발생했습니다.");
     }
   }
+
   /**
    * @name findUserForPasswordReset
    * @param values 비밀번호 찾기를 위해 입력한 유저 정보
@@ -216,6 +219,60 @@ class UserService {
       };
     }
   }
+
+  /**
+   * @name findJobDistributionList
+   * @description 직업 별 유저 정보 불러오기 (대표/서브캐릭터 포함)
+   * @return DashboardJobDistributionResponse[] | null
+   */
+  async findJobDistributionList(): Promise<DashboardJobDistributionResponse[] | null> {
+    try {
+      // 1. 컬렉션 참조
+      const userCollection = collection(db, 'collection_user');
+      const subUserCollection = collection(db, 'collection_sub_user');
+
+      // 2. 병렬로 데이터 조회
+      const [userSnapshot, subUserSnapshot] = await Promise.all([
+        getDocs(query(userCollection, where('approvalJoinYn', '==', 'Y'))),
+        getDocs(query(subUserCollection)),
+      ]);
+
+      // 3. 직업별 카운트 맵 초기화
+      const jobCountMap = jobTypeOptions.reduce<Record<string, { representCount: number; subCount: number }>>(
+        (acc, { value }) => ({ ...acc, [value]: { representCount: 0, subCount: 0 } }),
+        {}
+      );
+
+      // 4. 공통 카운트 함수
+      const countJobs = (
+        snapshot: typeof userSnapshot,
+        type: 'representCount' | 'subCount'
+      ) => {
+        snapshot.forEach((doc) => {
+          const job = doc.data().job;
+          if (job && jobCountMap[job]) {
+            jobCountMap[job][type]++;
+          }
+        });
+      };
+
+      // 5. 카운트 처리
+      countJobs(userSnapshot, 'representCount');
+      countJobs(subUserSnapshot, 'subCount');
+
+      // 6. 결과 반환
+      return Object.entries(jobCountMap).map(([job, { representCount, subCount }]) => ({
+        job,
+        representCount,
+        subCount,
+        totalCount: representCount + subCount,
+      }));
+    } catch (error) {
+      console.error('직업별 유저 정보를 불러오는 중 에러가 발생했습니다. ', error);
+      return null;
+    }
+  }
+
 }
 
 // 싱글톤 인스턴스 생성하여 export

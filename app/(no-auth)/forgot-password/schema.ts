@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import { GuildRoleOptions, JobTypeOptions } from '@/shared/constants/game'
+import { guildRoleOptions, jobTypeOptions } from '@/shared/constants/game'
 import { GuildRoleType, JobType } from '@/shared/types/game'
 
 export const forgotPasswordStep1FormSchema = z.object({
@@ -7,13 +7,13 @@ export const forgotPasswordStep1FormSchema = z.object({
     message: "캐릭터 이름은 최소 2자 이상이어야 합니다.",
   }),
   job: z.enum(
-    JobTypeOptions.map((job) => job.value) as [JobType, ...JobType[]], // Ensuring it's a tuple of literal types
+    jobTypeOptions.map((job) => job.value) as [JobType, ...JobType[]], // Ensuring it's a tuple of literal types
     {
       required_error: "직업을 선택해주세요.",
     }
   ),
   role: z.enum(
-    GuildRoleOptions.map((role) => role.value) as [
+    guildRoleOptions.map((role) => role.value) as [
       GuildRoleType,
       ...GuildRoleType[]
     ], // Ensuring it's a tuple of literal types

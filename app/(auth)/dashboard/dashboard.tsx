@@ -11,7 +11,7 @@ import Image from 'next/image'
 import { GuildMemberBubble } from './_components/guild-member-bubble'
 import { JobClassChart } from './_components/job-class-chart'
 import { getJobClassColor, JobClassIcons } from './job-class-utils'
-import { JobTypeOptions } from '@/shared/constants/game'
+import { jobTypeOptions } from '@/shared/constants/game'
 
 
 interface Member {
@@ -62,8 +62,8 @@ const latestArtwork = {
 // Generate mock data for guild members with the new job types
 const generateGuildMembers = () => {
   return Array.from({ length: 30 }, (_, i) => {
-    const randomJobIndex = Math.floor(Math.random() * JobTypeOptions.length)
-    const jobClass = JobTypeOptions[randomJobIndex].name
+    const randomJobIndex = Math.floor(Math.random() * jobTypeOptions.length)
+    const jobClass = jobTypeOptions[randomJobIndex].name
 
     return {
       id: i + 1,
@@ -82,7 +82,11 @@ const guildMembers = generateGuildMembers()
 export default function Dashboard() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const containerRef = useRef(null)
-  const isInView = useInView(containerRef, { once: false, amount: 0.2 })
+  const isInView = useInView(containerRef, {
+    once: false,
+    amount: 0, // 더 빠르게 트리거
+    margin: "0px 0px -20% 0px"
+  })
   const controls = useAnimation()
 
   useEffect(() => {

@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { forgotPasswordStep1FormSchema } from './schema'
-import { GuildRoleOptions, JobTypeOptions } from '@/shared/constants/game'
+import { guildRoleOptions, jobTypeOptions } from '@/shared/constants/game'
 import { GuildRoleType, JobType } from '@/shared/types/game'
 import { useFindPasswordStep1 } from '@/app/(no-auth)/forgot-password/hooks/use-find-password-step1'
 import { User } from 'next-auth'
@@ -33,8 +33,8 @@ export default function Step1VerifyIdentity({ onSuccessAction, onFailureAction }
     resolver: zodResolver(forgotPasswordStep1FormSchema),
     defaultValues: {
       id: "",
-      job: JobTypeOptions[0].value as JobType,
-      role: GuildRoleOptions[0].value as GuildRoleType,
+      job: jobTypeOptions[0].value as JobType,
+      role: guildRoleOptions[0].value as GuildRoleType,
       otp:''
     },
   })
@@ -84,7 +84,7 @@ export default function Step1VerifyIdentity({ onSuccessAction, onFailureAction }
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="w-full ">
-                    {JobTypeOptions.map((job) => {
+                    {jobTypeOptions.map((job) => {
                       return (
                         <SelectItem value={job.value} key={job.value}>
                           {job.name}
@@ -111,7 +111,7 @@ export default function Step1VerifyIdentity({ onSuccessAction, onFailureAction }
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="w-full">
-                    {GuildRoleOptions.map((role) => {
+                    {guildRoleOptions.map((role) => {
                       return (
                         <SelectItem value={role.value} key={role.value}>
                           {role.name}

@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { Shield } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { joinFormSchema } from './schema'
-import { GuildRoleOptions, JobTypeOptions } from '@/shared/constants/game'
+import { guildRoleOptions, jobTypeOptions } from '@/shared/constants/game'
 import { GuildRoleType, JobType } from '@/shared/types/game'
 import { useAddUserMutation } from '@/app/(no-auth)/join/hooks/use-add-user'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
@@ -26,8 +26,8 @@ export default function JoinForm() {
       password: '',
       confirmPassword: '',
       otp: '',
-      job: JobTypeOptions[0].value as JobType,
-      role: GuildRoleOptions[0].value as GuildRoleType,
+      job: jobTypeOptions[0].value as JobType,
+      role: guildRoleOptions[0].value as GuildRoleType,
     },
   })
 
@@ -221,7 +221,7 @@ export default function JoinForm() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="w-full">
-                            {JobTypeOptions.map((job) => {
+                            {jobTypeOptions.map((job) => {
                               return (
                                 <SelectItem value={job.value} key={job.value}>
                                   {job.name}
@@ -253,7 +253,7 @@ export default function JoinForm() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="w-full">
-                            {GuildRoleOptions.map((role) => {
+                            {guildRoleOptions.map((role) => {
                               return (
                                 <SelectItem value={role.value} key={role.value}>
                                   {role.name}

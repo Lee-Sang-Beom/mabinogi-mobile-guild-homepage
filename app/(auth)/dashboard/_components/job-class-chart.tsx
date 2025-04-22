@@ -1,164 +1,104 @@
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
-import { ChartContainer } from '@/components/ui/chart'
-import { MouseEvent, useState } from 'react'
-import { JobTypeOptions } from '@/shared/constants/game'
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { ChartContainer } from '@/components/ui/chart';
+import { useState } from 'react'
+import { useGetJobDistributionList } from '@/app/(auth)/dashboard/hooks/use-get-job-distribution-list';
+import { jobCategoryMap } from '@/shared/constants/game';
+import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils'
 
-// 차트 데이터 인터페이스 정의
 interface ChartDataItem {
   name: string;
   value: number;
-  color?: string;
+  color: string;
 }
 
-// 직업 분포 데이터를 생성하는 함수
-const generateJobDistributionData = (): ChartDataItem[] => {
-  const jobCategories = {
-    warrior: ["전사", "대검전사", "검술사", "견습 전사"],
-    archer: ["궁수", "석궁사수", "장궁병", "견습 궁수"],
-    mage: ["마법사", "화염술사", "빙결술사", "견습 마법사"],
-    healer: ["힐러", "사제", "수도사"],
-    bard: ["음유시인", "댄서", "악사", "견습 음유시인"],
-  };
+export function JobClassChart() {
+  const { data } = useGetJobDistributionList();
+  const [hoveredItem, setHoveredItem] = useState<ChartDataItem | null>(null);
+  const theme = useTheme();  // 테마 정보 가져오기
 
-  const colorSchemes = {
-    warrior: ["#d30505", "#e12020", "#fa5050", "#f46b6b"],
-    archer: ["#02732b", "#0daa46", "#23d162", "#71f6a0"],
-    mage: ["#1267ec", "#3790ff", "#68b1ff", "#7ab4f6"],
-    healer: ["#f59e0b", "#fbbf24", "#fcd34d", "#fef08a"],
-    bard: ["#8200ff", "#911bff", "#a149ff", "#b06cff"],
-  };
-
-  const jobColorMap: Record<string, string> = {};
-  Object.entries(jobCategories).forEach(([category, jobs]) => {
-    const colors = colorSchemes[category as keyof typeof colorSchemes];
-    jobs.forEach((job, jobIndex) => {
-      jobColorMap[job] = colors[jobIndex % colors.length];
-    });
-  });
-
-  const totalMembers = 120;
-  const data = JobTypeOptions.map((job) => {
-    let count;
-    if (job.name.includes("견습")) {
-      count = Math.floor(Math.random() * 5) + 1;
-    } else if (["전사", "궁수", "마법사", "힐러", "음유시인"].includes(job.name)) {
-      count = Math.floor(Math.random() * 10) + 8;
-    } else {
-      count = Math.floor(Math.random() * 8) + 3;
-    }
-
+  // 대표 + 서브 합쳐서 카테고리별 정리
+  const chartData: ChartDataItem[] = data?.map((item) => {
+    const mapping = jobCategoryMap[item.job];
+    if (!mapping) return null;
     return {
-      name: job.name,
-      value: count,
-      color: jobColorMap[job.name],
+      name: item.job,
+      value: item.totalCount,
+      color: mapping.color,
     };
-  });
+  }).filter((d): d is ChartDataItem => d !== null) ?? [];
 
-  const currentTotal = data.reduce((sum, item) => sum + item.value, 0);
-  const adjustmentFactor = totalMembers / currentTotal;
-
-  return data.map((item) => ({
-    ...item,
-    value: Math.round(item.value * adjustmentFactor),
-  }));
-};
-
-// 데이터 생성
-const jobDistributionData = generateJobDistributionData();
-
-interface JobClassChartProps {
-  data?: ChartDataItem[];
-}
-
-export function JobClassChart({ data = jobDistributionData }: JobClassChartProps) {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-
-  const chartConfig = data.reduce<Record<string, { color?: string; label?: string }>>((config, item) => {
-    return {
-      ...config,
-      [item.name]: { color: item.color, label: item.name },
-    };
+  const chartConfig = chartData.reduce<Record<string, { color: string; label: string }>>((config, item) => {
+    config[item.name] = { color: item.color, label: item.name };
+    return config;
   }, {});
 
-  const onPieEnter = (_event: MouseEvent<SVGPathElement>, index: number) => {
-    setActiveIndex(index);
+  const onRadarEnter = (e: { activePayload: { index: number; }[]; })  => {
+    const index = e.activePayload?.[0]?.index;  // e.activePayload에서 index 값을 추출
+    if (index !== undefined) {
+      setHoveredItem(chartData[index]);
+    }
   };
 
-  const onPieLeave = () => {
-    setActiveIndex(null);
+  const onRadarLeave = () => {
+    setHoveredItem(null);
   };
-
-  const totalMembers = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
     <ChartContainer className="h-full w-full" config={chartConfig}>
-      <ResponsiveContainer width="100%" height="400px">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="45%"
-            innerRadius={80}
-            outerRadius={120}
-            paddingAngle={1}
+      <ResponsiveContainer width="100%" height="400px" minWidth={320}>
+        <RadarChart outerRadius="80%" width={500} height={400} data={chartData}>
+          <PolarGrid
+            stroke={theme.theme === "light" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)"}
+          />
+          <PolarAngleAxis
+            dataKey="name"
+            tick={{
+              fill: theme.theme === "light" ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.5)",
+              fontSize: 12,
+              fontWeight: 600
+            }}
+          />
+          <PolarRadiusAxis angle={30} domain={[0, 'dataMax']} tick={false} axisLine={false} />
+          <Radar
+            name="직업분포"
             dataKey="value"
-            nameKey="name"
-            onMouseEnter={onPieEnter}
-            onMouseLeave={onPieLeave}
-            animationDuration={1000}
-            animationBegin={0}
-            animationEasing="ease-out"
-          >
-            {data.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={entry.color}
-                stroke="rgba(255,255,255,0.3)"
-                strokeWidth={activeIndex === index ? 2 : 1}
-                style={{
-                  filter: activeIndex === index ? "drop-shadow(0 0 4px rgba(0,0,0,0.3))" : "none",
-                  transform: activeIndex === index ? "scale(1.1)" : "scale(1)",
-                  transformOrigin: "center",
-                  transition: "transform 0.3s ease, filter 0.3s ease", // transition 속성 수정
-                }}
-              />
-            ))}
-          </Pie>
+            stroke={theme.theme === "light" ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.5)"}  // 선택된 아이템 색상
+            fill={theme.theme === "light" ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.5)"}
+            fillOpacity={1}
+            strokeWidth={1}  // 선택된 아이템 두께
+            onMouseEnter={onRadarEnter}
+            onMouseLeave={onRadarLeave}
+          />
           <Tooltip
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
-                const { name, value } = payload[0];
+                const payloadObj = payload[0];
                 return (
                   <div className="border border-gray-300 rounded-lg shadow-lg p-2 bg-gradient-to-br from-background/90 to-background/70 max-w-xs mx-auto">
-                    <div className="font-medium text-sm text-foreground">{name}</div>
-                    <div className="text-xs font-semibold text-primary">{value}명</div>
+                    <div className="font-medium text-sm text-foreground">{payloadObj.payload.name}</div>
+                    <div className={cn("text-xs font-semibold", theme.theme === "light" ? "text-yellow-700":"text-primary")}>{payloadObj.value}명</div>
                   </div>
                 );
               }
               return null;
             }}
-            cursor={{ fill: "rgba(255, 255, 255, 0.3)" }}
+            cursor={{ fill: 'rgba(255, 255, 255, 0.3)' }}
           />
           <Legend
-            layout="horizontal"
-            verticalAlign="bottom"
-            align="center"
-            wrapperStyle={{ fontSize: "10px", marginTop: "10px" }}
+            layout="vertical"
+            verticalAlign="top"
+            align="right"
+            wrapperStyle={{ fontSize: '10px', marginTop: '10px' }}
             formatter={(value) => <span className="text-xs">{value}</span>}
           />
-          <text x="50%" y="35%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground font-medium">
-            총 길드원
-          </text>
-          <text
-            x="50%"
-            y="45%"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="fill-foreground text-lg font-bold"
-          >
-            {totalMembers}명
-          </text>
-        </PieChart>
+          {hoveredItem && (
+            <div className="mt-4 p-4 rounded-lg bg-gradient-to-br from-background/90 to-background/70 shadow-lg max-w-xs mx-auto text-center">
+              <div className="font-medium text-sm text-foreground">직업명: {hoveredItem.name}</div>
+              <div className="text-xs font-semibold text-primary">{hoveredItem.value}명</div>
+            </div>
+          )}
+        </RadarChart>
       </ResponsiveContainer>
     </ChartContainer>
   );

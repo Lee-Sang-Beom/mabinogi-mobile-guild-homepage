@@ -20,7 +20,7 @@ import {
   Target,
   Wand,
 } from 'lucide-react'
-import { JobTypeOptions } from '@/shared/constants/game'
+import { jobTypeOptions } from '@/shared/constants/game'
 
 // Define icon mapping type
 type IconMap = Record<string, React.ElementType>
@@ -48,8 +48,8 @@ const iconMap: IconMap = {
   '견습 음유시인': MusicIcon,
 }
 
-// Create JobClassIcons based on JobTypeOptions
-export const JobClassIcons: Record<string, React.ElementType> = JobTypeOptions.reduce<
+// Create JobClassIcons based on jobTypeOptions
+export const JobClassIcons: Record<string, React.ElementType> = jobTypeOptions.reduce<
   Record<string, React.ElementType>
 >((acc, jobType) => {
   acc[jobType.value] = iconMap[jobType.value] || Sword // Default to Sword if no icon is found

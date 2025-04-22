@@ -4,13 +4,13 @@ import {
   BarChart,
   Briefcase,
   FileText,
+  Search,
   Settings,
   Info,
   Bell,
   RefreshCw,
   UserCog,
   UserPlus,
-  Calendar,
   ImageIcon,
 } from "lucide-react";
 import { MenuItem } from "../types/menu";
@@ -23,9 +23,9 @@ export const loggedInMenuStructure: MenuItem[] = [
     icon: LayoutDashboard,
   },
   {
-    name: "일정관리",
+    name: "파티찾기",
     href: "/schedule",
-    icon: Calendar,
+    icon: Search,
   },
   {
     name: "길드원 정보",
