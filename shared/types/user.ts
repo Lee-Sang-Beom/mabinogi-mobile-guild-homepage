@@ -1,4 +1,8 @@
-import { User } from "next-auth";
+import { JobType } from '@/shared/types/game'
 
-export interface UserResponse extends User{
+export interface SubUser {
+  parentDocId: string;
+  docId: string;
+  id: string;
+  job: JobType;
 }

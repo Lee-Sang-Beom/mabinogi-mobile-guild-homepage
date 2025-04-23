@@ -12,22 +12,15 @@ import { JobClassChart } from './_components/job-class-chart'
 import { User } from 'next-auth'
 import GuildUserBubbleDialog from '@/app/(auth)/dashboard/_components/guild-user-bubble-dialog'
 import { useTheme } from 'next-themes'
+import { guildInfo, guildName } from '@/shared/constants/game'
 
 
 // Mock data
-const guildInfo = {
-  name: "럭키비키",
-  level: 3,
-  memberCount: 25,
-  maxMembers: 25,
-  regDt: "2025-03-25",
-}
 
 const latestAnnouncement = {
   id: 1,
   title: "길드 홈페이지 추가",
-  content:
-    "럭키비키의 길드 홈페이지가 추가되었습니다!",
+  content: `${guildName} 의 길드 홈페이지가 추가되었습니다!`,
   date: "2025-04-22",
   author: "길드마스터",
 }
@@ -445,7 +438,7 @@ export default function Dashboard() {
       </div>
 
       {/* Member detail dialog */}
-      selectedUser && <GuildUserBubbleDialog selectedUser={selectedUser} setSelectedUser={setSelectedUser}/>
+      {selectedUser && <GuildUserBubbleDialog selectedUser={selectedUser} setSelectedUser={setSelectedUser}/>}
      </div>
   )
 }

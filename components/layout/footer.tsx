@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
+import { guildName } from '@/shared/constants/game'
 
 export default function Footer() {
   const footerLinks = [
@@ -42,7 +43,7 @@ export default function Footer() {
               </span>
             </motion.div>
             <span className="font-cinzel text-xl font-bold text-primary">
-              럭키비키
+              {guildName}
             </span>
           </Link>
 

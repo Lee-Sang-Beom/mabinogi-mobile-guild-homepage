@@ -3,12 +3,13 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { Users, Award, Calendar, Clock } from "lucide-react";
+import { guildInfo } from '@/shared/constants/game'
 
 const stats = [
-  { name: "활동 길드원", value: "30+", icon: Users },
-  { name: "길드 레벨", value: "3", icon: Award },
-  { name: "설립일", value: "2025.03", icon: Calendar },
-  { name: "주간 활동 시간", value: "80시간+", icon: Clock },
+  { name: "활동 길드원", value: `${guildInfo.memberCount}+`, icon: Users },
+  { name: "길드 레벨", value: `${guildInfo.level}`, icon: Award },
+  { name: "설립일", value: `${guildInfo.regDt}`, icon: Calendar },
+  { name: "주간 활동 시간", value: `${guildInfo.activityWeeklyTotalTime}시간 +`, icon: Clock },
 ];
 
 export default function GuildStats() {

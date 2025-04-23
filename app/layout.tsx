@@ -8,6 +8,7 @@ import { ThemeProvider } from 'next-themes'
 import Header from '@/components/layout/header'
 import Footer from '@/components/layout/footer'
 import { Toaster } from 'sonner'
+import { guildName } from '@/shared/constants/game'
 
 const notoSansKR = Noto_Sans_KR({
   subsets: ['latin'],
@@ -16,8 +17,8 @@ const notoSansKR = Noto_Sans_KR({
 })
 
 export const metadata: Metadata = {
-  title: '럭키비키',
-  description: '마비노기 모바일 럭키비키 길드 커뮤니티',
+  title: guildName,
+  description: `마비노기 모바일 ${guildName} 길드 커뮤니티`,
   icons: {
     icon: '/images/favicon-mabinogi-mobile-luckybiki-logo.png', // public 폴더 기준 경로
   },

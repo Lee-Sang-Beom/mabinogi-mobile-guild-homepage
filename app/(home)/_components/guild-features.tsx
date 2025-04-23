@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { Shield, Users, Trophy, Sword, Scroll, Heart } from "lucide-react";
+import { guildName } from '@/shared/constants/game'
 
 const features = [
   {
@@ -79,7 +80,7 @@ export default function GuildFeatures() {
             </span>
           </h2>
           <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            마비노기 모바일에서 럭키비키만의 특별한 장점들을 경험해보세요.
+            마비노기 모바일에서 {guildName}만의 특별한 장점들을 경험해보세요.
             함께하는 모험은 언제나 더 즐겁습니다.
           </p>
         </motion.div>

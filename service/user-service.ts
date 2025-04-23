@@ -1,14 +1,15 @@
 import { ApiResponse } from '@/shared/types/api'
 import { encryptPassword, verifyPassword } from '@/shared/utils/utils'
-import { User } from 'next-auth'
+import { Session, User } from 'next-auth'
 import { z } from 'zod'
 import { joinFormSchema } from '@/app/(no-auth)/join/schema'
-import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { db } from '@/shared/firestore'
 import moment from 'moment'
 import { forgotPasswordStep1FormSchema } from '@/app/(no-auth)/forgot-password/schema'
 import { DashboardJobDistributionResponse } from '@/app/(auth)/dashboard/types'
 import { jobTypeOptions } from '@/shared/constants/game'
+import { profileFormSchema } from '@/app/(auth)/profile/schema'
 
 
 class UserService {
@@ -32,29 +33,6 @@ class UserService {
     } catch (e) {
       console.error("유저 리스트 조회 중 오류가 발생했습니다. ", e);
       throw new Error("유저 리스트 조회 중 오류가 발생했습니다.");
-    }
-  }
-
-  /**
-   * @name getSubUsers
-   * @description Firestore에서 서브유저들을 조회
-   */
-  async getSubUsers(): Promise<User[] | null> {
-    try {
-      const snapshot = await getDocs(
-        query(collection(db, "collection_sub_user"))
-      );
-
-      if (snapshot.empty) return null;
-
-      // 모든 문서를 순회하여 User[] 형태로 반환
-      return snapshot.docs.map((doc) => ({
-        docId: doc.id,
-        ...doc.data(),
-      })) as User[];
-    } catch (e) {
-      console.error("서브유저 리스트 조회 중 오류가 발생했습니다. ", e);
-      throw new Error("서브유저 리스트 조회 중 오류가 발생했습니다.");
     }
   }
 
@@ -144,7 +122,7 @@ class UserService {
 
       return {
         success: true,
-        message: "회원가입이 완료되었습니다.",
+        message: "회원가입이 완료되었습니다. 관리자 승인 후 로그인하실 수 있습니다.",
         data: docRef.id,
       };
     } catch (e) {
@@ -222,14 +200,14 @@ class UserService {
 
 
   /**
-   * @name modifyPasswordCollectionUser
+   * @name changePassword
    * @description 개인정보 중 패스워드를 수정
    * @param password
    * @param user
    */
-  async modifyPasswordCollectionUser(
+  async changePassword(
     password: string,
-    user: User
+    user: User,
   ): Promise<ApiResponse<string | null>> {
     try {
       const { id, job, role, otp } = user;
@@ -261,6 +239,126 @@ class UserService {
       return {
         success: false,
         message: "새 비밀번호를 설정하는 과정에서 오류가 발생했습니다.",
+        data: null,
+      };
+    }
+  }
+
+  /**
+   * @name updateUser
+   * @param data 변경하기를 원하는 유저 정보
+   * @param currentUser 변경 이전 유저 정보
+   * @description 개인정보 수정
+   */
+   async updateUser(
+    data: z.infer<typeof profileFormSchema>,
+    currentUser: User,
+    update: (data: { user: User }) => Promise<Session | null>
+  ): Promise<ApiResponse<string | null>> {
+    try {
+      /**
+       * STEP1
+       * @description 변경하고자 하는 닉네임을 가진 다른 정보가 DB에 있는지 확인
+       * @description 이 때, 내 닉네임은 예외에서 제외해야 함
+       */
+      if(data.id !== currentUser.id) {
+        const isDuplicated = await this.checkDuplicateId(
+          data.id
+        );
+        if (isDuplicated) {
+          return {
+            success: false,
+            message: "이미 같은 닉네임을 가진 캐릭터가 존재합니다.",
+            data: null,
+          };
+        }
+      }
+
+
+      /**
+       * STEP2
+       * @description 새로 덮어쓸 유저정보 추가
+       */
+      const updatedUser = {
+        ...data,
+        password:
+          data.password && data.password.length > 0
+            ? encryptPassword(data.password) // 새 비밀번호 암호화
+            : currentUser.password, // 기존 비밀번호 유지
+
+        approvalJoinYn: currentUser.approvalJoinYn,
+        isHaveEventBadge: currentUser.isHaveEventBadge,
+        mngDt: moment(new Date()).format("YYYY-MM-DD"),
+      };
+
+      /**
+       * STEP3
+       * @description Firestore에서 기존 문서를 업데이트
+       */
+      const docRef = doc(db, "collection_user", currentUser.docId);
+      await updateDoc(docRef, updatedUser);
+
+      /**
+       * STEP4
+       * @description next-auth session update
+       */
+      await update({ user: updatedUser });
+
+      return {
+        success: true,
+        message: "개인정보 수정이 완료되었습니다.",
+        data: currentUser.docId,
+      };
+    } catch (e) {
+      console.error("Error adding user: ", e);
+      return {
+        success: false,
+        message: "개인정보 수정 중 오류가 발생했습니다.",
+        data: null,
+      };
+    }
+  }
+
+  /**
+   * @name withDrawnUser
+   * @param user 삭제하기를 원하는 유저 정보
+   * @param type REJECTED: 승인반려용도, WITHDRAWN: 삭제용도
+   * @description 개인정보 수정
+   */
+   async withDrawnUser(
+    user: User,
+    type: "REJECTED" | "WITHDRAWN"
+  ): Promise<ApiResponse<string | null>> {
+    const userDocRef = doc(db, "collection_user", user.docId);
+
+    try {
+      // 서브 유저 삭제 - parentDocId가 user.docId인 문서 삭제
+      const subUserRef = collection(db, "collection_sub_user");
+      const q = query(subUserRef, where("parentDocId", "==", user.docId));
+      const querySnapshot = await getDocs(q);
+
+      // 서브 유저 문서가 있으면 삭제
+      const deletePromises = querySnapshot.docs.map((doc) => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
+
+      // 회원 탈퇴 처리
+      await deleteDoc(userDocRef);
+
+      return {
+        success: true,
+        message:
+          type === "WITHDRAWN"
+            ? "회원탈퇴가 완료되었습니다."
+            : "정상적으로 승인요청을 반려했습니다.",
+        data: userDocRef.id,
+      };
+    } catch (error) {
+      console.error("Error adding user: ", error);
+      return {
+        success: false,
+        message: type === "WITHDRAWN"
+          ? "회원탈퇴가 요청 중 오류가 발생했습니다.."
+          : "승인요청 반려 중 오류가 발생했습니다.",
         data: null,
       };
     }

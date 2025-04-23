@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Cog, Home, Hammer, Wrench } from "lucide-react"
+import { guildName } from '@/shared/constants/game'
 
 export default function AnimatedUnderDevelopment() {
   const [mounted, setMounted] = useState(false)
@@ -98,7 +99,7 @@ export default function AnimatedUnderDevelopment() {
         >
           현재 이 페이지는 개발중입니다!
           <br />
-          하루빨리 <span className={"font-semibold"}>럭키비키</span>와 함께할 수 있는 공간을 만들 수 있도록
+          하루빨리 <span className={"font-semibold"}>{guildName}</span>와 함께할 수 있는 공간을 만들 수 있도록
           노력하겠습니다.
         </motion.p>
 
@@ -122,7 +123,7 @@ export default function AnimatedUnderDevelopment() {
         transition={{ delay: 1.5, duration: 1 }}
         className="absolute bottom-8 text-sm text-muted-foreground"
       >
-        © 마비노기 모바일 럭키비키 커뮤니티
+        © 마비노기 모바일 {guildName} 커뮤니티
       </motion.div>
     </div>
   )

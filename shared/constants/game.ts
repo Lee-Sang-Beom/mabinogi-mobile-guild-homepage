@@ -1,6 +1,25 @@
 import { KeyValue } from '../types/common'
 
 /**
+ * @name guildName
+ * @description 길드명
+ */
+export const guildName ="럭키비키"
+
+/**
+ * @name guildInfo
+ * @description 길드정보
+ */
+export const guildInfo = {
+  name: guildName,
+  level: 3,
+  memberCount: 25,
+  maxMembers: 25,
+  regDt: "2025-03-25",
+  activityWeeklyTotalTime: 80
+}
+
+/**
  * @name guildRoleOptions
  * @description 길드 내 등급 (name-value 형태)
  */

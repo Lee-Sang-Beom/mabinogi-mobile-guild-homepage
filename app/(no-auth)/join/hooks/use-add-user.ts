@@ -17,7 +17,7 @@ export function useAddUserMutation() {
     mutationFn: apiAddUser,
     onSuccess: (response) => {
       if (response.success) {
-        toast.success('회원가입이 완료되었습니다.');
+        toast.success('회원가입이 완료되었습니다. 관리자 승인 후 로그인하실 수 있습니다.');
         setTimeout(() => {
           router.push('/login');
         }, 1000);

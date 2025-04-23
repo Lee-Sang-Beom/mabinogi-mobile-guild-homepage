@@ -13,7 +13,7 @@ export const useFindPasswordStep2 = (
 ) => {
   return useMutation({
     mutationFn: async (values: z.infer<typeof forgotPasswordStep2FormSchema>) => {
-      return await userService.modifyPasswordCollectionUser(values.password, user)
+      return await userService.changePassword(values.password, user)
     },
     onSuccess: (res) => {
       if (res.success) {

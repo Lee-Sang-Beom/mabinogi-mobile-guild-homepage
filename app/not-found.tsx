@@ -5,6 +5,7 @@ import {motion} from "framer-motion"
 import Link from "next/link"
 import {useEffect, useState} from "react"
 import {Compass, Home, MapPin} from "lucide-react"
+import { guildName } from '@/shared/constants/game'
 
 export default function NotFound() {
     const [mounted, setMounted] = useState(false)
@@ -57,12 +58,9 @@ export default function NotFound() {
                     transition={{ delay: 0.9, duration: 0.8 }}
                     className="text-white/80 mb-8"
                 >
-                    {/*찾으시는 페이지가 존재하지 않거나 이동되었을 수 있습니다.*/}
-                    {/*<br />*/}
-                    {/*마비노기 모바일에서 <span className={"font-semibold"}>럭키비키</span>와 함께하는 새로운 모험을 시작하세요.*/}
-                    현재 이 페이지는 개발중입니다!
+                     현재 이 페이지는 개발중입니다!
                     <br />
-                    하루빨리 <span className={"font-semibold"}>럭키비키</span>와 함께할 수 있는 공간을 만들 수 있도록 노력하겠습니다.
+                    하루빨리 <span className={"font-semibold"}>{guildName}</span>와 함께할 수 있는 공간을 만들 수 있도록 노력하겠습니다.
                 </motion.p>
 
                 <motion.div
@@ -85,7 +83,7 @@ export default function NotFound() {
                 transition={{ delay: 1.5, duration: 1 }}
                 className="absolute bottom-8 text-sm text-muted-foreground"
             >
-                © 마비노기 모바일 럭키비키 커뮤니티
+                © 마비노기 모바일 {guildName} 커뮤니티
             </motion.div>
         </div>
     )

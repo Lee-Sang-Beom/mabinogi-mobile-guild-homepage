@@ -21,6 +21,7 @@ import MobileMenu from './mobile-menu'
 import { useSession } from 'next-auth/react'
 import { loggedInMenuStructure, loggedOutMenuStructure } from '@/shared/constants/menu'
 import { authService } from '@/service/auth-service'
+import { guildName } from '@/shared/constants/game'
 
 export default function Header() {
   const [mounted, setMounted] = useState(false)
@@ -62,7 +63,7 @@ export default function Header() {
       >
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-            <span className="sr-only">럭키비키 길드</span>
+            <span className="sr-only">{guildName}</span>
             <motion.div
               className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center"
               whileHover={{ scale: 1.1, rotate: 5 }}
@@ -73,7 +74,7 @@ export default function Header() {
               </span>
             </motion.div>
             <span className="font-cinzel text-xl font-bold text-primary">
-              럭키비키
+              {guildName}
             </span>
           </Link>
         </div>

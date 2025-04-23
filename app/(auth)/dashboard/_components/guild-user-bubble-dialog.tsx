@@ -1,8 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { getJobClassColor, JobClassIcons } from '@/app/(auth)/dashboard/job-class-utils'
 import { Award, CheckCircle, Sword, XCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import { User } from 'next-auth'
 import { Dispatch, SetStateAction } from 'react'
 import { guildRoleOptions } from '@/shared/constants/game'
@@ -18,7 +16,7 @@ export default function GuildUserBubbleDialog({selectedUser, setSelectedUser}:Gu
 
   return (
     <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-background/80 backdrop-blur-sm ">
         <DialogHeader>
           <DialogTitle>길드원 정보</DialogTitle>
           <DialogDescription>
@@ -74,11 +72,6 @@ export default function GuildUserBubbleDialog({selectedUser, setSelectedUser}:Gu
                 <span className="text-muted-foreground">명예 길드원 여부</span>
                 <span className="font-medium">{isBadge  ? <CheckCircle/> : <XCircle/>}</span>
               </div>
-            </div>
-            <div className="pt-4">
-              <Button variant="outline" size="sm" className="w-full">
-                <Link href={`/members/${selectedUser.id}`}>프로필 상세보기</Link>
-              </Button>
             </div>
           </div>
         )}
