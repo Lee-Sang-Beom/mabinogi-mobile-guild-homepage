@@ -3,25 +3,19 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useDrag } from '@use-gesture/react'
-import { Sword } from 'lucide-react'
+import { Award, Sword } from 'lucide-react'
 import { getJobClassColor, JobClassIcons } from '@/app/(auth)/dashboard/job-class-utils'
+import { useGetUserList } from '@/app/(auth)/dashboard/hooks/use-get-user-list'
+import { User } from 'next-auth'
 
-interface Member {
-  id: number
-  name: string
-  level: number
-  jobClass: string
-  joinDate: string
-  avatar: string
-  contribution: number
+
+interface GuildUserBubbleProps {
+  setSelectedUserAction: Dispatch<SetStateAction<User | null>>
 }
 
-interface GuildMemberBubbleProps {
-  members: Member[]
-  setSelectedMemberAction: Dispatch<SetStateAction<Member | null>>
-}
+export function GuildUserBubble({ setSelectedUserAction }: GuildUserBubbleProps) {
+  const { data } = useGetUserList();
 
-export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMemberBubbleProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
   const [positions, setPositions] = useState<{ x: number; y: number; scale: number; rotation: number }[]>([])
@@ -63,21 +57,21 @@ export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMem
   }, [])
 
   useEffect(() => {
-    if (containerSize.width === 0 || containerSize.height === 0 || !isClient) return
+    if (!data || !data.length || containerSize.width === 0 || containerSize.height === 0 || !isClient) return
 
     const centerX = containerSize.width / 2
     const centerY = containerSize.height / 2
 
-    const newPositions = members.map((_, index) => {
+    const newPositions = data.map((_, index) => {
       let x, y
 
       if (index % 3 === 0) {
-        const angle = (index / (members.length / 3)) * Math.PI * 2
+        const angle = (index / (data.length / 3)) * Math.PI * 2
         const radius = Math.min(centerX, centerY) * 0.85
         x = centerX + Math.cos(angle) * radius * (0.7 + Math.random() * 0.3)
         y = centerY + Math.sin(angle) * radius * (0.7 + Math.random() * 0.3)
       } else if (index % 3 === 1) {
-        const gridSize = Math.ceil(Math.sqrt(members.length))
+        const gridSize = Math.ceil(Math.sqrt(data.length))
         const gridX = index % gridSize
         const gridY = Math.floor(index / gridSize)
         const cellWidth = containerSize.width / gridSize
@@ -126,16 +120,14 @@ export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMem
     setPositions(newPositions)
 
     const newConnections: { from: number; to: number; opacity: number }[] = []
-    members.forEach((member, i) => {
-      members.forEach((otherMember, j) => {
-        if (i !== j && member.jobClass === otherMember.jobClass) {
-          if (Math.random() > 0.7) {
-            newConnections.push({
-              from: i,
-              to: j,
-              opacity: 0.1 + Math.random() * 0.2,
-            })
-          }
+    data.forEach((user, i) => {
+      data.forEach((otherUser, j) => {
+        if (i !== j && user.job === otherUser.job) {
+          newConnections.push({
+            from: i,
+            to: j,
+            opacity: 0.1 + Math.random() * 0.2,
+          })
         }
       })
     })
@@ -146,7 +138,7 @@ export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMem
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [members.length, containerSize, isClient])
+  }, [data, containerSize, isClient])
 
   const bindDrag = useDrag(
     ({ args: [index], active, delta: [dx, dy] }) => {
@@ -167,7 +159,7 @@ export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMem
   )
 
   const renderConnectionLines = () => {
-    if (!isInitialized || !isClient || positions.length === 0) return null
+    if (!data|| !data.length || !isInitialized || !isClient || positions.length === 0) return null
 
     return connections.map((connection, index) => {
       const from = positions[connection.from]
@@ -183,9 +175,9 @@ export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMem
           y1={from.y + 20}
           x2={to.x + 20}
           y2={to.y + 20}
-          transition={{ duration: 1, delay: 0.5 + index * 0.01 }}
-          stroke={getJobClassColor(members[connection.from].jobClass)}
-          strokeWidth={1}
+          transition={{ duration: 1, delay: 0.5 }}
+          stroke={getJobClassColor(data[connection.from].job)}
+          strokeWidth={10}
           strokeDasharray="3,3"
           filter="url(#glow)"
         />
@@ -193,7 +185,7 @@ export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMem
     })
   }
 
-  const handleMemberClick = (member: Member) => setSelectedMemberAction(member)
+  const handleUserClick = (user: User) => setSelectedUserAction(user)
 
   useEffect(() => {
     const handleTouchMove = (e: TouchEvent) => {
@@ -224,25 +216,27 @@ export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMem
         {renderConnectionLines()}
       </svg>
 
-      {/* Member Bubbles */}
+      {/* user Bubbles */}
       {positions.map((pos, index) => {
-        const member = members[index]
-        const color = getJobClassColor(member.jobClass)
-        const Icon = JobClassIcons[member.jobClass] || Sword
+        if(!data || !data.length) return null
+        const user = data[index]
+        const isBadge = user.isHaveEventBadge === "Y"
+        const color = getJobClassColor(user.job)
+        const Icon = JobClassIcons[user.job] || Sword
 
         return (
           <div
             {...bindDrag(index)}
-            key={member.id}
+            key={user.id}
             className="absolute z-10 cursor-pointer  touch-none"
             style={{ transform: `translate(${pos.x}px, ${pos.y}px) scale(${pos.scale}) rotate(${pos.rotation}deg)` }}
           >
             <motion.div
-              onClick={() => handleMemberClick(member)}
+              onClick={() => handleUserClick(user)}
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+              className="relative w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
               style={{ backgroundColor: color }}
               whileHover={{
                 scale: pos.scale * 1.3,
@@ -251,6 +245,7 @@ export function GuildMemberBubble({ members, setSelectedMemberAction }: GuildMem
                 backgroundImage: `linear-gradient(135deg, ${color}, #ffffff30)`,
               }}
             >
+              {isBadge ? <Award className={"w-5 h-5 text-primary absolute top-[-3px] right-[-3px]" } /> : <></>}
               <Icon className="w-5 h-5" />
             </motion.div>
           </div>

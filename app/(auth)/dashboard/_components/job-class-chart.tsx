@@ -12,7 +12,6 @@ import { ChartContainer } from '@/components/ui/chart'
 import { useState } from 'react'
 import { useGetJobDistributionList } from '@/app/(auth)/dashboard/hooks/use-get-job-distribution-list'
 import { jobCategoryMap } from '@/shared/constants/game'
-import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 
 interface ChartDataItem {
@@ -21,10 +20,9 @@ interface ChartDataItem {
   color: string;
 }
 
-export function JobClassChart() {
+export function JobClassChart({theme}:{theme: "light" | "dark"}) {
   const { data } = useGetJobDistributionList();
   const [hoveredItem, setHoveredItem] = useState<ChartDataItem | null>(null);
-  const theme = useTheme();  // 테마 정보 가져오기
 
   // 대표 + 서브 합쳐서 카테고리별 정리
   const chartData: ChartDataItem[] = data?.map((item) => {
@@ -58,13 +56,13 @@ export function JobClassChart() {
       <ResponsiveContainer width="100%" height="320px" minWidth={280}>
         <RadarChart outerRadius="80%" width={320} height={400} data={chartData}>
           <PolarGrid
-            stroke={theme.theme === "light" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)"}
+            stroke={theme === "light" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)"}
           />
           <PolarAngleAxis
             dataKey="name"
             tick={{
-              fill: theme.theme === "light" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)",
-              stroke: theme.theme === "light" ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.4)",
+              fill: theme === "light" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)",
+              stroke: theme === "light" ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.4)",
               fontSize: 11,
             }}
           />
@@ -72,8 +70,8 @@ export function JobClassChart() {
           <Radar
             name="직업분포"
             dataKey="value"
-            stroke={theme.theme === "light" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)"}  // 선택된 아이템 색상
-            fill={theme.theme === "light" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)"}
+            stroke={theme === "light" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)"}  // 선택된 아이템 색상
+            fill={theme === "light" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)"}
             fillOpacity={1}
             strokeWidth={1}  // 선택된 아이템 두께
             onMouseEnter={onRadarEnter}
@@ -86,7 +84,7 @@ export function JobClassChart() {
                 return (
                   <div className="border border-gray-300 rounded-lg shadow-lg p-2 bg-gradient-to-br from-background/90 to-background/70 max-w-xs mx-auto">
                     <div className="font-medium text-sm text-foreground">{payloadObj.payload.name}</div>
-                    <div className={cn("text-xs font-semibold", theme.theme === "light" ? "text-yellow-700":"text-primary")}>{payloadObj.value}명</div>
+                    <div className={cn("text-xs font-semibold", theme === "light" ? "text-yellow-700":"text-primary")}>{payloadObj.value}명</div>
                   </div>
                 );
               }

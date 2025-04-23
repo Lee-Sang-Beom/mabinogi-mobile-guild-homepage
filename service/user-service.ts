@@ -13,6 +13,52 @@ import { jobTypeOptions } from '@/shared/constants/game'
 
 class UserService {
   /**
+   * @name getUsers
+   * @description Firestore에서 유저들을 조회
+   */
+  async getUsers(): Promise<User[] | null> {
+    try {
+      const snapshot = await getDocs(
+        query(collection(db, "collection_user"), where("approvalJoinYn", "==", "Y"))
+      );
+
+      if (snapshot.empty) return null;
+
+      // 모든 문서를 순회하여 User[] 형태로 반환
+      return snapshot.docs.map((doc) => ({
+        docId: doc.id,
+        ...doc.data(),
+      })) as User[];
+    } catch (e) {
+      console.error("유저 리스트 조회 중 오류가 발생했습니다. ", e);
+      throw new Error("유저 리스트 조회 중 오류가 발생했습니다.");
+    }
+  }
+
+  /**
+   * @name getSubUsers
+   * @description Firestore에서 서브유저들을 조회
+   */
+  async getSubUsers(): Promise<User[] | null> {
+    try {
+      const snapshot = await getDocs(
+        query(collection(db, "collection_sub_user"))
+      );
+
+      if (snapshot.empty) return null;
+
+      // 모든 문서를 순회하여 User[] 형태로 반환
+      return snapshot.docs.map((doc) => ({
+        docId: doc.id,
+        ...doc.data(),
+      })) as User[];
+    } catch (e) {
+      console.error("서브유저 리스트 조회 중 오류가 발생했습니다. ", e);
+      throw new Error("서브유저 리스트 조회 중 오류가 발생했습니다.");
+    }
+  }
+
+  /**
    * @name getUserById
    * @description Firestore에서 특정 ID를 가진 유저를 조회
    */

@@ -4,25 +4,15 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useAnimation, useInView } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { ArrowRight, Bell, BookOpen, ImageIcon, Shield, Sparkles, Sword, Trophy, Users } from 'lucide-react'
+import { ArrowRight, Bell, BookOpen, ImageIcon, Shield, Sparkles, Trophy, Users } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { GuildMemberBubble } from './_components/guild-member-bubble'
+import { GuildUserBubble } from './_components/guild-user-bubble'
 import { JobClassChart } from './_components/job-class-chart'
-import { getJobClassColor, JobClassIcons } from './job-class-utils'
-import { jobTypeOptions } from '@/shared/constants/game'
+import { User } from 'next-auth'
+import GuildUserBubbleDialog from '@/app/(auth)/dashboard/_components/guild-user-bubble-dialog'
+import { useTheme } from 'next-themes'
 
-
-interface Member {
-  id: number
-  name: string
-  level: number
-  jobClass: string
-  joinDate: string
-  avatar: string
-  contribution: number
-}
 
 // Mock data
 const guildInfo = {
@@ -59,28 +49,9 @@ const latestArtwork = {
   imageUrl: "/images/(test)/img-test-dashboard-artwork.png",
 }
 
-// Generate mock data for guild members with the new job types
-const generateGuildMembers = () => {
-  return Array.from({ length: 30 }, (_, i) => {
-    const randomJobIndex = Math.floor(Math.random() * jobTypeOptions.length)
-    const jobClass = jobTypeOptions[randomJobIndex].name
-
-    return {
-      id: i + 1,
-      name: `길드원${i + 1}`,
-      level: Math.floor(Math.random() * 50) + 50,
-      jobClass,
-      joinDate: `2023-${Math.floor(Math.random() * 9) + 1}-${Math.floor(Math.random() * 28) + 1}`,
-      avatar: `/placeholder.svg?height=100&width=100&text=멤버${i + 1}`,
-      contribution: Math.floor(Math.random() * 1000) + 100,
-    }
-  })
-}
-
-const guildMembers = generateGuildMembers()
-
 export default function Dashboard() {
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null)
+  const theme = useTheme();  // 테마 정보 가져오기
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const containerRef = useRef(null)
   const isInView = useInView(containerRef, {
     once: false,
@@ -402,7 +373,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="relative z-10">
                 <div className="h-[400px] w-full">
-                  <JobClassChart />
+                  <JobClassChart theme={theme.theme as 'light' | 'dark'}/>
                 </div>
               </CardContent>
             </Card>
@@ -464,9 +435,8 @@ export default function Dashboard() {
                 </motion.div>
 
                 {/* Guild members bubbles */}
-                <GuildMemberBubble
-                  members={guildMembers}
-                  setSelectedMemberAction={setSelectedMember}
+                <GuildUserBubble
+                  setSelectedUserAction={setSelectedUser}
                 />
               </div>
             </CardContent>
@@ -475,56 +445,7 @@ export default function Dashboard() {
       </div>
 
       {/* Member detail dialog */}
-      <Dialog open={!!selectedMember} onOpenChange={(open) => !open && setSelectedMember(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>길드원 정보</DialogTitle>
-            <DialogDescription>{selectedMember?.name}의 상세 정보입니다.</DialogDescription>
-          </DialogHeader>
-          {selectedMember && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div
-                  className="relative h-16 w-16 rounded-full overflow-hidden flex items-center justify-center bg-background/80 border-2"
-                  style={{ borderColor: getJobClassColor(selectedMember.jobClass) }}
-                >
-                  {/* Use the appropriate icon based on job class */}
-                  {(() => {
-                    const IconComponent = JobClassIcons[selectedMember.jobClass] || Sword
-                    return (
-                      <IconComponent
-                        className="h-10 w-10"
-                        style={{ color: getJobClassColor(selectedMember.jobClass) }}
-                      />
-                    )
-                  })()}
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg">{selectedMember.name}</h3>
-                  <p className="text-muted-foreground">
-                    레벨 {selectedMember.level} {selectedMember.jobClass}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">길드 기여도</span>
-                  <span className="font-medium">{selectedMember.contribution} 포인트</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">가입일</span>
-                  <span className="font-medium">{selectedMember.joinDate}</span>
-                </div>
-              </div>
-              <div className="pt-4">
-                <Button variant="outline" size="sm" className="w-full">
-                  <Link href={`/members/${selectedMember.id}`}>프로필 상세보기</Link>
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+      selectedUser && <GuildUserBubbleDialog selectedUser={selectedUser} setSelectedUser={setSelectedUser}/>
+     </div>
   )
 }

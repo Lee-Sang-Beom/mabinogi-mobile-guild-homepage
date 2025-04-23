@@ -6,7 +6,7 @@ import { KeyValue } from '../types/common'
  */
 export const guildRoleOptions: KeyValue[] = [
   { name: "길드 마스터", value: "GUILD_MASTER" },
-  { name: "부길드 마스터", value: "GUILD_SUB_MASTER" },
+  { name: "길드 서브 마스터", value: "GUILD_SUB_MASTER" },
   { name: "길드원", value: "GUILD_MEMBER" },
 ] as const;
 

@@ -27,8 +27,8 @@ type IconMap = Record<string, React.ElementType>
 
 // Define the icon mapping for each job type
 const iconMap: IconMap = {
-  '전사': Sword,
-  '대검전사': Axe,
+  '전사': Axe,
+  '대검전사': Sword,
   '검술사': Swords,
   '궁수': BowIcon,
   '석궁사수': Crosshair,
