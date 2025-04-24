@@ -12,7 +12,7 @@ interface GuildUserBubbleDialogProps {
 }
 export default function GuildUserBubbleDialog({selectedUser, setSelectedUser}:GuildUserBubbleDialogProps) {
   if(!selectedUser) return null;
-  const isBadge = selectedUser.isHaveEventBadge === "Y"
+  const isBadge = selectedUser.isHaveEventBadge && selectedUser.isHaveEventBadge === "Y"
 
   return (
     <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>

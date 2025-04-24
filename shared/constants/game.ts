@@ -63,13 +63,19 @@ export const jobTypeOptions: KeyValue[] = [
   { name: "음유시인", value: "음유시인" },
   { name: "댄서", value: "댄서" },
   { name: "악사", value: "악사" },
+
+  // 음유시인 계열
+  { name: "견습 도적", value: "견습 도적" },
+  { name: "도적", value: "도적" },
+  { name: "격투가", value: "격투가" },
+  { name: "듀얼블레이드", value: "듀얼블레이드" },
 ] as const;
 
 /**
  * @name jobcategoryKeys
  * @description 직업 카테고리 키
  */
-export const jobcategoryKeys = ['전사 계열', '궁수 계열', '마법사 계열', '힐러 계열', '음유시인 계열'] as const;
+export const jobcategoryKeys = ['전사 계열', '궁수 계열', '마법사 계열', '힐러 계열', '음유시인 계열', '도적 계열'] as const;
 
 /**
  * @name allJobCategoryColors
@@ -88,6 +94,7 @@ export const allJobCategoryColors = [
   "#1267ec", "#3790ff", "#68b1ff", "#7ab4f6",       // mage
   "#f59e0b", "#fbbf24", "#fcd34d", "#fef08a",       // healer
   "#8200ff", "#911bff", "#a149ff", "#b06cff",       // bard
+  "#2c3e50", "#34495e", "#16a085", "#1abc9c",       // rogue
 ] as const;
 
 export const jobColorSchemes = jobcategoryKeys.reduce((acc, key, index) => {

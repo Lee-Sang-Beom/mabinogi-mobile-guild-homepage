@@ -19,6 +19,9 @@ import {
   Swords,
   Target,
   Wand,
+  Scissors,  // 대체 아이콘: 단검 (Knife)
+  Hand,       // 대체 아이콘: 격투가 (Fist)
+  Slash,      // 듀얼블레이드
 } from 'lucide-react'
 import { jobTypeOptions } from '@/shared/constants/game'
 
@@ -29,7 +32,7 @@ type IconMap = Record<string, React.ElementType>
 const iconMap: IconMap = {
   '전사': Axe,
   '대검전사': Sword,
-  '검술사': Swords,
+  '검술사': Slash,
   '궁수': BowIcon,
   '석궁사수': Crosshair,
   '장궁병': Target,
@@ -46,6 +49,10 @@ const iconMap: IconMap = {
   '견습 궁수': ArrowUpRight,
   '견습 마법사': Sparkles,
   '견습 음유시인': MusicIcon,
+  '견습 도적': Scissors,  // 단검을 나타내는 아이콘 (Scissors)
+  '도적': Scissors,      // 도적 계열 (단검)
+  '격투가': Hand,        // 격투가 (손, 맨손)
+  '듀얼블레이드': Swords,  // 듀얼블레이드 (쌍검)
 }
 
 // Create JobClassIcons based on jobTypeOptions
@@ -63,6 +70,7 @@ const jobClassColorMap: { [key: string]: string } = {
   mage: 'rgba(59, 130, 246, 0.8)', // Blue
   healer: 'rgba(245, 158, 11, 0.8)', // Amber
   bard: 'rgba(168, 85, 247, 0.8)', // Purple
+  rouge: 'rgba(44, 62, 80, 0.8)', // Dark Gray
 }
 
 // Keywords that map to job class categories
@@ -80,6 +88,9 @@ const jobClassKeywordMap: { [keyword: string]: keyof typeof jobClassColorMap } =
   '음유': 'bard',
   '댄서': 'bard',
   '악사': 'bard',
+  '도적': 'rouge',
+  '격투': 'rouge',
+  '듀얼': 'rouge'
 }
 
 /**
