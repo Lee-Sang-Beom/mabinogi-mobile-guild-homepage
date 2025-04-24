@@ -21,7 +21,7 @@ export default function ProfilePage({user}: ProfilePageProps) {
   if (!mounted) return null
 
   return (
-    <div className="min-h-[calc(100vh-200px)] py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-[calc(100vh-200px)] py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
       {/* Animated background elements */}
       <motion.div
         className="absolute left-1/4 top-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-purple-500/10 to-blue-500/10 blur-3xl"

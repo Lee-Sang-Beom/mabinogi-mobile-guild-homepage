@@ -59,7 +59,7 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
       <Card className="bg-background/50 backdrop-blur-sm border-primary/10 shadow-xl">
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col items-start gap-2 md:gap-0 md:flex-row md:justify-between md:items-center">
             <div>
               <CardTitle>서브캐릭터 관리</CardTitle>
               <CardDescription>내 서브캐릭터를 추가하고 관리할 수 있습니다.</CardDescription>
