@@ -13,46 +13,46 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Plus, Trash2, User as UserIcon} from 'lucide-react'
+import { Plus, Trash2, User as UserIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { subUsersFormSchema } from '@/app/(auth)/profile/schema'
-import { User } from "next-auth";
-import { useSubUsersByDocId } from '@/app/(auth)/profile/hooks/use-subusers-bydocid'
+import { User } from 'next-auth'
+import { useGetSubusersBydocId } from '@/app/(auth)/profile/hooks/use-get-subusers-bydocid'
 import { jobTypeOptions } from '@/shared/constants/game'
 import { JobType } from '@/shared/types/game'
+import { useAddSubUser } from '@/app/(auth)/profile/hooks/user-add-subusers'
+import { useDeleteSubUser } from '@/app/(auth)/profile/hooks/user-delete-subusers'
 
 interface SubcharactersFormProps {
   user: User;
 }
 
 export default function SubUsersForm({user}: SubcharactersFormProps) {
-  const { data } = useSubUsersByDocId(user.docId);
+  const { data } = useGetSubusersBydocId(user.docId);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+
+  const { mutate: addSubUser, isPending: isAddUserPending } = useAddSubUser(user.docId, setIsAddDialogOpen)
+  const { mutate: deleteSubUser, isPending: isDeleteUserPending } = useDeleteSubUser(user.docId)
 
   const form = useForm<z.infer<typeof subUsersFormSchema>>({
     resolver: zodResolver(subUsersFormSchema),
     defaultValues: {
-      parentDocId:user.docId,
+      parentDocId: user.docId,
       id: '',
       job: jobTypeOptions[0].value as JobType,
     },
   })
 
-  function onAddSubCharacter(values: z.infer<typeof subUsersFormSchema>) {
-    const postData = values;
-    console.log('postData is ', postData)
-    // 추가 api
-
-    // 사후 처리
+  function onAddSubUser(values: z.infer<typeof subUsersFormSchema>) {
+    addSubUser(values)
     form.reset()
-    setIsAddDialogOpen(false)
   }
 
-  function deleteSubCharacter(docId: string) {
-    console.log('docId ', docId)
+  function onDeleteSubUser(docId: string) {
+    deleteSubUser(docId);
   }
 
   return (
@@ -76,7 +76,7 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
                   <DialogDescription>새로운 서브캐릭터 정보를 입력하세요.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onAddSubCharacter)} className="space-y-4">
+                  <form onSubmit={form.handleSubmit(onAddSubUser)} className="space-y-4">
                     <FormField
                       control={form.control}
                       name="id"
@@ -127,7 +127,7 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
                       <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} type="button">
                         취소
                       </Button>
-                      <Button type="submit">추가</Button>
+                      <Button type="submit" disabled={isAddUserPending}>{isAddUserPending ? '추가중...' : '추가'}</Button>
                     </DialogFooter>
                   </form>
                 </Form>
@@ -161,8 +161,9 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => deleteSubCharacter(subUser.docId)}
+                    onClick={() => onDeleteSubUser(subUser.docId)}
                     className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                    disabled={isDeleteUserPending}
                   >
                     <Trash2 className="h-5 w-5" />
                   </Button>

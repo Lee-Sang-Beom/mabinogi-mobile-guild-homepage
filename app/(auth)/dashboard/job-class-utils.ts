@@ -49,10 +49,10 @@ const iconMap: IconMap = {
   '견습 궁수': ArrowUpRight,
   '견습 마법사': Sparkles,
   '견습 음유시인': MusicIcon,
-  '견습 도적': Scissors,  // 단검을 나타내는 아이콘 (Scissors)
-  '도적': Scissors,      // 도적 계열 (단검)
-  '격투가': Hand,        // 격투가 (손, 맨손)
-  '듀얼블레이드': Swords,  // 듀얼블레이드 (쌍검)
+  '견습 도적': Scissors,
+  '도적': Scissors,
+  '격투가': Hand,
+  '듀얼블레이드': Swords,
 }
 
 // Create JobClassIcons based on jobTypeOptions

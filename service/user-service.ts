@@ -99,7 +99,7 @@ class UserService {
       if (await this.checkDuplicateId(data.id)) {
         return {
           success: false,
-          message: "이미 같은 닉네임을 가진 회원이 존재합니다.",
+          message: "이미 같은 닉네임을 가진 캐릭터가 존재합니다.",
           data: null,
         };
       }
@@ -248,6 +248,7 @@ class UserService {
    * @name updateUser
    * @param data 변경하기를 원하는 유저 정보
    * @param currentUser 변경 이전 유저 정보
+   * @param update next-auth session update
    * @description 개인정보 수정
    */
    async updateUser(

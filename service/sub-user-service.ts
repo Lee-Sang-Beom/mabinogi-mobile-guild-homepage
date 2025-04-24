@@ -1,6 +1,10 @@
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore'
 import { db } from '@/shared/firestore'
 import { SubUser } from '@/shared/types/user'
+import * as z from 'zod'
+import { subUsersFormSchema } from '@/app/(auth)/profile/schema'
+import { ApiResponse } from '@/shared/types/api'
+import { userService } from '@/service/user-service'
 
 
 class SubUserService {
@@ -76,6 +80,68 @@ class SubUserService {
     } catch (e) {
       console.error("서브유저 리스트 조회 중 오류가 발생했습니다. ", e);
       throw new Error("서브유저 리스트 조회 중 오류가 발생했습니다.");
+    }
+  }
+
+  /**
+   * @name addSubUser
+   * @description 서브유저 추가
+   */
+  async addSubUser (values: z.infer<typeof subUsersFormSchema>):Promise<ApiResponse<string | null>> {
+    try {
+      // ID 중복 확인
+      if (await userService.checkDuplicateId(values.id)) {
+        return {
+          success: false,
+          message: "이미 같은 닉네임을 가진 캐릭터가 존재합니다.",
+          data: null,
+        };
+      }
+
+      // Firestore에 유저 추가 (sub_users 컬렉션에 추가)
+      const subUserRef = collection(db, "collection_sub_user");
+
+      // 서브캐릭터 추가
+      const docRef = await addDoc(subUserRef, {
+        ...values,
+      });
+
+      return {
+        success: true,
+        message: "서브캐릭터가 추가되었습니다.",
+        data: docRef.id,
+      };
+    } catch (e) {
+      console.error("서브캐릭터 추가 중 오류가 발생했습니다. ", e);
+      return {
+        success: false,
+        message: "서브캐릭터 추가 중 오류가 발생했습니다.",
+        data: null,
+      };
+    }
+  }
+
+  /**
+   * @name deleteSubUser
+   * @description 서브유저 삭제
+   */
+  async deleteSubUser (docId:string):Promise<ApiResponse<string | null>> {
+    try {
+      const docRef = doc(db, 'collection_sub_user', docId);
+      await deleteDoc(docRef);
+
+      return {
+        success: true,
+        message: '서브캐릭터가 삭제되었습니다.',
+        data: docId,
+      };
+    } catch (error) {
+      console.error('서브캐릭터 삭제 중 오류 발생:', error);
+      return {
+        success: false,
+        message: '서브캐릭터 삭제 중 오류가 발생했습니다.',
+        data: null,
+      };
     }
   }
 }
