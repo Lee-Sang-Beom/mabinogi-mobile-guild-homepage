@@ -1,4 +1,4 @@
-import { LoginRequest } from '@/app/(no-auth)/login/types'
+import { LoginRequest } from '@/app/(no-auth)/login/api'
 import { ApiResponse } from '@/shared/types/api'
 import { User } from 'next-auth'
 import { userService } from '@/service/user-service'

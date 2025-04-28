@@ -1,5 +1,5 @@
 import AnimatedUnderDevelopment from '@/components/animated-under-development'
 
-export default function Home() {
+export default function Page() {
   return <AnimatedUnderDevelopment />
 }

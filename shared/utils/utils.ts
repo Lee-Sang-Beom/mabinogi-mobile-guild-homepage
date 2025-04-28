@@ -37,3 +37,20 @@ export const clearCache = () => {
     });
   }
 };
+
+/**
+ * @name generateTimeOptions
+ * @description 30분단위 시간을 생성하는 함수
+ * @description (00:00, 00:30, 01:00, ...)
+ */
+export const generateTimeOptions = () => {
+  const options = []
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) {
+      const formattedHour = hour.toString().padStart(2, '0')
+      const formattedMinute = minute.toString().padStart(2, '0')
+      options.push(`${formattedHour}:${formattedMinute}`)
+    }
+  }
+  return options
+}

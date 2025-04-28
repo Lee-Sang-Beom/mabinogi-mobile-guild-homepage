@@ -7,7 +7,7 @@ import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } 
 import { db } from '@/shared/firestore'
 import moment from 'moment'
 import { forgotPasswordStep1FormSchema } from '@/app/(no-auth)/forgot-password/schema'
-import { DashboardJobDistributionResponse } from '@/app/(auth)/dashboard/types'
+import { DashboardJobDistributionResponse } from '@/app/(auth)/dashboard/api'
 import { jobTypeOptions } from '@/shared/constants/game'
 import { profileFormSchema } from '@/app/(auth)/profile/schema'
 

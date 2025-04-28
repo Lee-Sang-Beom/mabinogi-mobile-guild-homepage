@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { DashboardJobDistributionResponse } from '@/app/(auth)/dashboard/types'
+import { DashboardJobDistributionResponse } from '@/app/(auth)/dashboard/api'
 import { userService } from '@/service/user-service'
 
 /**

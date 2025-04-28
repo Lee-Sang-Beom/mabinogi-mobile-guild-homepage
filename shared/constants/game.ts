@@ -1,5 +1,6 @@
 import { KeyValue } from '../types/common'
 
+
 /**
  * @name guildName
  * @description 길드명
@@ -115,3 +116,16 @@ export const jobCategoryMap = jobcategoryKeys.reduce((acc, category) => {
 
   return acc;
 }, {} as Record<string, { category: string; color: string }>);
+
+
+/**
+ * @name participateCountList
+ * @description 제한 파티원 수
+ */
+export const participateCountList: KeyValue[]  = [1,2,3,4,5,6,7,8].map((num) => {
+  const toStringNum = num.toString();
+  return {
+    name: toStringNum,
+    value: toStringNum
+  }
+})
