@@ -78,7 +78,7 @@ export default function ScheduleCalendar({
 
       participateWriteUser:{
         participateUserIsSubUser: false,
-        participateUserParentDocId: null,
+        participateUserParentDocId: user.docId,
         participateUserDocId: user.docId,
         participateUserId: user.id,
         participateUserJob: user.job

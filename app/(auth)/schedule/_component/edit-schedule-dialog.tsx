@@ -72,7 +72,7 @@ export default function EditScheduleDialog({
     const representCharacterData: ParticipateForm[] = [
       {
         participateUserIsSubUser: false,
-        participateUserParentDocId: null,
+        participateUserParentDocId: user.docId,
         participateUserDocId: user.docId,
         participateUserId: user.id,
         participateUserJob: user.job,

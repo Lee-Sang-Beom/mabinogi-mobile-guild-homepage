@@ -1,15 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CalendarIcon, Clock, Edit, Trash2 } from 'lucide-react'
+import { CalendarIcon, Clock, Edit, Trash2, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { ScheduleResponse } from '@/app/(auth)/schedule/api'
 import EditScheduleDialog from '@/app/(auth)/schedule/_component/edit-schedule-dialog'
-import { scheduleFormSchema, ScheduleFormSchema } from '@/app/(auth)/schedule/schema'
+import {
+  participatePartyFormSchema,
+  ParticipatePartyFormSchema,
+  scheduleFormSchema,
+  ScheduleFormSchema,
+} from '@/app/(auth)/schedule/schema'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { User } from 'next-auth'
 import { generateTimeOptions } from '@/shared/utils/utils'
+import ParticipateScheduleDialogProps from '@/app/(auth)/schedule/_component/participate-schedule-dialog'
 
 
 interface ScheduleListProps {
@@ -26,8 +32,14 @@ export default function ScheduleList({
                                        user,
                                      }: ScheduleListProps) {
 
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const timeOptions = generateTimeOptions()
+  const [selectSchedule, setSelectSchedule] = useState<ScheduleResponse | null>(null)
+
+  // dialog open
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isParticipateDialogOpen, setIsParticipateDialogOpen] = useState(false)
+
+  // form
   const editScheduleForm = useForm<ScheduleFormSchema>({
     resolver: zodResolver(scheduleFormSchema),
     defaultValues: {
@@ -41,7 +53,7 @@ export default function ScheduleList({
 
       participateWriteUser: {
         participateUserIsSubUser: false,
-        participateUserParentDocId: null,
+        participateUserParentDocId: user.docId,
         participateUserDocId: user.docId,
         participateUserId: user.id,
         participateUserJob: user.job,
@@ -50,7 +62,22 @@ export default function ScheduleList({
       participateEtcUser: [],
     },
   })
+  const participateScheduleForm = useForm<ParticipatePartyFormSchema>({
+    resolver: zodResolver(participatePartyFormSchema),
+    defaultValues: {
+      docId: null,
+      participateUser: {
+        participateUserIsSubUser: false,
+        participateUserParentDocId: user.docId,
+        participateUserDocId: user.docId,
+        participateUserId: user.id,
+        participateUserJob: user.job
+      }
+    },
+  })
 
+
+  // 작성자가 자신일 때 발생
   const handleEditEvent = (data: ScheduleResponse) => {
     const newFormValues: ScheduleFormSchema = {
       ...data,
@@ -61,8 +88,12 @@ export default function ScheduleList({
     setIsEditDialogOpen(true)
   }
 
-  console.log(scheduleData)
-
+  // 작성자가 자신이 아닐 때 발생
+  const handleParticipateEvent = (data: ScheduleResponse) => {
+    console.log('data is ', data)
+    setSelectSchedule(data)
+    setIsParticipateDialogOpen(true)
+  }
 
   return (
     <>
@@ -124,10 +155,10 @@ export default function ScheduleList({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleEditEvent(schData)}
+                            className="w-auto px-2 hover:bg-background"
+                            onClick={() => handleParticipateEvent(schData)}
                           >
-                            파티가입
+                            <UserPlus /> 파티가입
                           </Button>
                         </div>
                       }
@@ -140,11 +171,22 @@ export default function ScheduleList({
         </Card>
       </motion.div>
 
+      {/*내 작성글 관리 다이얼로그*/}
       <EditScheduleDialog
         isEditDialogOpen={isEditDialogOpen}
         setIsEditDialogOpen={setIsEditDialogOpen}
         editScheduleForm={editScheduleForm}
         timeOptions={timeOptions}
+        user={user}
+      />
+
+      {/*파티가입 다이얼로그*/}
+      <ParticipateScheduleDialogProps
+        isParticipateDialogOpen={isParticipateDialogOpen}
+        setIsParticipateDialogOpen={setIsParticipateDialogOpen}
+        participateScheduleForm={participateScheduleForm}
+        selectSchedule={selectSchedule}
+        setSelectSchedule={setSelectSchedule}
         user={user}
       />
     </>

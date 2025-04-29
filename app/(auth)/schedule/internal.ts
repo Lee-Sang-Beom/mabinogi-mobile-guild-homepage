@@ -18,7 +18,7 @@ export interface ScheduleRecruitForm {
 // 파티 참여 타입이자, 파티에 참여하는 유저: 이건 부캐일수도있고 본캐일수도 있음
 export interface ParticipateForm {
   participateUserIsSubUser: boolean; // 참여 유저가 서브캐릭터인가?
-  participateUserParentDocId: string | null; // 참여 캐릭터 부모 아이디 (이미 부모캐릭터면 null)
+  participateUserParentDocId: string; // 참여 캐릭터 부모 아이디 (이미 부모캐릭터면 내 정보 포함)
   participateUserDocId: string; // 참여 유저 문서 아이디
   participateUserId: string; // 참여 유저 아이디
   participateUserJob: JobType // 참여 유저 직업 (기본은 내 직업, 다른 직업 선택가능)

@@ -25,9 +25,9 @@ export const guildInfo = {
  * @description 길드 내 등급 (name-value 형태)
  */
 export const guildRoleOptions: KeyValue[] = [
-  { name: "길드 마스터", value: "GUILD_MASTER" },
-  { name: "길드 서브 마스터", value: "GUILD_SUB_MASTER" },
   { name: "길드원", value: "GUILD_MEMBER" },
+  { name: "길드 서브 마스터", value: "GUILD_SUB_MASTER" },
+  { name: "길드 마스터", value: "GUILD_MASTER" },
 ] as const;
 
 /**
