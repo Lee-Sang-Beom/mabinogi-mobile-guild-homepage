@@ -11,29 +11,95 @@ import { Calendar as ReactCalendar } from 'react-calendar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { addScheduleFormType, ScheduleFormSchema } from '@/app/(auth)/schedule/schema'
-import { generateTimeOptions } from '@/shared/utils/utils'
+import { editScheduleFormType, ScheduleFormSchema, TimeOptionsType } from '@/app/(auth)/schedule/schema'
+import { jobTypeOptions, participateCountList } from '@/shared/constants/game'
+import { User } from 'next-auth'
+import { useGetSubusersBydocId } from '@/app/(auth)/profile/hooks/use-get-subusers-bydocid'
+import { useEffect, useState } from 'react'
+import { ParticipateForm, ScheduleRecruitForm } from '@/app/(auth)/schedule/internal'
+import moment from 'moment/moment'
+import { useUpdateScheduleMutation } from '@/app/(auth)/schedule/hooks/use-update-schedule'
 
 interface EditScheduleDialogProps {
   isEditDialogOpen: boolean
   setIsEditDialogOpen: (open: boolean) => void
-  editScheduleForm: addScheduleFormType
-  onEdit: (values: ScheduleFormSchema) => void
-
+  editScheduleForm: editScheduleFormType
+  timeOptions: TimeOptionsType;
+  user: User
 }
 
 export default function EditScheduleDialog({
                                              isEditDialogOpen,
                                              setIsEditDialogOpen,
                                              editScheduleForm,
-                                             onEdit,
+                                             timeOptions,
+                                             user
                                            }: EditScheduleDialogProps) {
 
-  const timeOptions = generateTimeOptions()
+
+  const { data } = useGetSubusersBydocId(user.docId);
+  const [myUserList, setMyUserList] = useState<ParticipateForm[]>([]);
+  const { mutate: updateSchedule } = useUpdateScheduleMutation();
+
+  const onEdit = (formData: ScheduleFormSchema) => {
+    if (!formData.docId) return; // docId가 없으면 무시
+
+    const postData:ScheduleRecruitForm  = {
+      ...formData,
+      date: moment(formData.date).format("YYYY-MM-DD"),
+      maxParticipateCount: Number(formData.maxParticipateCount),
+      userDocId: user.docId,
+      mngDt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+    }
+
+    updateSchedule(
+      { docId: formData.docId, data: postData },
+      {
+        onSuccess: (res) => {
+          console.log('수정 완료', res);
+          editScheduleForm.reset();
+          setIsEditDialogOpen(false);
+        },
+        onError: (error) => {
+          console.error('수정 실패', error);
+        },
+      }
+    );
+  };
+
+  useEffect(() => {
+    // 대표캐릭터 정보
+    const representCharacterData: ParticipateForm[] = [
+      {
+        participateUserIsSubUser: false,
+        participateUserParentDocId: null,
+        participateUserDocId: user.docId,
+        participateUserId: user.id,
+        participateUserJob: user.job,
+      }
+    ]
+
+    // 서브캐릭터 정보
+    const subCharacterData: ParticipateForm[] = data && data.length > 0 ? data.map((sub) => {
+      return {
+        participateUserIsSubUser: true,
+        participateUserParentDocId: user.docId,
+        participateUserDocId: sub.docId,
+        participateUserId: sub.id,
+        participateUserJob:  sub.job,
+      }
+    }) : [];
+
+    // 세팅
+    setMyUserList([
+      ...representCharacterData,
+      ...subCharacterData
+    ])
+  }, [user, data])
 
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>일정 수정</DialogTitle>
           <DialogDescription>일정 정보를 수정하세요.</DialogDescription>
@@ -45,7 +111,6 @@ export default function EditScheduleDialog({
               name="date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>날짜</FormLabel>
                   <div className="calendar-container">
                     <ReactCalendar
                       onChange={field.onChange}
@@ -63,10 +128,10 @@ export default function EditScheduleDialog({
               name="time"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>시간</FormLabel>
+                  <FormLabel>파티 출발 시간</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className={"w-full"}>
                         <SelectValue placeholder="시간 선택" />
                       </SelectTrigger>
                     </FormControl>
@@ -83,15 +148,130 @@ export default function EditScheduleDialog({
               )}
             />
 
+
+            <FormField
+              control={editScheduleForm.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>파티 소개 제목</FormLabel>
+                  <FormControl>
+                    <Input placeholder="파티 소개 제목 입력" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={editScheduleForm.control}
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>일정 내용</FormLabel>
+                  <FormLabel>파티 소개 내용</FormLabel>
                   <FormControl>
-                    <Input placeholder="일정 내용을 입력하세요" {...field} />
+                    <Input placeholder="파티 소개 내용 입력" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+
+            {myUserList.length > 0 ?
+              <>
+                <FormField
+                  control={editScheduleForm.control}
+                  name="participateWriteUser"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>참여 캐릭터 선택</FormLabel>
+                      <Select
+                        onValueChange={(value) => {
+                          const selectedCharacter = myUserList.find(user => user.participateUserDocId === value);
+
+                          if (selectedCharacter) {
+                            field.onChange(selectedCharacter);
+                            editScheduleForm.setValue('participateWriteUser.participateUserJob', selectedCharacter.participateUserJob);
+                          }
+                        }}
+                        defaultValue={field.value?.participateUserDocId || ''}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={"w-full"}>
+                            <SelectValue placeholder="파티원 수 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {myUserList.map((character) => (
+                            <SelectItem key={character.participateUserDocId} value={character.participateUserDocId}>
+                              {character.participateUserId}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+
+                <FormField
+                  control={editScheduleForm.control}
+                  name="participateWriteUser.participateUserJob" // nested field
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>참여 캐릭터 직업</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value} // value로 동적으로 변경되는 직업 값
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="직업 선택" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="w-full">
+                          {jobTypeOptions.map((job) => {
+                            return (
+                              <SelectItem value={job.value} key={job.value}>
+                                {job.name}
+                              </SelectItem>
+                            )
+                          })}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+              </>
+              : <></>}
+
+
+
+            <FormField
+              control={editScheduleForm.control}
+              name="maxParticipateCount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>총 파티원 수 (본인 포함)</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className={"w-full"}>
+                        <SelectValue placeholder="파티원 수 선택" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {participateCountList.map((count) => (
+                        <SelectItem key={count.name} value={count.value}>
+                          {count.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

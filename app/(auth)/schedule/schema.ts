@@ -17,6 +17,7 @@ const participateFormSchema = z.object({
 
 
 export const scheduleFormSchema = z.object({
+  docId: z.string().nullable(),
   date: z.date({
     required_error: '날짜를 선택해주세요.',
   }),
@@ -40,5 +41,6 @@ export const scheduleFormSchema = z.object({
 
 export type ScheduleFormSchema = z.infer<typeof scheduleFormSchema>
 export type addScheduleFormType = UseFormReturn<ScheduleFormSchema>
+export type editScheduleFormType = UseFormReturn<ScheduleFormSchema>
 export type onAddType = (values: ScheduleFormSchema) => void
 export type TimeOptionsType = string[]

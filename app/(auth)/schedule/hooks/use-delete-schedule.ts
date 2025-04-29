@@ -5,7 +5,7 @@ import { scheduleService } from '@/service/schudule-service'
 
 /**
  * @name useDeleteSchedule
- * @description 파티구인글 삭제 훅
+ * @description 파티원 모집 정보 삭제
  */
 export function useDeleteSchedule() {
   const queryClient = useQueryClient();
@@ -14,14 +14,14 @@ export function useDeleteSchedule() {
     mutationFn: scheduleService.delete,
     onSuccess: (response) => {
       if (response.success) {
-        toast.success('파티구인글이 삭제되었습니다.');
+        toast.success('파티원 모집 정보가 삭제되었습니다.');
         queryClient.invalidateQueries({ queryKey: ['useGetSchedules'] });
       } else {
         toast.error(response.message);
       }
     },
     onError: (error) => {
-      toast.error(`파티구인글 삭제 중 오류가 발생했습니다: ${error.message}`);
+      toast.error(`파티원 모집 정보 삭제 중 오류가 발생했습니다: ${error.message}`);
     },
   });
 }

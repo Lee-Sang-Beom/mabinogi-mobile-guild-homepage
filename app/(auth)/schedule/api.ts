@@ -9,5 +9,6 @@ export interface ScheduleResponse {
   userDocId: string; // 작성인 유저 문서 ID
   maxParticipateCount: number; // 최대참여인원
   mngDt: string; // 작성 및 수정 시간
-  participateUserList: ParticipateForm[]; // 참여유저들
+  participateWriteUser : ParticipateForm // 작성자 본인 참여 캐릭터
+  participateEtcUser : ParticipateForm[]; // 작성자 제외 참여 캐릭터
 }

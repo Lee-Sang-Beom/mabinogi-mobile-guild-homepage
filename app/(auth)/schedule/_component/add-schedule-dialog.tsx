@@ -132,9 +132,9 @@ export default function AddScheduleDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>파티 제목</FormLabel>
+                  <FormLabel>파티 소개 제목</FormLabel>
                   <FormControl>
-                    <Input placeholder="파티 제목을 입력하세요" {...field} />
+                    <Input placeholder="파티 소개 제목 입력" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -146,9 +146,9 @@ export default function AddScheduleDialog({
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>파티 내용</FormLabel>
+                  <FormLabel>파티 소개 내용</FormLabel>
                   <FormControl>
-                    <Input placeholder="파티원 구인에 대한 내용을 입력하세요" {...field} />
+                    <Input placeholder="파티 소개 내용 입력" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

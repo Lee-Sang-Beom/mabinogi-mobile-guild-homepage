@@ -1,36 +1,37 @@
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar as ReactCalendar } from 'react-calendar'
-import { Dispatch, JSX, SetStateAction } from 'react'
+import { Dispatch, SetStateAction, useState } from 'react'
 import { Value } from '@/shared/types/common'
-import { addScheduleFormType, onAddType } from '@/app/(auth)/schedule/schema'
+import { scheduleFormSchema, ScheduleFormSchema } from '@/app/(auth)/schedule/schema'
 import AddScheduleDialog from '@/app/(auth)/schedule/_component/add-schedule-dialog'
 import { generateTimeOptions } from '@/shared/utils/utils'
 import { User } from 'next-auth'
+import { ScheduleRecruitForm } from '@/app/(auth)/schedule/internal'
+import moment from 'moment/moment'
+import { useAddSchedule } from '@/app/(auth)/schedule/hooks/use-add-schedule'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ScheduleResponse } from '@/app/(auth)/schedule/api'
 
 interface ScheduleCalendarProps {
-  isAddDialogOpen: boolean
-  setIsAddDialogOpen: Dispatch<SetStateAction<boolean>>
   selectedDate: Date
   setSelectedDate: Dispatch<SetStateAction<Date>>
-  tileContent: (props: { date: Date; view: string }) => JSX.Element | null
-  addScheduleForm: addScheduleFormType
-  onAdd: onAddType
   user: User
+  scheduleData: ScheduleResponse[]
+
 }
 
 export default function ScheduleCalendar({
-                                           isAddDialogOpen,
-                                           setIsAddDialogOpen,
                                            selectedDate,
                                            setSelectedDate,
-                                           tileContent,
-                                           addScheduleForm,
-                                           onAdd,
-                                           user
+                                           user,
+                                           scheduleData
                                          }: ScheduleCalendarProps) {
-
+  const addScheduleMutation = useAddSchedule()
   const timeOptions = generateTimeOptions()
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+
   const handleDateChange = (
     value: Value,
   ) => {
@@ -42,6 +43,68 @@ export default function ScheduleCalendar({
     }
   }
 
+  const tileContent = ({ date, view }: { date: Date; view: string }) => {
+    if (view === 'month') {
+      const eventCount = scheduleData.filter((event) => {
+        const eventDate = new Date(event.date);
+        return (
+          eventDate.getFullYear() === date.getFullYear() &&
+          eventDate.getMonth() === date.getMonth() &&
+          eventDate.getDate() === date.getDate()
+        );
+      }).length;
+
+      return eventCount > 0 ? (
+        <div className="flex justify-center gap-[2px] mt-1">
+          {Array.from({ length: eventCount }).map((_, idx) => (
+            <div key={idx} className="w-1.5 h-1.5 bg-primary rounded-full" />
+          ))}
+        </div>
+      ) : null;
+    }
+    return null;
+  };
+
+  const addScheduleForm = useForm<ScheduleFormSchema>({
+    resolver: zodResolver(scheduleFormSchema),
+    defaultValues: {
+      docId: null,
+      date: new Date(),
+      time: '00:00',
+
+      title: `${user.id}님의 파티에서 파티원을 모집합니다.`,
+      content: '',
+      maxParticipateCount: '4',
+
+      participateWriteUser:{
+        participateUserIsSubUser: false,
+        participateUserParentDocId: null,
+        participateUserDocId: user.docId,
+        participateUserId: user.id,
+        participateUserJob: user.job
+      },
+
+      participateEtcUser: []
+    },
+  })
+
+
+  const onAdd = (values: ScheduleFormSchema) => {
+    const postData: ScheduleRecruitForm = {
+      ...values,
+      date: moment(values.date).format("YYYY-MM-DD"),
+      maxParticipateCount: Number(values.maxParticipateCount),
+      userDocId: user.docId,
+      mngDt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+    }
+
+    addScheduleMutation.mutate(postData, {
+      onSuccess: () => {
+        addScheduleForm.reset()
+        setIsAddDialogOpen(false)
+      }
+    })
+  }
 
   return (
     <motion.div
