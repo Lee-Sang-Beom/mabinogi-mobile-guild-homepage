@@ -90,7 +90,7 @@ export default function Footer() {
           transition={{ duration: 0.8, delay: 0.4 }}
           viewport={{ once: true }}
         >
-          &copy; {new Date().getFullYear()} 마비노기 모바일 길드. All rights
+          &copy; {new Date().getFullYear()} 마비노기 모바일 {guildName}. All rights
           reserved.
         </motion.p>
       </div>

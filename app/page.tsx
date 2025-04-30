@@ -7,6 +7,7 @@ import GuildActivities from "./(home)/_components/guild-activites";
 import JoinGuild from "./(home)/_components/join-guild";
 import { useEffect, useState } from "react";
 import IntroAnimation from "./(home)/_components/info-animation";
+import CollaborativeGuild from '@/app/(home)/_components/collaborative-guild'
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(false); // 기본 false
@@ -41,6 +42,7 @@ export default function Home() {
         <GuildFeatures />
         <GuildStats />
         <GuildActivities />
+        <CollaborativeGuild/>
         <JoinGuild />
       </div>
     </>
