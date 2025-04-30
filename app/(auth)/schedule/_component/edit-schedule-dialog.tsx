@@ -21,7 +21,7 @@ import moment from 'moment/moment'
 import { useUpdateScheduleMutation } from '@/app/(auth)/schedule/hooks/use-update-schedule'
 import { ScheduleResponse } from '@/app/(auth)/schedule/api'
 import { toast } from 'sonner'
-import { X } from 'lucide-react'
+import { Users, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 interface EditScheduleDialogProps {
@@ -313,7 +313,7 @@ export default function EditScheduleDialog({
                     <FormLabel>참여 중인 파티원 (본인 제외)</FormLabel>
                     <div className="flex flex-wrap gap-2">
                       {visibleUsers.length === 0 && (
-                        <div className="text-sm text-muted-foreground">현재 파티원이 없습니다.</div>
+                        <div className="w-full text-sm text-muted-foreground p-2 border rounded-md flex items-center gap-1 bg-gray-200/50"> <Users className={"w-4 h-4"}/> 현재 파티원이 없습니다.</div>
                       )}
                       {visibleUsers.map((user) => (
                         <Badge key={user.participateUserDocId} className="flex items-center gap-1">

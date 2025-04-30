@@ -28,6 +28,7 @@ export const guildRoleOptions: KeyValue[] = [
   { name: "길드원", value: "GUILD_MEMBER" },
   { name: "길드 서브 마스터", value: "GUILD_SUB_MASTER" },
   { name: "길드 마스터", value: "GUILD_MASTER" },
+  { name: "협력 길드 구성원", value: "COOPERATIVE_GUILD_MEMBERS" },
 ] as const;
 
 /**
