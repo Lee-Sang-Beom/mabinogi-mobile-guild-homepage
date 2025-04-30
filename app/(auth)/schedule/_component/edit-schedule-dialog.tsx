@@ -19,6 +19,10 @@ import { useEffect, useState } from 'react'
 import { ParticipateForm, ScheduleRecruitForm } from '@/app/(auth)/schedule/internal'
 import moment from 'moment/moment'
 import { useUpdateScheduleMutation } from '@/app/(auth)/schedule/hooks/use-update-schedule'
+import { ScheduleResponse } from '@/app/(auth)/schedule/api'
+import { toast } from 'sonner'
+import { X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 interface EditScheduleDialogProps {
   isEditDialogOpen: boolean
@@ -26,6 +30,7 @@ interface EditScheduleDialogProps {
   editScheduleForm: editScheduleFormType
   timeOptions: TimeOptionsType;
   user: User
+  selectSchedule: ScheduleResponse | null
 }
 
 export default function EditScheduleDialog({
@@ -33,35 +38,46 @@ export default function EditScheduleDialog({
                                              setIsEditDialogOpen,
                                              editScheduleForm,
                                              timeOptions,
-                                             user
+                                             user,
+                                             selectSchedule
                                            }: EditScheduleDialogProps) {
-
 
   const { data } = useGetSubusersBydocId(user.docId);
   const [myUserList, setMyUserList] = useState<ParticipateForm[]>([]);
+  const [excludedUsers, setExcludedUsers] = useState<string[]>([]);
+
   const { mutate: updateSchedule } = useUpdateScheduleMutation();
 
   const onEdit = (formData: ScheduleFormSchema) => {
-    if (!formData.docId) return; // docId가 없으면 무시
+    // docId가 없으면 무시
+    if (!selectSchedule) return;
+    
+    // 제한인원 조건 검사 : 이미 가입된 인원이 있을경우, 제한인원은 기타인원 + 본인(1명) 이상이어야 함
+    if (Number(formData.maxParticipateCount) < formData.participateEtcUser.length + 1) {
+      toast.error('파티에 이미 가입된 총 인원수보다 제한 인원이 적을 수 없습니다.');
+      return;
+    }
 
-    const postData:ScheduleRecruitForm  = {
+    const filteredEtcUsers = formData.participateEtcUser.filter(
+      (user) => !excludedUsers.includes(user.participateUserDocId)
+    );
+
+    const postData: ScheduleRecruitForm  = {
       ...formData,
+      participateEtcUser: filteredEtcUsers,
       date: moment(formData.date).format("YYYY-MM-DD"),
       maxParticipateCount: Number(formData.maxParticipateCount),
       userDocId: user.docId,
       mngDt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
     }
+    console.log('postData is ', postData)
 
     updateSchedule(
-      { docId: formData.docId, data: postData },
+      { docId: selectSchedule.docId, data: postData },
       {
-        onSuccess: (res) => {
-          console.log('수정 완료', res);
+        onSuccess: () => {
           editScheduleForm.reset();
           setIsEditDialogOpen(false);
-        },
-        onError: (error) => {
-          console.error('수정 실패', error);
         },
       }
     );
@@ -96,6 +112,12 @@ export default function EditScheduleDialog({
       ...subCharacterData
     ])
   }, [user, data])
+
+
+  const handleKickUser = (docId: string) => {
+    setExcludedUsers(prev => [...prev, docId]);
+  };
+
 
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -275,6 +297,41 @@ export default function EditScheduleDialog({
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            {/* ✅ 파티원 목록 + 추방 기능 */}
+            <FormField
+              control={editScheduleForm.control}
+              name="participateEtcUser"
+              render={({ field }) => {
+                const visibleUsers = field.value?.filter(
+                  (user) => !excludedUsers.includes(user.participateUserDocId)
+                ) || [];
+
+                return (
+                  <FormItem>
+                    <FormLabel>참여 중인 파티원 (본인 제외)</FormLabel>
+                    <div className="flex flex-wrap gap-2">
+                      {visibleUsers.length === 0 && (
+                        <div className="text-sm text-muted-foreground">현재 파티원이 없습니다.</div>
+                      )}
+                      {visibleUsers.map((user) => (
+                        <Badge key={user.participateUserDocId} className="flex items-center gap-1">
+                          <span>{user.participateUserId} / {user.participateUserJob}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleKickUser(user.participateUserDocId)}
+                            className="ml-1 hover:text-red-500"
+                          >
+                            <X size={12} />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <DialogFooter>

@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CalendarIcon, Clock, Edit, Trash2, UserPlus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { CalendarIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { ScheduleResponse } from '@/app/(auth)/schedule/api'
 import EditScheduleDialog from '@/app/(auth)/schedule/_component/edit-schedule-dialog'
@@ -16,6 +15,7 @@ import { useState } from 'react'
 import { User } from 'next-auth'
 import { generateTimeOptions } from '@/shared/utils/utils'
 import ParticipateScheduleDialogProps from '@/app/(auth)/schedule/_component/participate-schedule-dialog'
+import ScheduleListItem from '@/app/(auth)/schedule/_component/schedule-list-item'
 
 
 interface ScheduleListProps {
@@ -43,7 +43,6 @@ export default function ScheduleList({
   const editScheduleForm = useForm<ScheduleFormSchema>({
     resolver: zodResolver(scheduleFormSchema),
     defaultValues: {
-      docId: null,
       date: new Date(),
       time: '00:00',
 
@@ -62,10 +61,11 @@ export default function ScheduleList({
       participateEtcUser: [],
     },
   })
+
+  // 파티 참가에 대한 form
   const participateScheduleForm = useForm<ParticipatePartyFormSchema>({
     resolver: zodResolver(participatePartyFormSchema),
     defaultValues: {
-      docId: null,
       participateUser: {
         participateUserIsSubUser: false,
         participateUserParentDocId: user.docId,
@@ -85,12 +85,13 @@ export default function ScheduleList({
       date: new Date(data.date),
     }
     editScheduleForm.reset(newFormValues)
+    
+    setSelectSchedule(data)
     setIsEditDialogOpen(true)
   }
 
   // 작성자가 자신이 아닐 때 발생
   const handleParticipateEvent = (data: ScheduleResponse) => {
-    console.log('data is ', data)
     setSelectSchedule(data)
     setIsParticipateDialogOpen(true)
   }
@@ -122,48 +123,14 @@ export default function ScheduleList({
             ) : (
               <div className="space-y-4">
                 {scheduleData.map((schData) => (
-                  <div key={schData.docId} className="p-4 bg-background/50 rounded-lg border border-primary/10">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Clock className="h-4 w-4 text-primary" />
-                      <span className="font-medium">{schData.time}</span>
-                    </div>
-                    <p className="mb-3">{schData.title}</p>
-                    <div className="flex items-center justify-between">
-                      <span
-                        className="text-xs text-muted-foreground">등록자: {schData.participateWriteUser.participateUserId}</span>
-                      {
-                        schData.userDocId === user.docId ?
-                          <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleEditEvent(schData)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
-                            onClick={() => handleDeleteEvent(schData.docId)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>:
-                          <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-auto px-2 hover:bg-background"
-                            onClick={() => handleParticipateEvent(schData)}
-                          >
-                            <UserPlus /> 파티가입
-                          </Button>
-                        </div>
-                      }
-                    </div>
-                  </div>
+                  <ScheduleListItem
+                    key={schData.docId}
+                    schData={schData}
+                    user={user}
+                    handleEditEvent={handleEditEvent}
+                    handleDeleteEvent={handleDeleteEvent}
+                    handleParticipateEvent={handleParticipateEvent}
+                  />
                 ))}
               </div>
             )}
@@ -177,6 +144,8 @@ export default function ScheduleList({
         setIsEditDialogOpen={setIsEditDialogOpen}
         editScheduleForm={editScheduleForm}
         timeOptions={timeOptions}
+        selectSchedule={selectSchedule}
+
         user={user}
       />
 

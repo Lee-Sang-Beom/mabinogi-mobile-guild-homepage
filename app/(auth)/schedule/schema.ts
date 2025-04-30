@@ -18,7 +18,6 @@ const participateFormSchema = z.object({
 
 // 파티 구인글에 대한 정보 관리
 export const scheduleFormSchema = z.object({
-  docId: z.string().nullable(),
   date: z.date({
     required_error: '날짜를 선택해주세요.',
   }),
@@ -42,7 +41,6 @@ export const scheduleFormSchema = z.object({
 
 // 파티 가입에 대한 정보 관리
 export const participatePartyFormSchema = z.object({
-  docId: z.string().nullable(),
   participateUser: participateFormSchema
 })
 

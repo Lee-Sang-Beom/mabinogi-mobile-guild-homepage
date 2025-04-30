@@ -29,7 +29,6 @@ export default function GuildUserBubbleDialog({selectedUser, setSelectedUser}:Gu
                 className="relative h-16 w-16 rounded-full overflow-hidden flex items-center justify-center bg-background/80 border-2"
                 style={{ borderColor: getJobClassColor(selectedUser.job) }}
               >
-                {/* Use the appropriate icon based on job class */}
                 {(() => {
                   const IconComponent = JobClassIcons[selectedUser.job
                     ] || Sword

@@ -1,13 +1,51 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { db } from '@/shared/firestore'
 
-import { ApiResponse } from '@/shared/types/api';
-import { ScheduleRecruitForm } from '@/app/(auth)/schedule/internal';
-import { ScheduleResponse } from '@/app/(auth)/schedule/api';
+import { ApiResponse } from '@/shared/types/api'
+import { ParticipateForm, ScheduleRecruitForm } from '@/app/(auth)/schedule/internal'
+import { ScheduleResponse } from '@/app/(auth)/schedule/api'
 import moment from 'moment'
 
 class ScheduleService {
   private scheduleCollection = collection(db, 'collection_schedule');
+
+
+  /**
+   * @name get
+   * @description 선택된 날짜의 파티구인글 목록 조회
+   * @param selectedDate 선택된 날짜 string (YYYY-MM-DD)
+   */
+  async get(selectedDate: Date): Promise<ApiResponse<ScheduleResponse[]>> {
+    try {
+      // selectedDate를 moment로 변환하여 'YYYY-MM-DD' 형식으로 맞춤
+      const formattedDate: string = moment(selectedDate).format('YYYY-MM-DD');
+
+      // 쿼리로 날짜 필터링 (문자열로 비교)
+      const q = query(
+        this.scheduleCollection,
+        where('date', '==', formattedDate)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const schedules: ScheduleResponse[] = querySnapshot.docs.map((doc) => ({
+        ...(doc.data() as Omit<ScheduleResponse, 'docId'>),
+        docId: doc.id,
+      })).sort((a, b) => b.time.localeCompare(a.time));
+
+      return {
+        success: true,
+        message: "선택된 날짜의 파티원 모집 정보 목록을 불러왔습니다.",
+        data: schedules,
+      };
+    } catch (error) {
+      console.error('파티원 모집 정보 조회 중 오류가 발생했습니다.', error);
+      return {
+        success: false,
+        message: "파티원 모집 정보 조회 중 오류가 발생했습니다.",
+        data: [],
+      };
+    }
+  }
 
   /**
    * @name add
@@ -82,38 +120,55 @@ class ScheduleService {
   }
 
   /**
-   * @name get
-   * @description 선택된 날짜의 파티구인글 목록 조회
-   * @param selectedDate 선택된 날짜 string (YYYY-MM-DD)
+   * @name updateParticipateStatus
+   * @description 파티구인글에서 파티참가/파티 취소 관리
    */
-  async get(selectedDate: Date): Promise<ApiResponse<ScheduleResponse[]>> {
+  async updateParticipateStatus(
+    scheduleDocId: string,
+    participateUser: ParticipateForm,
+    isParticipate: boolean
+  ): Promise<ApiResponse<null>> {
     try {
-      // selectedDate를 moment로 변환하여 'YYYY-MM-DD' 형식으로 맞춤
-      const formattedDate: string = moment(selectedDate).format('YYYY-MM-DD');
+      const scheduleRef = doc(this.scheduleCollection, scheduleDocId);
+      const scheduleSnap = await getDoc(scheduleRef);
 
-      // 쿼리로 날짜 필터링 (문자열로 비교)
-      const q = query(
-        this.scheduleCollection,
-        where('date', '==', formattedDate)
-      );
+      if (!scheduleSnap.exists()) {
+        return {
+          success: false,
+          message: "해당 파티가 존재하지 않습니다.",
+          data: null,
+        };
+      }
 
-      const querySnapshot = await getDocs(q);
-      const schedules: ScheduleResponse[] = querySnapshot.docs.map((doc) => ({
-        ...(doc.data() as Omit<ScheduleResponse, 'docId'>),
-        docId: doc.id,
-      })).sort((a, b) => b.time.localeCompare(a.time));
+      const currentData = scheduleSnap.data() as ScheduleResponse;
+      let updatedParticipateEtcUser = currentData.participateEtcUser ?? [];
+
+      if (isParticipate) {
+        // 이미 참여 중이면 제거
+        updatedParticipateEtcUser = updatedParticipateEtcUser.filter(
+          (u) => u.participateUserParentDocId !== participateUser.participateUserParentDocId
+        );
+      } else {
+        // 참여 안했으면 추가
+        updatedParticipateEtcUser.push(participateUser);
+      }
+
+      await updateDoc(scheduleRef, {
+        participateEtcUser: updatedParticipateEtcUser,
+        updatedAt: moment().toISOString(),
+      });
 
       return {
         success: true,
-        message: "선택된 날짜의 파티원 모집 정보 목록을 불러왔습니다.",
-        data: schedules,
+        message: isParticipate ? "파티에서 탈퇴했습니다." : "파티에 가입했습니다.",
+        data: null,
       };
     } catch (error) {
-      console.error('파티원 모집 정보 조회 중 오류가 발생했습니다.', error);
+      console.error("파티 참여 상태 변경 실패: ", error);
       return {
         success: false,
-        message: "파티원 모집 정보 조회 중 오류가 발생했습니다.",
-        data: [],
+        message: "파티 참여 상태 변경에 실패했습니다.",
+        data: null,
       };
     }
   }

@@ -68,7 +68,6 @@ export default function ScheduleCalendar({
   const addScheduleForm = useForm<ScheduleFormSchema>({
     resolver: zodResolver(scheduleFormSchema),
     defaultValues: {
-      docId: null,
       date: new Date(),
       time: '00:00',
 

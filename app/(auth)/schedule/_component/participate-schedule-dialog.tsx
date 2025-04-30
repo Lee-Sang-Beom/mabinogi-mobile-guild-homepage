@@ -13,9 +13,16 @@ import { ParticipatePartyFormSchema, ParticipatePartyFormType } from '@/app/(aut
 import { jobTypeOptions } from '@/shared/constants/game'
 import { User } from 'next-auth'
 import { useGetSubusersBydocId } from '@/app/(auth)/profile/hooks/use-get-subusers-bydocid'
-import { useEffect, useState, Dispatch, SetStateAction } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { ParticipateForm } from '@/app/(auth)/schedule/internal'
 import { ScheduleResponse } from '@/app/(auth)/schedule/api'
+import { useUpdateParticipateStatus } from '@/app/(auth)/schedule/hooks/use-update-participate-status'
+import { CalendarClock, FileText, Sword, Tag, Users } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { getJobClassColor, JobClassIcons } from '@/app/(auth)/dashboard/job-class-utils'
+import { motion } from 'framer-motion'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 interface ParticipateScheduleDialogProps {
   isParticipateDialogOpen: boolean
@@ -35,9 +42,17 @@ export default function ParticipateScheduleDialogProps({
                                                          user,
                                                        }: ParticipateScheduleDialogProps) {
 
+  // hooks - api
   const { data } = useGetSubusersBydocId(user.docId)
+  const { mutate: updateParticipateStatus } = useUpdateParticipateStatus();
+
+  // 내 캐릭터 전체리스트
   const [myUserList, setMyUserList] = useState<ParticipateForm[]>([])
+
+  // 파티 가입여부와 가입된 유저 정보
   const [isParticipate, setIsParticipate] = useState<boolean>(false)
+
+
 
   /**
    * @name onParticipate
@@ -45,17 +60,37 @@ export default function ParticipateScheduleDialogProps({
    * @description 파티 참여, 파티 참여 취소를 결정짓는 submit 함수
    */
   const onParticipate = (values: ParticipatePartyFormSchema) => {
-    console.log('selectSchedule is ', selectSchedule)
-    console.log('values is ', values)
+    if (!selectSchedule) return;
+    const scheduleDocId = selectSchedule.docId;
+    const postData = values.participateUser;
 
-    // API 통신 개념 핵심
-    // 1. 내 정보가 이미 selectSchedule의 participateEtcUser에 들어가있으면 가입이 된 상태임
-    // 2. 내 정보가  selectSchedule의 participateEtcUser에 안들어가있으면 가입이 안된거임
+    // 내가 이미 파티에 가입되어 있는가? (true)
+    // 내가 이미 파티에 가입되지 있지 않아 신청할 예정이다? (false)
+    const isAlreadyParticipating = (selectSchedule.participateEtcUser ?? []).some(
+      (u) => u.participateUserParentDocId === postData.participateUserParentDocId
+    );
 
-    // API 통신 완료 시 적용
-    setSelectSchedule(null)
-    setIsParticipateDialogOpen(false)
-  }
+    // 파티에 가입되어 있지 않은 상태에서 onParticipate가 실행된다면, 파티신청 시 파티원 구인이 마감되었는지 확인해야 함
+    if (!isAlreadyParticipating && selectSchedule.maxParticipateCount <= (selectSchedule.participateEtcUser.length || 0) + 1) {
+      toast.error('이미 파티원 모집이 완료된 파티입니다.');
+      return;
+    }
+
+    console.log('isAlreadyParticipating ', isAlreadyParticipating)
+    updateParticipateStatus(
+      {
+        scheduleDocId,
+        participateUser: postData,
+        isParticipate: isAlreadyParticipating,
+      },
+      {
+        onSuccess: () => {
+          setSelectSchedule(null);
+          setIsParticipateDialogOpen(false);
+        },
+      }
+    );
+  };
 
   /**
    * @name useEffect
@@ -109,84 +144,170 @@ export default function ParticipateScheduleDialogProps({
     setIsParticipate(!!alreadyIsParticipate)
 
   }, [selectSchedule, user.docId])
+
   return (
     <Dialog open={isParticipateDialogOpen} onOpenChange={setIsParticipateDialogOpen}>
       <DialogContent className="sm:max-w-[425px] max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>파티 가입 관리</DialogTitle>
-          <DialogDescription>파티 가입 관리</DialogDescription>
+          <DialogDescription>등록된 파티 정보와 파티 가입 및 탈퇴를 진행할 수 있습니다. </DialogDescription>
         </DialogHeader>
+
         <Form {...participateScheduleForm}>
-          <form onSubmit={participateScheduleForm.handleSubmit(onParticipate)} className="space-y-4">
+          <form onSubmit={participateScheduleForm.handleSubmit(onParticipate)} className="space-y-4 relative">
             {myUserList.length > 0 ?
               <>
-                <FormField
-                  control={participateScheduleForm.control}
-                  name="participateUser"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>참여 캐릭터 선택</FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          const selectedCharacter = myUserList.find(user => user.participateUserDocId === value)
+                {selectSchedule &&
+                  <div className="space-y-4">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="p-4 rounded-md shadow-lg border bg-card"
+                    >
+                      <h3 className="text-md font-semibold mb-2">파티 정보</h3>
+                      <div className="flex flex-col space-y-2 text-sm">
+                        <p className="flex items-center gap-2">
+                          <CalendarClock className="w-4 h-4 " />
+                          <strong>출발 일정:</strong> {selectSchedule.date} {selectSchedule.time}
+                        </p>
+                        <p className="flex items-center gap-2">
+                          <Tag className="w-4 h-4 " />
+                          <strong>파티 제목:</strong> {selectSchedule.title}
+                        </p>
+                        <p className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 " />
+                          <strong>파티 내용:</strong> {selectSchedule.content}
+                        </p>
+                        <p className="flex items-center gap-2">
+                          <Users className="w-4 h-4 " />
+                          <strong>최대 파티원 수:</strong> {selectSchedule.maxParticipateCount}명
+                        </p>
+                      </div>
+                    </motion.div>
 
-                          if (selectedCharacter) {
-                            field.onChange(selectedCharacter)
-                            participateScheduleForm.setValue('participateUser.participateUserJob', selectedCharacter.participateUserJob)
-                          }
-                        }}
-                        defaultValue={field.value?.participateUserDocId || ''}
-                      >
-                        <FormControl>
-                          <SelectTrigger className={'w-full'}>
-                            <SelectValue placeholder="파티원 수 선택" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {myUserList.map((character) => (
-                            <SelectItem key={character.participateUserDocId} value={character.participateUserDocId}>
-                              {character.participateUserId}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="p-4 rounded-md shadow-lg border bg-card"
+                    >
+                      <h3 className="text-md font-semibold mb-4">파티 인원</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <motion.div whileHover={{ scale: 1.05 }}>
+                          <Badge
+                            className="flex items-center gap-1 bg-muted text-foreground border border-sky-500"
+                            variant="outline"
+                          >
+                            {(() => {
+                              const IconComponent = JobClassIcons[selectSchedule.participateWriteUser.participateUserJob] || Sword
+                              return (
+                                <IconComponent
+                                  className="h-4 w-4"
+                                  style={{ color: getJobClassColor(selectSchedule.participateWriteUser.participateUserJob) }}
+                                />
+                              )
+                            })()}
+                            <p>
+                              {selectSchedule.participateWriteUser.participateUserId}
+                              ({selectSchedule.participateWriteUser.participateUserJob})
+                              <span className="ml-1 text-xs text-sky-500 font-semibold">(파티장)</span>
+                            </p>
+                          </Badge>
+                        </motion.div>
 
+                        {selectSchedule.participateEtcUser.map((member) => {
+                          const isMe = member.participateUserParentDocId === user.docId;
+                          return (
+                            <motion.div key={member.participateUserDocId} whileHover={{ scale: 1.05 }}>
+                              <Badge
+                                className={cn("flex items-center gap-1 bg-muted text-foreground border", isMe && "border-red-400")}
+                                variant="outline"
+                              >
+                                {(() => {
+                                  const IconComponent = JobClassIcons[member.participateUserJob] || Sword
+                                  return (
+                                    <IconComponent
+                                      className="h-4 w-4"
+                                      style={{ color: getJobClassColor(member.participateUserJob) }}
+                                    />
+                                  )
+                                })()}
+                                <p>{member.participateUserId}({member.participateUserJob}) {isMe && <span className={"text-red-400 font-semibold"}>{`(내 캐릭터)`}</span>}</p>
+                              </Badge>
+                            </motion.div>
+                          )
+                        })}
+                      </div>
+                    </motion.div>
+                  </div>
+                }
 
-                <FormField
-                  control={participateScheduleForm.control}
-                  name="participateUser.participateUserJob" // nested field
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>참여 캐릭터 직업</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value} // value로 동적으로 변경되는 직업 값
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="직업 선택" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="w-full">
-                          {jobTypeOptions.map((job) => {
-                            return (
-                              <SelectItem value={job.value} key={job.value}>
-                                {job.name}
+                {isParticipate ? <p className={"text-sm w-full text-center"}>이미 가입된 파티입니다! <br/> 파티탈퇴를 원하시면, 아래 <strong>파티탈퇴</strong> 버튼을 클릭해주세요.</p> :  <>
+                  <FormField
+                    control={participateScheduleForm.control}
+                    name="participateUser"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>참여 캐릭터 선택</FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            const selectedCharacter = myUserList.find(user => user.participateUserDocId === value)
+
+                            if (selectedCharacter) {
+                              field.onChange(selectedCharacter)
+                              participateScheduleForm.setValue('participateUser.participateUserJob', selectedCharacter.participateUserJob)
+                            }
+                          }}
+                          defaultValue={field.value?.participateUserDocId || ''}
+                        >
+                          <FormControl>
+                            <SelectTrigger className={'w-full'}>
+                              <SelectValue placeholder="파티원 수 선택" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {myUserList.map((character) => (
+                              <SelectItem key={character.participateUserDocId} value={character.participateUserDocId}>
+                                {character.participateUserId}
                               </SelectItem>
-                            )
-                          })}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={participateScheduleForm.control}
+                    name="participateUser.participateUserJob" // nested field
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>참여 캐릭터 직업</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value} // value로 동적으로 변경되는 직업 값
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="직업 선택" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="w-full">
+                            {jobTypeOptions.map((job) => {
+                              return (
+                                <SelectItem value={job.value} key={job.value}>
+                                  {job.name}
+                                </SelectItem>
+                              )
+                            })}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  /></>}
               </>
               : <></>}
 
@@ -200,7 +321,7 @@ export default function ParticipateScheduleDialogProps({
                 }}>
                 취소
               </Button>
-              <Button type="submit">{isParticipate ? '가입취소' : '가입하기'}</Button>
+              <Button type="submit">{isParticipate ? '파티 탈퇴' : '파티 가입'}</Button>
             </DialogFooter>
           </form>
         </Form>
