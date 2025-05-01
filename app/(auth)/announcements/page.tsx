@@ -1,5 +1,5 @@
-import AnimatedUnderDevelopment from '@/components/animated-under-development'
+import AnnouncementsPage from "./announcement";
 
 export default function Page() {
-  return <AnimatedUnderDevelopment />
+  return <AnnouncementsPage />
 }
