@@ -220,7 +220,7 @@ export function GuildUserBubble({ setSelectedUserAction }: GuildUserBubbleProps)
       {positions.map((pos, index) => {
         if(!data || !data.length) return null
         const user = data[index]
-        const isBadge = user.isHaveEventBadge === "Y"
+        const isBadge = user.isHaveEventBadge && user.isHaveEventBadge === "Y"
         const color = getJobClassColor(user.job)
         const Icon = JobClassIcons[user.job] || Sword
 

@@ -52,15 +52,17 @@ export default function EditScheduleDialog({
     // docId가 없으면 무시
     if (!selectSchedule) return;
     
-    // 제한인원 조건 검사 : 이미 가입된 인원이 있을경우, 제한인원은 기타인원 + 본인(1명) 이상이어야 함
-    if (Number(formData.maxParticipateCount) < formData.participateEtcUser.length + 1) {
-      toast.error('파티에 이미 가입된 총 인원수보다 제한 인원이 적을 수 없습니다.');
-      return;
-    }
+
 
     const filteredEtcUsers = formData.participateEtcUser.filter(
       (user) => !excludedUsers.includes(user.participateUserDocId)
     );
+
+    // 제한인원 조건 검사 : 이미 가입된 인원이 있을경우, 제한인원은 기타인원 + 본인(1명) 이상이어야 함
+    if (Number(formData.maxParticipateCount) < filteredEtcUsers.length + 1) {
+      toast.error('파티에 이미 가입된 총 인원수보다 제한 인원이 적을 수 없습니다.');
+      return;
+    }
 
     const postData: ScheduleRecruitForm  = {
       ...formData,

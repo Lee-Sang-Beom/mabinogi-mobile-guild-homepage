@@ -147,7 +147,7 @@ export default function ParticipateScheduleDialogProps({
 
   return (
     <Dialog open={isParticipateDialogOpen} onOpenChange={setIsParticipateDialogOpen}>
-      <DialogContent className="sm:max-w-[425px] max-h-[500px] overflow-y-auto">
+      <DialogContent className="sm:max-w-[480px] max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>파티 가입 관리</DialogTitle>
           <DialogDescription>등록된 파티 정보와 파티 가입 및 탈퇴를 진행할 수 있습니다. </DialogDescription>
