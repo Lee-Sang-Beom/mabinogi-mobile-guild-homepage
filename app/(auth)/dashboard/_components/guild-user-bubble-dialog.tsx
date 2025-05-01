@@ -68,7 +68,7 @@ export default function GuildUserBubbleDialog({selectedUser, setSelectedUser}:Gu
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">명예 길드원 여부</span>
+                <span className="text-muted-foreground">자랑스런 길드원 여부</span>
                 <span className="font-medium">{isBadge  ? <CheckCircle/> : <XCircle/>}</span>
               </div>
             </div>
