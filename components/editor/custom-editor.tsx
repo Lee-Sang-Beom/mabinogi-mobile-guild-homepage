@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import "@/styles/Editor.scss";
 import {
   ClassicEditor,
   AccessibilityHelp,
