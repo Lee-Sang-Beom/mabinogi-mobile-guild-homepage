@@ -80,7 +80,7 @@ import {
 } from 'ckeditor5'
 
 import translations from 'ckeditor5/translations/ko.js'
-import 'ckeditor5/ckeditor5.css'
+import 'ckeditor5/ckeditor5.css';
 
 interface CustomCKEditorProps {
   /**
@@ -139,7 +139,7 @@ const CustomEditor = ({ content, onContentChange }: CustomCKEditorProps) => {
           "indent",
           "outdent",
         ],
-        shouldNotGroupWhenFull: false,
+        shouldNotGroupWhenFull: true,
       },
       plugins: [
         AccessibilityHelp,
@@ -251,7 +251,7 @@ const CustomEditor = ({ content, onContentChange }: CustomCKEditorProps) => {
         supportAllValues: true,
       },
       fontSize: {
-        options: [10, 12, 14, "default", 18, 20, 22],
+        options: [10, "default", 14, 16, 18, 20, 22],
         supportAllValues: true,
       },
       heading: {

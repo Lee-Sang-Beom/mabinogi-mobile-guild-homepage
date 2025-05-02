@@ -4,7 +4,7 @@ import { ScheduleRecruitForm } from '@/app/(auth)/schedule/internal'
 import { ApiResponse } from '@/shared/types/api'
 import { scheduleService } from '@/service/schudule-service'
 
-export function useAddSchedule() {
+export function useCreateSchedule() {
   const queryClient = useQueryClient()
 
   return useMutation<ApiResponse<string | null>, Error, ScheduleRecruitForm>({

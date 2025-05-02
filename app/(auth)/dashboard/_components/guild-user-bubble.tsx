@@ -188,16 +188,15 @@ export function GuildUserBubble({ setSelectedUserAction }: GuildUserBubbleProps)
   const handleUserClick = (user: User) => setSelectedUserAction(user)
 
   useEffect(() => {
+    const containerEl = containerRef.current
     const handleTouchMove = (e: TouchEvent) => {
-      if (containerRef.current && containerRef.current.contains(e.target as Node)) {
+      if (containerEl && containerEl.contains(e.target as Node)) {
         e.preventDefault()
       }
     }
-
-    containerRef.current?.addEventListener('touchmove', handleTouchMove, { passive: false })
-
+    containerEl?.addEventListener('touchmove', handleTouchMove, { passive: false })
     return () => {
-      containerRef.current?.removeEventListener('touchmove', handleTouchMove)
+      containerEl?.removeEventListener('touchmove', handleTouchMove)
     }
   }, [])
 

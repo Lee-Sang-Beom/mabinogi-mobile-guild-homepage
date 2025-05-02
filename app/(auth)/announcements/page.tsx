@@ -1,5 +1,5 @@
-import AnnouncementsPage from "./announcement";
+import AnnouncementsList from "./_component/announcement-list";
 
 export default function Page() {
-  return <AnnouncementsPage />
+  return <AnnouncementsList />
 }

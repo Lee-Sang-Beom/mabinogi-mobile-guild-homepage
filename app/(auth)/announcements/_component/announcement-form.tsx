@@ -1,77 +1,77 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save } from "lucide-react"
-import { useForm, type SubmitHandler } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { toast } from "sonner"
-import EditorComponent from "@/components/editor/ck-editor"
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ArrowLeft, Save } from 'lucide-react'
+import { type SubmitHandler, useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import EditorComponent from '@/components/editor/ck-editor'
+import { compressContentImages } from '@/shared/utils/utils'
+import { announcementFormSchema, AnnouncementFormSchema } from '@/app/(auth)/announcements/schema'
+import { User } from 'next-auth'
+import { useCreateAnnouncement } from '@/app/(auth)/announcements/hooks/use-create-announcement'
+import moment from 'moment'
+import { AnnouncementResponse } from '@/app/(auth)/announcements/api'
+import { useMemo, useState } from 'react'
+import { useUpdateAnnouncement } from '@/app/(auth)/announcements/hooks/use-update-announcement'
 
-// 공지사항 폼 스키마 정의
-const formSchema = z.object({
-  title: z.string().min(1, { message: "제목을 입력해주세요" }),
-  content: z.string().min(1, { message: "내용을 입력해주세요" }),
-  priority: z.enum(["high", "medium", "low"], {
-    required_error: "중요도를 선택해주세요",
-  }),
-})
+interface AnnouncementCreateFormProps {
+  user: User
+  type: "CREATE" | "UPDATE"
+  announcementData: AnnouncementResponse | null
+}
 
-// 폼 데이터 타입 정의
-type FormValues = z.infer<typeof formSchema>
-
-export default function AnnouncementsCreateForm() {
+export default function AnnouncementForm({ user, type, announcementData }: AnnouncementCreateFormProps) {
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [docId, setDocId] = useState<string | null>(null)
+  const defaultValues = useMemo<AnnouncementFormSchema>(() => {
+    if (type === "UPDATE" && announcementData) {
+      const { docId, ...rest } = announcementData;
+      setDocId(docId); // 단, 이 줄은 여전히 부작용이므로 useEffect 밖에서 사용하면 안 됩니다.
+      return rest;
+    }
 
-  // React Hook Form 설정
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      content: "",
-      priority: "medium", // 기본값: 일반
-    },
+    return {
+      title: '',
+      content: '',
+      priority: 'medium',
+      writeUserDocId: user.docId,
+      writeUserId: user.id,
+      mngDt: null
+    };
+  }, [type, announcementData, user]);
+
+  const { mutateAsync: createAnnouncement, isPending: isCreateSubmitting } = useCreateAnnouncement()
+  const { mutateAsync: updateAnnouncement, isPending: isUpdateSubmitting } = useUpdateAnnouncement()
+  const form = useForm<AnnouncementFormSchema>({
+    resolver: zodResolver(announcementFormSchema),
+    defaultValues: defaultValues,
   })
 
   // 폼 제출 처리
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+  const onSubmit: SubmitHandler<AnnouncementFormSchema> = async (data) => {
     try {
-      setIsSubmitting(true)
+      const contentWithCompressedImages = await compressContentImages(data.content)
+      const postData = { ...data, content: contentWithCompressedImages, mngDt: moment(new Date()).format( 'YYYY-MM-DD HH:mm:ss') }
 
-      // API 호출 로직 (실제 구현 시 추가)
-      // const response = await fetch('/api/announcements', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     ...data,
-      //     author: "현재 로그인한 사용자", // 실제로는 인증 시스템에서 가져옴
-      //     date: new Date().toISOString().split('T')[0],
-      //   })
-      // });
+      if(type==="CREATE") {
+        await createAnnouncement(postData)
+        router.push('/announcements')
+      } else {
+        await updateAnnouncement({
+          docId: docId!,
+          data: postData
+        });
 
-      console.log('data is ', data)
-
-      // 성공 시 처리 (임시)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      toast.success("공지사항이 등록되었습니다.")
-
-      // 목록 페이지로 이동
-      // router.push("/announcements")
+        router.push(`/announcements/${docId}`)
+      }
     } catch (error) {
-      console.error("공지사항 등록 오류:", error)
-      toast.error("공지사항 등록 중 오류가 발생했습니다.")
-
-    } finally {
-      setIsSubmitting(false)
+      console.error('공지사항 등록 오류:', error)
     }
   }
 
@@ -84,7 +84,7 @@ export default function AnnouncementsCreateForm() {
           x: [0, 50, 0],
           y: [0, 30, 0],
         }}
-        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 20, ease: "easeInOut" }}
+        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 20, ease: 'easeInOut' }}
       />
       <motion.div
         className="absolute right-1/4 bottom-1/4 -z-10 h-[350px] w-[350px] rounded-full bg-gradient-to-br from-amber-500/10 to-red-500/10 blur-3xl"
@@ -92,7 +92,7 @@ export default function AnnouncementsCreateForm() {
           x: [0, -30, 0],
           y: [0, 50, 0],
         }}
-        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 25, ease: "easeInOut", delay: 2 }}
+        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 25, ease: 'easeInOut', delay: 2 }}
       />
 
       <div className="max-w-4xl mx-auto">
@@ -102,8 +102,6 @@ export default function AnnouncementsCreateForm() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-        
-
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
               공지사항 작성
@@ -147,9 +145,12 @@ export default function AnnouncementsCreateForm() {
                       render={({ field }) => (
                         <FormItem className="w-full sm:w-1/4">
                           <FormLabel className="text-base font-medium">중요도</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="w-full">
                                 <SelectValue placeholder="중요도 선택" />
                               </SelectTrigger>
                             </FormControl>
@@ -174,20 +175,20 @@ export default function AnnouncementsCreateForm() {
                           내용 <span className="text-red-500">*</span>
                         </FormLabel>
                         <FormControl>
-                          <EditorComponent content={field.value} onContentChange={field.onChange} />
+                            <EditorComponent content={field.value} onContentChange={field.onChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button type="button" variant="outline" className="mb-4" onClick={() => router.back()}>
+                <CardFooter className="flex justify-between mt-4" >
+                  <Button type="button" variant="outline"  onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     돌아가기
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? (
+                  <Button type="submit" disabled={isCreateSubmitting||isUpdateSubmitting}>
+                    {(isCreateSubmitting || isUpdateSubmitting) ? (
                       <span className="flex items-center">
                         <svg
                           className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"

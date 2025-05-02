@@ -4,41 +4,44 @@ import type { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { DataTableColumnHeader } from "@/components/table/column-header"
-
-// 공지사항 데이터 타입 정의
-export type Announcement = {
-  id: number
-  title: string
-  author: string
-  date: string
-  views: number
-  comments: number
-  excerpt: string
-  priority: "high" | "medium" | "low"
-}
+import { AnnouncementResponse } from '@/app/(auth)/announcements/api'
+import { DataTableColumnHeader } from '@/components/table/column-header'
 
 // 컬럼 정의
-export const columns: ColumnDef<Announcement>[] = [
+export const columns: ColumnDef<AnnouncementResponse>[] = [
   {
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="모두 선택"
-        data-prevent-row-click="true"
-      />
-    ),
-    cell: ({ row }) => (
-      <div onClick={(e) => e.stopPropagation()} data-prevent-row-click="true">
+    header: ({ table }) => {
+      // 체크박스 상태 변경 핸들러를 메모이제이션
+      const onCheckedChange = (checked: boolean) => {
+        table.toggleAllPageRowsSelected(checked)
+      }
+
+      return (
         <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="행 선택"
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          onCheckedChange={onCheckedChange}
+          aria-label="모두 선택"
+          data-prevent-row-click="true"
         />
-      </div>
-    ),
+      )
+    },
+    cell: ({ row }) => {
+      // 체크박스 상태 변경 핸들러를 메모이제이션
+      const onCheckedChange = (checked: boolean) => {
+        row.toggleSelected(checked)
+      }
+
+      return (
+        <div onClick={(e) => e.stopPropagation()} data-prevent-row-click="true">
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={onCheckedChange}
+            aria-label="행 선택"
+          />
+        </div>
+      )
+    },
     enableSorting: false,
     enableHiding: false,
   },
@@ -74,11 +77,14 @@ export const columns: ColumnDef<Announcement>[] = [
     },
   },
   {
-    accessorKey: "author",
+    accessorKey: "writeUserId",
     header: ({ column }) => <DataTableColumnHeader column={column} title="작성자" />,
+    cell: ({ row }) => {
+      return <div className="font-medium">{row.getValue("writeUserId")}</div>
+    },
   },
   {
-    accessorKey: "date",
+    accessorKey: "mngDt",
     header: ({ column }) => <DataTableColumnHeader column={column} title="작성일" />,
-  },
+  }
 ]

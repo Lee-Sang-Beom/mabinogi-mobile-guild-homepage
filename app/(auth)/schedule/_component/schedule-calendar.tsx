@@ -9,7 +9,7 @@ import { generateTimeOptions } from '@/shared/utils/utils'
 import { User } from 'next-auth'
 import { ScheduleRecruitForm } from '@/app/(auth)/schedule/internal'
 import moment from 'moment/moment'
-import { useAddSchedule } from '@/app/(auth)/schedule/hooks/use-add-schedule'
+import { useCreateSchedule } from '@/app/(auth)/schedule/hooks/use-create-schedule'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ScheduleResponse } from '@/app/(auth)/schedule/api'
@@ -28,7 +28,7 @@ export default function ScheduleCalendar({
                                            user,
                                            scheduleData
                                          }: ScheduleCalendarProps) {
-  const addScheduleMutation = useAddSchedule()
+  const addScheduleMutation = useCreateSchedule()
   const timeOptions = generateTimeOptions()
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 

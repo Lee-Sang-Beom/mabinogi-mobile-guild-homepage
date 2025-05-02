@@ -1,30 +1,30 @@
-"use client"
+'use client'
 
-import * as React from "react"
+import * as React from 'react'
 import {
   type ColumnDef,
   type ColumnFiltersState,
-  type SortingState,
-  type VisibilityState,
-  type Row,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type Row,
+  type SortingState,
   useReactTable,
-} from "@tanstack/react-table"
+  type VisibilityState,
+} from '@tanstack/react-table'
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { DataTablePagination } from "./data-table-pagination"
+} from '@/components/ui/dropdown-menu'
+import { DataTablePagination } from './data-table-pagination'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -39,59 +39,48 @@ interface DataTableProps<TData, TValue> {
 }
 
 export function DataTable<TData, TValue>({
-  columns,
-  data,
-  searchKey = "title",
-  searchPlaceholder = "검색...",
-  onRowClick,
-  onSelectionChange,
-  onDeleteSelected,
-  columnLabels = {},
-  deleteButtonText = "선택 삭제",
-}: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+                                           columns,
+                                           data,
+                                           searchKey = "title",
+                                           searchPlaceholder = "검색...",
+                                           onRowClick,
+                                           onSelectionChange,
+                                           onDeleteSelected,
+                                           columnLabels = {},
+                                           deleteButtonText = "선택 삭제",
+                                         }: DataTableProps<TData, TValue>) {
+  // 상태를 useRef로 초기화하여 첫 렌더링에만 설정
+  const initialState = React.useRef({
+    sorting: [] as SortingState,
+    columnFilters: [] as ColumnFiltersState,
+    columnVisibility: {} as VisibilityState,
+    rowSelection: {} as Record<string, boolean>,
+  }).current;
 
-  // 모바일 환경에서 기본적으로 일부 컬럼 숨기기
+  const [sorting, setSorting] = React.useState<SortingState>(initialState.sorting)
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(initialState.columnFilters)
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(initialState.columnVisibility)
+  const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>(initialState.rowSelection)
+  const [searchValue, setSearchValue] = React.useState<string>("")
+
+  // 데이터가 변경될 때 선택 상태 초기화
   React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handleResize = () => {
-        const isMobileView = window.innerWidth < 768
+    setRowSelection({})
+  }, [data])
 
-        // 모바일에서 자동으로 숨길 컬럼 설정
-        if (isMobileView) {
-          const newVisibility: VisibilityState = { ...columnVisibility }
-
-          // 중요도가 낮은 컬럼들 숨기기 (예시)
-          columns.forEach((column) => {
-            const columnId = typeof column.id === "string" ? column.id : ""
-            if (["comments", "views", "lastActive"].includes(columnId)) {
-              newVisibility[columnId] = false
-            }
-          })
-
-          setColumnVisibility(newVisibility)
-        }
-      }
-
-      window.addEventListener("resize", handleResize)
-      handleResize() // 초기 로드 시 실행
-
-      return () => window.removeEventListener("resize", handleResize)
-    }
-  }, [columns])
-
+  // 테이블 인스턴스를 메모이제이션
   const table = useReactTable({
     data,
     columns,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
+    enableRowSelection: true,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: (updater) => {
       let newRowSelection: Record<string, boolean> = {}
@@ -108,60 +97,90 @@ export function DataTable<TData, TValue>({
       if (onSelectionChange) {
         const selectedRows = Object.keys(newRowSelection)
           .filter((idx) => newRowSelection[idx])
-          .map((idx) => table.getRowModel().rows[Number.parseInt(idx)].original as TData)
+          .map((idx) => {
+            const rowIndex = parseInt(idx, 10)
+            return table.getRowModel().rows[rowIndex]?.original as TData
+          })
+          .filter(Boolean)
 
         onSelectionChange(selectedRows)
       }
     },
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
   })
 
-  // 선택된 항목 삭제 함수
-  const handleDeleteSelected = () => {
+  // 검색 필드 변경 핸들러
+  const handleSearchChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setSearchValue(value)
+
+      // 검색 컬럼이 존재하는 경우에만 필터 적용
+      const column = table.getColumn(searchKey)
+      if (column) {
+        column.setFilterValue(value)
+      }
+    },
+    [searchKey, table]
+  )
+
+  // 선택된 항목 삭제 핸들러
+  const handleDeleteSelected = React.useCallback(() => {
     if (onDeleteSelected) {
       const selectedRows = Object.keys(rowSelection)
-        .filter((idx) => rowSelection[idx as keyof typeof rowSelection])
-        .map((idx) => table.getRowModel().rows[Number.parseInt(idx)].original as TData)
+        .filter((idx) => rowSelection[idx])
+        .map((idx) => {
+          const rowIndex = parseInt(idx, 10)
+          return table.getRowModel().rows[rowIndex]?.original as TData
+        })
+        .filter(Boolean)
 
       onDeleteSelected(selectedRows)
-
-      // 선택 상태 초기화 (실제 데이터 삭제는 외부에서 처리)
       setRowSelection({})
     }
-  }
+  }, [onDeleteSelected, rowSelection, table])
 
   // 행 클릭 핸들러
-  const handleRowClick = (row: Row<TData>) => {
-    if (onRowClick) {
-      onRowClick(row.original)
-    }
-  }
+  const handleRowClick = React.useCallback(
+    (row: Row<TData>) => {
+      if (onRowClick) {
+        onRowClick(row.original)
+      }
+    },
+    [onRowClick]
+  )
 
   // 컬럼 라벨 가져오기
-  const getColumnLabel = (columnId: string) => {
-    return columnLabels[columnId] || columnId
-  }
+  const getColumnLabel = React.useCallback(
+    (columnId: string) => {
+      return columnLabels[columnId] || columnId
+    },
+    [columnLabels]
+  )
 
   return (
     <div className="space-y-4">
-      {/* 모바일 뷰에서의 검색 및 필터 UI */}
+      {/* 검색 및 필터 UI */}
       <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:justify-between">
         <div className="w-full md:max-w-sm">
           <Input
             placeholder={searchPlaceholder}
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-            onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
+            value={searchValue}
+            onChange={handleSearchChange}
             className="w-full"
           />
         </div>
         <div className="flex items-center justify-between md:justify-end gap-2">
           {Object.keys(rowSelection).length > 0 && onDeleteSelected && (
-            <Button variant="destructive" onClick={handleDeleteSelected} size="sm" className="whitespace-nowrap">
+            <Button
+              variant="destructive"
+              onClick={handleDeleteSelected}
+              size="sm"
+              className="whitespace-nowrap"
+            >
               {deleteButtonText}
             </Button>
           )}
@@ -175,37 +194,33 @@ export function DataTable<TData, TValue>({
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                    >
-                      {getColumnLabel(column.id)}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(value)}
+                  >
+                    {getColumnLabel(column.id)}
+                  </DropdownMenuCheckboxItem>
+                ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
-      {/* 테이블 컨테이너 - 모바일에서 가로 스크롤 가능하도록 */}
+      {/* 테이블 */}
       <div className="rounded-md border overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id} className="whitespace-nowrap">
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    )
-                  })}
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className="whitespace-nowrap">
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
                 </TableRow>
               ))}
             </TableHeader>
@@ -217,7 +232,6 @@ export function DataTable<TData, TValue>({
                     data-state={row.getIsSelected() && "selected"}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={(e) => {
-                      // 체크박스 클릭 시 행 클릭 이벤트 방지
                       if ((e.target as HTMLElement).closest('[data-prevent-row-click="true"]')) {
                         return
                       }
@@ -243,7 +257,7 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      {/* 페이지네이션 - 모바일에서도 잘 보이도록 조정 */}
+      {/* 페이지네이션 */}
       <DataTablePagination table={table} />
     </div>
   )
