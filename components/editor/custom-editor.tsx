@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
+import React, { useEffect, useRef, useState } from 'react'
+import { CKEditor } from '@ckeditor/ckeditor5-react'
 import {
-  ClassicEditor,
   AccessibilityHelp,
   Alignment,
-  // Autoformat,
   AutoLink,
   Autosave,
   BalloonToolbar,
@@ -12,6 +10,7 @@ import {
   BlockQuote,
   BlockToolbar,
   Bold,
+  ClassicEditor,
   CloudServices,
   Code,
   CodeBlock,
@@ -75,14 +74,13 @@ import {
   TableToolbar,
   TextPartLanguage,
   TextTransformation,
-  // Title,
   TodoList,
   Underline,
   Undo,
-} from "ckeditor5";
+} from 'ckeditor5'
 
-import translations from "ckeditor5/translations/ko.js";
-import "ckeditor5/ckeditor5.css";
+import translations from 'ckeditor5/translations/ko.js'
+import 'ckeditor5/ckeditor5.css'
 
 interface CustomCKEditorProps {
   /**
@@ -95,8 +93,7 @@ interface CustomCKEditorProps {
   onContentChange: (value: string) => void;
 }
 
-const CustomEditor = React.forwardRef(
-  ({ content, onContentChange }: CustomCKEditorProps) => {
+const CustomEditor = ({ content, onContentChange }: CustomCKEditorProps) => {
     const editorContainerRef = useRef(null);
     const editorRef = useRef(null);
     const [isLayoutReady, setIsLayoutReady] = useState(false);
@@ -436,6 +433,5 @@ const CustomEditor = React.forwardRef(
       </>
     );
   }
-);
 CustomEditor.displayName = "CustomEditor";
 export default CustomEditor;
