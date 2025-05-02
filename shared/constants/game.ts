@@ -1,5 +1,10 @@
 import { KeyValue } from '../types/common'
 
+/**
+ * @name homePageAdminId
+ * @description 홈페이지 관리자 닉네임
+ */
+export const homePageAdminId = '영면';
 
 /**
  * @name guildName

@@ -12,6 +12,9 @@ import { useDeleteAnnouncement } from '@/app/(auth)/announcements/hooks/use-dele
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { columns } from '@/app/(auth)/announcements/_component/columns'
 import { SkeletonLoading } from '@/components/animated-loading'
+import { User } from 'next-auth'
+import { toast } from 'sonner'
+import { isRoleAdmin } from '@/shared/utils/utils'
 
 const columnLabels = {
   title: '제목',
@@ -20,8 +23,13 @@ const columnLabels = {
   mngDt: '작성일',
 }
 
-export default function AnnouncementsList() {
+interface AnnouncementListProps {
+  user: User;
+}
+
+export default function AnnouncementsList({user}: AnnouncementListProps) {
   const router = useRouter()
+  const isAdmin = isRoleAdmin(user)
   const [isMounted, setIsMounted] = useState<boolean>(false)
   const { data: announcementResponse, isPending } = useGetAnnouncements()
   const { mutate: deleteAnnouncements } = useDeleteAnnouncement()
@@ -34,10 +42,14 @@ export default function AnnouncementsList() {
   // 공지사항 삭제 - useCallback으로 메모이제이션
   const handleDeleteAnnouncements = useCallback((selectedRows: AnnouncementResponse[]) => {
     if (selectedRows.length === 0) return
+    if(!isAdmin) {
+      toast.error('삭제할 권한이 없습니다. 길드 마스터 혹은 서브 마스터만 삭제할 수 있습니다.');
+      return;
+    }
 
     const selectedDocIds = selectedRows.map((row) => row.docId)
     deleteAnnouncements(selectedDocIds)
-  }, [deleteAnnouncements])
+  }, [deleteAnnouncements, isAdmin])
 
   // 공지사항 상세 페이지로 이동 - useCallback으로 메모이제이션
   const handleAnnouncementClick = useCallback((announcement: AnnouncementResponse) => {
@@ -103,7 +115,8 @@ export default function AnnouncementsList() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <>
-            <div className="flex items-center justify-end mb-4 w-full">
+            {isAdmin &&
+              <div className="flex items-center justify-end mb-4 w-full">
               <Button
                 variant="outline"
                 className={"bg-primary text-black"}
@@ -112,6 +125,8 @@ export default function AnnouncementsList() {
                 작성하기
               </Button>
             </div>
+            }
+
 
             <Card>
               <CardContent className="p-3 sm:p-6">

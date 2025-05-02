@@ -27,23 +27,23 @@ export const loggedInMenuStructure: MenuItem[] = [
     href: "/schedule",
     icon: Search,
   },
-  {
-    name: "길드원 정보",
-    href: "/members",
-    icon: Users,
-    submenu: [
-      {
-        name: "직급별 분포",
-        href: "/members?tab=rank",
-        icon: BarChart,
-      },
-      {
-        name: "직업별 분포",
-        href: "/members?tab=job",
-        icon: Briefcase,
-      },
-    ],
-  },
+  // {
+  //   name: "길드원 정보",
+  //   href: "/members",
+  //   icon: Users,
+  //   submenu: [
+  //     {
+  //       name: "직급별 분포",
+  //       href: "/members?tab=rank",
+  //       icon: BarChart,
+  //     },
+  //     {
+  //       name: "직업별 분포",
+  //       href: "/members?tab=job",
+  //       icon: Briefcase,
+  //     },
+  //   ],
+  // },
   {
     name: "게시판",
     href: "/community",
@@ -78,23 +78,23 @@ export const loggedInMenuStructure: MenuItem[] = [
       },
     ],
   },
-  {
-    name: "서비스 관리",
-    href: "/admin",
-    icon: Settings,
-    submenu: [
-      {
-        name: "길드원 관리",
-        href: "/admin",
-        icon: UserCog,
-      },
-      {
-        name: "회원가입 관리",
-        href: "/admin?tab=applications",
-        icon: UserPlus,
-      },
-    ],
-  },
+  // {
+  //   name: "서비스 관리",
+  //   href: "/admin",
+  //   icon: Settings,
+  //   submenu: [
+  //     {
+  //       name: "길드원 관리",
+  //       href: "/admin",
+  //       icon: UserCog,
+  //     },
+  //     {
+  //       name: "회원가입 관리",
+  //       href: "/admin?tab=applications",
+  //       icon: UserPlus,
+  //     },
+  //   ],
+  // },
 ];
 export const loggedOutMenuStructure: MenuItem[] = [
   { name: "소개", href: "/#about" },
