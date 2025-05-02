@@ -11,7 +11,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import EditorComponent from '@/components/editor/ck-editor'
-import { compressContentImages } from '@/shared/utils/utils'
+import { compressContentImages, isRoleAdmin } from '@/shared/utils/utils'
 import { announcementFormSchema, AnnouncementFormSchema } from '@/app/(auth)/announcements/schema'
 import { User } from 'next-auth'
 import { useCreateAnnouncement } from '@/app/(auth)/announcements/hooks/use-create-announcement'
@@ -22,18 +22,20 @@ import { useUpdateAnnouncement } from '@/app/(auth)/announcements/hooks/use-upda
 
 interface AnnouncementCreateFormProps {
   user: User
-  type: "CREATE" | "UPDATE"
+  type: 'CREATE' | 'UPDATE'
   announcementData: AnnouncementResponse | null
 }
 
 export default function AnnouncementForm({ user, type, announcementData }: AnnouncementCreateFormProps) {
   const router = useRouter()
+  const isAdmin = isRoleAdmin(user)
+
   const [docId, setDocId] = useState<string | null>(null)
   const defaultValues = useMemo<AnnouncementFormSchema>(() => {
-    if (type === "UPDATE" && announcementData) {
-      const { docId, ...rest } = announcementData;
-      setDocId(docId); // 단, 이 줄은 여전히 부작용이므로 useEffect 밖에서 사용하면 안 됩니다.
-      return rest;
+    if (type === 'UPDATE' && announcementData) {
+      const { docId, ...rest } = announcementData
+      setDocId(docId) // 단, 이 줄은 여전히 부작용이므로 useEffect 밖에서 사용하면 안 됩니다.
+      return rest
     }
 
     return {
@@ -42,9 +44,9 @@ export default function AnnouncementForm({ user, type, announcementData }: Annou
       priority: 'medium',
       writeUserDocId: user.docId,
       writeUserId: user.id,
-      mngDt: null
-    };
-  }, [type, announcementData, user]);
+      mngDt: null,
+    }
+  }, [type, announcementData, user])
 
   const { mutateAsync: createAnnouncement, isPending: isCreateSubmitting } = useCreateAnnouncement()
   const { mutateAsync: updateAnnouncement, isPending: isUpdateSubmitting } = useUpdateAnnouncement()
@@ -57,16 +59,20 @@ export default function AnnouncementForm({ user, type, announcementData }: Annou
   const onSubmit: SubmitHandler<AnnouncementFormSchema> = async (data) => {
     try {
       const contentWithCompressedImages = await compressContentImages(data.content)
-      const postData = { ...data, content: contentWithCompressedImages, mngDt: moment(new Date()).format( 'YYYY-MM-DD HH:mm:ss') }
+      const postData = {
+        ...data,
+        content: contentWithCompressedImages,
+        mngDt: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+      }
 
-      if(type==="CREATE") {
+      if (type === 'CREATE') {
         await createAnnouncement(postData)
         router.push('/announcements')
       } else {
         await updateAnnouncement({
           docId: docId!,
-          data: postData
-        });
+          data: postData,
+        })
 
         router.push(`/announcements/${docId}`)
       }
@@ -76,7 +82,8 @@ export default function AnnouncementForm({ user, type, announcementData }: Annou
   }
 
   return (
-    <div className="min-h-[calc(100vh-200px)] py-8 sm:py-12 px-3 sm:px-6 lg:px-8 relative w-full max-w-full overflow-x-hidden">
+    <div
+      className="min-h-[calc(100vh-200px)] py-8 sm:py-12 px-3 sm:px-6 lg:px-8 relative w-full max-w-full overflow-x-hidden">
       {/* Animated background elements */}
       <motion.div
         className="absolute left-1/4 top-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-purple-500/10 to-blue-500/10 blur-3xl"
@@ -175,21 +182,22 @@ export default function AnnouncementForm({ user, type, announcementData }: Annou
                           내용 <span className="text-red-500">*</span>
                         </FormLabel>
                         <FormControl>
-                            <EditorComponent content={field.value} onContentChange={field.onChange} />
+                          <EditorComponent content={field.value} onContentChange={field.onChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </CardContent>
-                <CardFooter className="flex justify-between mt-4" >
-                  <Button type="button" variant="outline"  onClick={() => router.back()}>
+                <CardFooter className="flex justify-between mt-4">
+                  <Button type="button" variant="outline" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     돌아가기
                   </Button>
-                  <Button type="submit" disabled={isCreateSubmitting||isUpdateSubmitting}>
-                    {(isCreateSubmitting || isUpdateSubmitting) ? (
-                      <span className="flex items-center">
+                  {isAdmin &&
+                    <Button type="submit" disabled={isCreateSubmitting || isUpdateSubmitting}>
+                      {(isCreateSubmitting || isUpdateSubmitting) ? (
+                        <span className="flex items-center">
                         <svg
                           className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                           xmlns="http://www.w3.org/2000/svg"
@@ -212,13 +220,13 @@ export default function AnnouncementForm({ user, type, announcementData }: Annou
                         </svg>
                         저장 중...
                       </span>
-                    ) : (
-                      <span className="flex items-center">
+                      ) : (
+                        <span className="flex items-center">
                         <Save className="mr-2 h-4 w-4" />
                         저장하기
                       </span>
-                    )}
-                  </Button>
+                      )}
+                    </Button>}
                 </CardFooter>
               </form>
             </Form>

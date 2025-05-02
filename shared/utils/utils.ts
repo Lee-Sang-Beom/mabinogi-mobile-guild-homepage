@@ -1,4 +1,20 @@
 import bcrypt from "bcryptjs";
+import { User } from 'next-auth'
+import { homePageAdminId } from '@/shared/constants/game'
+
+/**
+ * @name isRoleAdmin
+ * @description 홈페이지 관리자인지 검사
+ * @returns true / false
+ */
+export function isRoleAdmin(user: User) {
+  return (
+    user.role === "GUILD_MASTER" ||
+    user.role === "GUILD_SUB_MASTER" ||
+    user.id === homePageAdminId
+  );
+}
+
 /**
  * @name encryptPassword
  * @description 비밀번호를 bcrypt를 사용하여 암호화합니다.

@@ -8,5 +8,5 @@ export default async function Page() {
   if (!session || !session.user) {
     redirect('/login');
   }
-  return <AnnouncementsList />
+  return <AnnouncementsList user={session.user}/>
 }

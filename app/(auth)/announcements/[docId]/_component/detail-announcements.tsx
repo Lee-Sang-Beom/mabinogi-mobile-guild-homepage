@@ -10,6 +10,8 @@ import { AnnouncementResponse } from '@/app/(auth)/announcements/api'
 import { User } from 'next-auth'
 import DisplayEditorContent from '@/components/editor/display-editor-content'
 import { useDeleteAnnouncement } from '@/app/(auth)/announcements/hooks/use-delete-announcement'
+import { isRoleAdmin } from '@/shared/utils/utils'
+import { cn } from '@/lib/utils'
 
 interface AnnouncementDetailProps {
   user: User;
@@ -32,6 +34,7 @@ const getPriorityBadge = (priority: string) => {
 export default function AnnouncementDetailPage({ user, announcementData }: AnnouncementDetailProps) {
   const router = useRouter()
   const { mutate: deleteAnnouncements } = useDeleteAnnouncement()
+  const isAdmin = isRoleAdmin(user)
 
   // 공지사항 삭제
   const handleDeleteAnnouncements = async () => {
@@ -82,12 +85,12 @@ export default function AnnouncementDetailPage({ user, announcementData }: Annou
               <div className="border-t border-primary/10"></div>
               <DisplayEditorContent content={announcementData.content || ''} />
             </CardContent>
-            <CardFooter className="flex justify-between">
+            <CardFooter className={cn('flex justify-between', !isAdmin && "flex-row-reverse")}>
               <Button variant="outline" onClick={() => router.push('/announcements')}>
                 목록으로
               </Button>
               {
-                user.docId === announcementData.writeUserDocId &&
+                isAdmin &&
                 <div className="flex gap-2">
                   <Button variant="destructive" onClick={()=>{handleDeleteAnnouncements()}}>삭제하기</Button>
                   <Button

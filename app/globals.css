@@ -144,6 +144,11 @@
   font-family: "Noto Sans KR", sans-serif;
 }
 
+/* ========== toast창 왼쪽 마진 제거 ========== */
+li[data-sonner-toast] {
+  margin-left: 0 !important;
+}
+
 /* ========== 숫자형 input에 대한 화살표 제거 ========== */
 input[type="number"] {
   -moz-appearance: textfield; /* Firefox에서 화살표 제거 */
