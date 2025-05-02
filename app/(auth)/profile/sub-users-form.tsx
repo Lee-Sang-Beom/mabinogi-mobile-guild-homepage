@@ -23,7 +23,7 @@ import { User } from 'next-auth'
 import { useGetSubusersBydocId } from '@/app/(auth)/profile/hooks/use-get-subusers-bydocid'
 import { jobTypeOptions } from '@/shared/constants/game'
 import { JobType } from '@/shared/types/game'
-import { useAddSubUser } from '@/app/(auth)/profile/hooks/user-add-subusers'
+import { useCreateSubUser } from '@/app/(auth)/profile/hooks/user-create-subusers'
 import { useDeleteSubUser } from '@/app/(auth)/profile/hooks/user-delete-subusers'
 
 interface SubcharactersFormProps {
@@ -34,7 +34,7 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
   const { data } = useGetSubusersBydocId(user.docId);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
-  const { mutate: addSubUser, isPending: isAddUserPending } = useAddSubUser(user.docId, setIsAddDialogOpen)
+  const { mutate: createSubUser, isPending: isAddUserPending } = useCreateSubUser(user.docId, setIsAddDialogOpen)
   const { mutate: deleteSubUser, isPending: isDeleteUserPending } = useDeleteSubUser(user.docId)
 
   const form = useForm<z.infer<typeof subUsersFormSchema>>({
@@ -46,8 +46,8 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
     },
   })
 
-  function onAddSubUser(values: z.infer<typeof subUsersFormSchema>) {
-    addSubUser(values)
+  function onCreateSubUser(values: z.infer<typeof subUsersFormSchema>) {
+    createSubUser(values)
     form.reset()
   }
 
@@ -76,7 +76,7 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
                   <DialogDescription>새로운 서브캐릭터 정보를 입력하세요.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onAddSubUser)} className="space-y-4">
+                  <form onSubmit={form.handleSubmit(onCreateSubUser)} className="space-y-4">
                     <FormField
                       control={form.control}
                       name="id"

@@ -6,11 +6,11 @@ import { subUserService } from '@/service/sub-user-service'
 import { subUsersFormSchema } from '@/app/(auth)/profile/schema'
 import { Dispatch, SetStateAction } from 'react'
 
-export function useAddSubUser(docId: string, setIsAddDialogOpen: Dispatch<SetStateAction<boolean>>) {
+export function useCreateSubUser(docId: string, setIsAddDialogOpen: Dispatch<SetStateAction<boolean>>) {
   const queryClient = useQueryClient();
 
   return useMutation<ApiResponse<string | null>, Error, z.infer<typeof subUsersFormSchema>>({
-    mutationFn: subUserService.addSubUser,
+    mutationFn: subUserService.createSubUser,
     onSuccess: (response) => {
       if (response.success) {
         toast.success('서브캐릭터가 추가되었습니다.');

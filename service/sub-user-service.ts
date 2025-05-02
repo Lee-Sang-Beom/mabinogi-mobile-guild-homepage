@@ -84,10 +84,10 @@ class SubUserService {
   }
 
   /**
-   * @name addSubUser
+   * @name createSubUser
    * @description 서브유저 추가
    */
-  async addSubUser (values: z.infer<typeof subUsersFormSchema>):Promise<ApiResponse<string | null>> {
+  async createSubUser (values: z.infer<typeof subUsersFormSchema>):Promise<ApiResponse<string | null>> {
     try {
       // ID 중복 확인
       if (await userService.checkDuplicateId(values.id)) {
