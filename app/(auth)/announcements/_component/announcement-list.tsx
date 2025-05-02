@@ -62,7 +62,7 @@ export default function AnnouncementsList() {
   }, [])
 
   return (
-    <div className="min-h-[calc(100vh-200px)] py-8 sm:py-12 px-3 sm:px-6 lg:px-8 relative">
+    <div className="min-h-[calc(100vh-200px)] py-8 sm:py-12 px-3 sm:px-6 lg:px-8 relative w-full max-w-full overflow-x-hidden">
       {/* 배경 애니메이션 */}
       <motion.div
         className="absolute left-1/4 top-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-purple-500/10 to-blue-500/10 blur-3xl"
@@ -106,6 +106,7 @@ export default function AnnouncementsList() {
             <div className="flex items-center justify-end mb-4 w-full">
               <Button
                 variant="outline"
+                className={"bg-primary text-black"}
                 onClick={() => router.push('/announcements/create')}
               >
                 작성하기
