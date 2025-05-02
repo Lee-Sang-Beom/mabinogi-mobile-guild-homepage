@@ -91,7 +91,7 @@ export function AnimatedLoading({
             className="relative mx-auto mb-4"
           >
             {/* CSS 애니메이션을 사용하여 회전 구현 */}
-            <div className="animate-spin flex items-center justify-center w-12 h-12">
+            <div className="animate-spin flex items-center justify-center w-full h-12">
               <Loader2 className="w-12 h-12 text-primary" />
             </div>
           </motion.div>

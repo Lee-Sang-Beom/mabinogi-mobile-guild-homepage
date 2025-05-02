@@ -113,7 +113,7 @@ export default function Dashboard() {
                 repeatType: "reverse",
               }}
             >
-              {guildInfo.name} 길드 대시보드
+              대시보드
             </motion.span>
           </h1>
           <p className="text-muted-foreground mt-2">길드의 최신 정보와 활동을 확인하세요.</p>
