@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { ApiResponse } from '@/shared/types/api'
-import { AnnouncementFormSchema } from '@/app/(auth)/announcements/schema'
 import { announcementService } from '@/service/announcement-service'
+import { NoticeFormSchema } from '@/shared/notice/schema'
 
 export function useCreateAnnouncement() {
   const queryClient = useQueryClient()
 
-  return useMutation<ApiResponse<string | null>, Error, AnnouncementFormSchema>({
+  return useMutation<ApiResponse<string | null>, Error, NoticeFormSchema>({
     mutationFn: (data) => announcementService.create(data),
     onSuccess: (response) => {
       if (response.success) {

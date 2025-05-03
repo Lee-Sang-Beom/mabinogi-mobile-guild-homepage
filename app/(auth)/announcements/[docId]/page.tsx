@@ -24,5 +24,5 @@ export default async function Page(props: PageProps) {
     redirect('/login');
   }
 
-  return <AnnouncementDetailPage user={session.user} announcementData={response.data} />;
+  return <AnnouncementDetailPage user={session.user} noticeData={response.data} />;
 }

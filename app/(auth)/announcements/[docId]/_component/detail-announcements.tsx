@@ -4,41 +4,22 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Bell, Calendar, User as UserIcon } from 'lucide-react'
-import { AnnouncementResponse } from '@/app/(auth)/announcements/api'
-import { User } from 'next-auth'
 import DisplayEditorContent from '@/components/editor/display-editor-content'
 import { useDeleteAnnouncement } from '@/app/(auth)/announcements/hooks/use-delete-announcement'
 import { isRoleAdmin } from '@/shared/utils/utils'
 import { cn } from '@/lib/utils'
+import { NoticeDetailProps } from '@/shared/notice/internal'
+import { getPriorityBadge } from '@/shared/notice/utils'
 
-interface AnnouncementDetailProps {
-  user: User;
-  announcementData: AnnouncementResponse;
-}
-
-const getPriorityBadge = (priority: string) => {
-  switch (priority) {
-    case 'high':
-      return <Badge variant="destructive">중요</Badge>
-    case 'medium':
-      return <Badge variant="default">일반</Badge>
-    case 'low':
-      return <Badge variant="secondary">참고</Badge>
-    default:
-      return null
-  }
-}
-
-export default function AnnouncementDetailPage({ user, announcementData }: AnnouncementDetailProps) {
+export default function AnnouncementDetailPage({ user, noticeData }: NoticeDetailProps) {
   const router = useRouter()
   const { mutate: deleteAnnouncements } = useDeleteAnnouncement()
   const isAdmin = isRoleAdmin(user)
 
   // 공지사항 삭제
   const handleDeleteAnnouncements = async () => {
-    await deleteAnnouncements(announcementData.docId)
+    await deleteAnnouncements(noticeData.docId)
     router.push('/announcements')
   }
 
@@ -62,28 +43,28 @@ export default function AnnouncementDetailPage({ user, announcementData }: Annou
         transition={{ repeat: Number.POSITIVE_INFINITY, duration: 25, ease: 'easeInOut', delay: 2 }}
       />
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl overflow-hidden">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bell className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-xl">타이틀</CardTitle>
+                  <CardTitle className="text-xl">{noticeData.title}</CardTitle>
                 </div>
-                {getPriorityBadge(announcementData.priority)}
+                {getPriorityBadge(noticeData.priority)}
               </div>
               <div className="flex items-center text-sm text-muted-foreground mt-4">
                 <UserIcon className="h-3 w-3 mr-1" />
-                {announcementData.writeUserId}
+                {noticeData.writeUserId}
                 <p className={'mx-2'}>{'/'}</p>
                 <Calendar className="h-3 w-3 mr-1" />
-                {announcementData.mngDt}
+                {noticeData.mngDt}
               </div>
             </CardHeader>
             <CardContent>
               <div className="border-t border-primary/10"></div>
-              <DisplayEditorContent content={announcementData.content || ''} />
+              <DisplayEditorContent content={noticeData.content || ''} />
             </CardContent>
             <CardFooter className={cn('flex justify-between', !isAdmin && "flex-row-reverse")}>
               <Button variant="outline" onClick={() => router.push('/announcements')}>
@@ -97,7 +78,7 @@ export default function AnnouncementDetailPage({ user, announcementData }: Annou
                     variant="outline"
                     className={'text-black bg-primary'}
                     onClick={() => {
-                      router.push(`/announcements/${announcementData.docId}/edit`)
+                      router.push(`/announcements/${noticeData.docId}/edit`)
                     }}
                   >
                     수정하기

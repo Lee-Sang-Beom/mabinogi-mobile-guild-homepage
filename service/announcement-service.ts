@@ -1,8 +1,8 @@
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '@/shared/firestore'
 import { ApiResponse } from '@/shared/types/api'
-import { AnnouncementResponse } from '@/app/(auth)/announcements/api'
-import { AnnouncementFormSchema } from '@/app/(auth)/announcements/schema'
+import { NoticeResponse } from '@/shared/notice/api';
+import { NoticeFormSchema } from '@/shared/notice/schema';
 
 
 class AnnouncementService {
@@ -11,15 +11,15 @@ class AnnouncementService {
   /**
    * 전체 공지사항 목록 조회
    */
-  async get(): Promise<ApiResponse<AnnouncementResponse[]>> {
+  async get(): Promise<ApiResponse<NoticeResponse[]>> {
     try {
       const snapshot = await getDocs(this.announcementCollection);
-      const announcements: AnnouncementResponse[] = snapshot.docs.map((docSnap) => {
+      const announcements: NoticeResponse[] = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
         return {
          ...data,
           docId: docSnap.id,
-        } as AnnouncementResponse;
+        } as NoticeResponse;
       });
 
       return {
@@ -41,7 +41,7 @@ class AnnouncementService {
   /**
    * 특정 공지사항 조회 (docId 기준)
    */
-  async getByDocId(docId: string): Promise<ApiResponse<AnnouncementResponse | null>> {
+  async getByDocId(docId: string): Promise<ApiResponse<NoticeResponse | null>> {
     try {
       const docRef = doc(db, 'collection_announcement', docId);
       const docSnap = await getDoc(docRef);
@@ -55,10 +55,10 @@ class AnnouncementService {
       }
 
       const data = docSnap.data();
-      const announcement: AnnouncementResponse = {
+      const announcement: NoticeResponse = {
         ...data,
         docId: docSnap.id,
-      } as AnnouncementResponse;
+      } as NoticeResponse;
 
       return {
         success: true,
@@ -78,7 +78,7 @@ class AnnouncementService {
   /**
    * 공지사항 생성
    */
-  async create(data: AnnouncementFormSchema): Promise<ApiResponse<string | null>> {
+  async create(data: NoticeFormSchema): Promise<ApiResponse<string | null>> {
     try {
       const docRef = await addDoc(this.announcementCollection, data);
       return {
@@ -99,7 +99,7 @@ class AnnouncementService {
   /**
    * 공지사항 수정 (docId 기준 덮어쓰기)
    */
-  async update(docId: string, data: AnnouncementFormSchema): Promise<ApiResponse<string | null>> {
+  async update(docId: string, data: NoticeFormSchema): Promise<ApiResponse<string | null>> {
     try {
       const docRef = doc(db, 'collection_announcement', docId);
       await updateDoc(docRef, data);

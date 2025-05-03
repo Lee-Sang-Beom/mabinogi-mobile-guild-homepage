@@ -24,5 +24,5 @@ export default async function Page(props: PageProps) {
     redirect('/login');
   }
 
-  return <AnnouncementForm user={session.user} type={"UPDATE"} announcementData={response.data} />
+  return <AnnouncementForm user={session.user} type={"UPDATE"} noticeResponse={response.data} />
 }

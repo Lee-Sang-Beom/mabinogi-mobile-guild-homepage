@@ -7,40 +7,30 @@ import { guildName } from '@/shared/constants/game'
 import { DataTable } from '@/components/table/data-table'
 import { useRouter } from 'next/navigation'
 import { useGetAnnouncements } from '@/app/(auth)/announcements/hooks/use-get-announcements'
-import { AnnouncementResponse } from '@/app/(auth)/announcements/api'
 import { useDeleteAnnouncement } from '@/app/(auth)/announcements/hooks/use-delete-announcement'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { columns } from '@/app/(auth)/announcements/_component/columns'
 import { SkeletonLoading } from '@/components/animated-loading'
-import { User } from 'next-auth'
 import { toast } from 'sonner'
 import { isRoleAdmin } from '@/shared/utils/utils'
+import { NoticeListProps } from '@/shared/notice/internal'
+import { noticeColumnLabels, noticeColumns } from '@/shared/notice/columns'
+import { NoticeResponse } from '@/shared/notice/api'
 
-const columnLabels = {
-  title: '제목',
-  priority: '중요도',
-  writeUserId: '작성자',
-  mngDt: '작성일',
-}
 
-interface AnnouncementListProps {
-  user: User;
-}
-
-export default function AnnouncementsList({user}: AnnouncementListProps) {
+export default function AnnouncementsList({user}: NoticeListProps) {
   const router = useRouter()
   const isAdmin = isRoleAdmin(user)
   const [isMounted, setIsMounted] = useState<boolean>(false)
-  const { data: announcementResponse, isPending } = useGetAnnouncements()
+  const { data: notice, isPending } = useGetAnnouncements()
   const { mutate: deleteAnnouncements } = useDeleteAnnouncement()
 
   // 데이터 메모이제이션
   const announcementData = useMemo(() => {
-    return announcementResponse?.data || []
-  }, [announcementResponse])
+    return notice?.data || []
+  }, [notice])
 
   // 공지사항 삭제 - useCallback으로 메모이제이션
-  const handleDeleteAnnouncements = useCallback((selectedRows: AnnouncementResponse[]) => {
+  const handleDeleteAnnouncements = useCallback((selectedRows: NoticeResponse[]) => {
     if (selectedRows.length === 0) return
     if(!isAdmin) {
       toast.error('삭제할 권한이 없습니다. 길드 마스터 혹은 서브 마스터만 삭제할 수 있습니다.');
@@ -52,13 +42,13 @@ export default function AnnouncementsList({user}: AnnouncementListProps) {
   }, [deleteAnnouncements, isAdmin])
 
   // 공지사항 상세 페이지로 이동 - useCallback으로 메모이제이션
-  const handleAnnouncementClick = useCallback((announcement: AnnouncementResponse) => {
+  const handleAnnouncementClick = useCallback((announcement: NoticeResponse) => {
     if (!announcement?.docId) return
     router.push(`/announcements/${announcement.docId}`)
   }, [router])
 
   // 선택 변경 핸들러 - useCallback으로 메모이제이션
-  const handleSelectionChange = useCallback((selectedRows: AnnouncementResponse[]) => {
+  const handleSelectionChange = useCallback((selectedRows: NoticeResponse[]) => {
     // 필요한 경우 여기서 선택된 행 처리
     console.log('선택된 행:', selectedRows.length)
   }, [])
@@ -133,14 +123,14 @@ export default function AnnouncementsList({user}: AnnouncementListProps) {
                 {isMounted && !isPending ? (
                   <DataTable
                     key={`announcements-table-${announcementData.length}`}
-                    columns={columns}
+                    columns={noticeColumns}
                     data={announcementData}
                     searchKey="title"
                     searchPlaceholder="제목으로 검색..."
                     onRowClick={handleAnnouncementClick}
                     onSelectionChange={handleSelectionChange}
                     onDeleteSelected={handleDeleteAnnouncements}
-                    columnLabels={columnLabels}
+                    columnLabels={noticeColumnLabels}
                     deleteButtonText="선택 삭제"
                   />
                 ) : <SkeletonLoading />  }

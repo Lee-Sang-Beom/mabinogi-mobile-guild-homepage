@@ -1,18 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ApiResponse } from '@/shared/types/api';
-import { AnnouncementFormSchema } from '@/app/(auth)/announcements/schema';
 import { announcementService } from '@/service/announcement-service';
-
-interface UpdateAnnouncementVariables {
-  docId: string;
-  data: AnnouncementFormSchema;
-}
+import { UpdateNoticeRequest } from '@/shared/notice/api';
 
 export function useUpdateAnnouncement() {
   const queryClient = useQueryClient();
 
-  return useMutation<ApiResponse<string | null>, Error, UpdateAnnouncementVariables>({
+  return useMutation<ApiResponse<string | null>, Error, UpdateNoticeRequest>({
     mutationFn: ({ docId, data }) => announcementService.update(docId, data),
     onSuccess: (response) => {
       if (response.success) {

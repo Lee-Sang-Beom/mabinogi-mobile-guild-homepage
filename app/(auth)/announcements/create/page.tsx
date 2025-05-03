@@ -8,5 +8,5 @@ export default async function Page(){
   if(!session || !session.user) {
     redirect("/login");
   }
-  return <AnnouncementForm user={session.user} type={"CREATE"} announcementData={null} />
+  return <AnnouncementForm user={session.user} type={"CREATE"} noticeResponse={null} />
 }

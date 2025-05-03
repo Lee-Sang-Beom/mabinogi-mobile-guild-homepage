@@ -12,28 +12,22 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import EditorComponent from '@/components/editor/ck-editor'
 import { compressContentImages, isRoleAdmin } from '@/shared/utils/utils'
-import { announcementFormSchema, AnnouncementFormSchema } from '@/app/(auth)/announcements/schema'
-import { User } from 'next-auth'
 import { useCreateAnnouncement } from '@/app/(auth)/announcements/hooks/use-create-announcement'
 import moment from 'moment'
-import { AnnouncementResponse } from '@/app/(auth)/announcements/api'
 import { useMemo, useState } from 'react'
 import { useUpdateAnnouncement } from '@/app/(auth)/announcements/hooks/use-update-announcement'
+import { noticeFormSchema, NoticeFormSchema } from '@/shared/notice/schema'
+import { NoticeFormProps } from '@/shared/notice/internal'
 
-interface AnnouncementCreateFormProps {
-  user: User
-  type: 'CREATE' | 'UPDATE'
-  announcementData: AnnouncementResponse | null
-}
 
-export default function AnnouncementForm({ user, type, announcementData }: AnnouncementCreateFormProps) {
+export default function AnnouncementForm({ user, type, noticeResponse }: NoticeFormProps) {
   const router = useRouter()
   const isAdmin = isRoleAdmin(user)
 
   const [docId, setDocId] = useState<string | null>(null)
-  const defaultValues = useMemo<AnnouncementFormSchema>(() => {
-    if (type === 'UPDATE' && announcementData) {
-      const { docId, ...rest } = announcementData
+  const defaultValues = useMemo<NoticeFormSchema>(() => {
+    if (type === 'UPDATE' && noticeResponse) {
+      const { docId, ...rest } = noticeResponse
       setDocId(docId) // 단, 이 줄은 여전히 부작용이므로 useEffect 밖에서 사용하면 안 됩니다.
       return rest
     }
@@ -46,17 +40,17 @@ export default function AnnouncementForm({ user, type, announcementData }: Annou
       writeUserId: user.id,
       mngDt: null,
     }
-  }, [type, announcementData, user])
+  }, [type, noticeResponse, user])
 
   const { mutateAsync: createAnnouncement, isPending: isCreateSubmitting } = useCreateAnnouncement()
   const { mutateAsync: updateAnnouncement, isPending: isUpdateSubmitting } = useUpdateAnnouncement()
-  const form = useForm<AnnouncementFormSchema>({
-    resolver: zodResolver(announcementFormSchema),
+  const form = useForm<NoticeFormSchema>({
+    resolver: zodResolver(noticeFormSchema),
     defaultValues: defaultValues,
   })
 
   // 폼 제출 처리
-  const onSubmit: SubmitHandler<AnnouncementFormSchema> = async (data) => {
+  const onSubmit: SubmitHandler<NoticeFormSchema> = async (data) => {
     try {
       const contentWithCompressedImages = await compressContentImages(data.content)
       const postData = {
@@ -102,7 +96,7 @@ export default function AnnouncementForm({ user, type, announcementData }: Annou
         transition={{ repeat: Number.POSITIVE_INFINITY, duration: 25, ease: 'easeInOut', delay: 2 }}
       />
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <motion.div
           className="mb-6"
           initial={{ opacity: 0, y: 20 }}
