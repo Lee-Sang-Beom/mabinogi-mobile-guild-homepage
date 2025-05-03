@@ -4,11 +4,25 @@ import type { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { AnnouncementResponse } from '@/app/(auth)/announcements/api'
 import { DataTableColumnHeader } from '@/components/table/column-header'
+import { NoticeResponse } from "./api"
 
-// 컬럼 정의
-export const columns: ColumnDef<AnnouncementResponse>[] = [
+/**
+ * @name noticeColumnLabels
+ * @description 출력할 columns의 label
+ */
+export const noticeColumnLabels = {
+  title: '제목',
+  priority: '중요도',
+  writeUserId: '작성자',
+  mngDt: '작성일',
+}
+
+/**
+ * @name noticeColumns
+ * @description 게시판 형태의 컬럼 정의
+ */
+export const noticeColumns: ColumnDef<NoticeResponse>[] = [
   {
     id: "select",
     header: ({ table }) => {

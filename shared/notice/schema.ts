@@ -1,6 +1,6 @@
 import * as z from 'zod'
 
-export const announcementFormSchema = z.object({
+export const noticeFormSchema = z.object({
   title: z.string().min(1, { message: '제목을 입력해주세요' }),
   content: z.string().min(1, { message: '내용을 입력해주세요' }),
   priority: z.enum(['high', 'medium', 'low'], {
@@ -10,4 +10,4 @@ export const announcementFormSchema = z.object({
   writeUserId: z.string(),
   mngDt: z.string().nullable()
 })
-export type AnnouncementFormSchema = z.infer<typeof announcementFormSchema>
+export type NoticeFormSchema = z.infer<typeof noticeFormSchema>

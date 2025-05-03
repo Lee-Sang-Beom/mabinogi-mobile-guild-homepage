@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button'
 import { guildName } from '@/shared/constants/game'
 import { DataTable } from '@/components/table/data-table'
 import { useRouter } from 'next/navigation'
-import { useGetAnnouncements } from '@/app/(auth)/announcements/hooks/use-get-announcements'
-import { useDeleteAnnouncement } from '@/app/(auth)/announcements/hooks/use-delete-announcement'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SkeletonLoading } from '@/components/animated-loading'
 import { toast } from 'sonner'
@@ -15,21 +13,23 @@ import { isRoleAdmin } from '@/shared/utils/utils'
 import { NoticeListProps } from '@/shared/notice/internal'
 import { noticeColumnLabels, noticeColumns } from '@/shared/notice/columns'
 import { NoticeResponse } from '@/shared/notice/api'
+import { useGetUpdates } from '../hooks/use-get-updates'
+import { useDeleteUpdate } from '../hooks/use-delete-update'
 
 
-export default function AnnouncementsList({user}: NoticeListProps) {
+export default function UpdateList({user}: NoticeListProps) {
   const router = useRouter()
   const isAdmin = isRoleAdmin(user)
   const [isMounted, setIsMounted] = useState<boolean>(false)
-  const { data: notice, isPending } = useGetAnnouncements()
-  const { mutate: deleteAnnouncements } = useDeleteAnnouncement()
+  const { data: notice, isPending } = useGetUpdates()
+  const { mutate: deleteUpdates } = useDeleteUpdate()
 
   // 데이터 메모이제이션
   const noticeData = useMemo(() => {
     return notice?.data || []
   }, [notice])
 
-  // 공지사항 삭제 - useCallback으로 메모이제이션
+  // 업데이트 삭제 - useCallback으로 메모이제이션
   const handleDeleteNotices = useCallback((selectedRows: NoticeResponse[]) => {
     if (selectedRows.length === 0) return
     if(!isAdmin) {
@@ -38,13 +38,13 @@ export default function AnnouncementsList({user}: NoticeListProps) {
     }
 
     const selectedDocIds = selectedRows.map((row) => row.docId)
-    deleteAnnouncements(selectedDocIds)
-  }, [deleteAnnouncements, isAdmin])
+    deleteUpdates(selectedDocIds)
+  }, [deleteUpdates, isAdmin])
 
-  // 공지사항 상세 페이지로 이동 - useCallback으로 메모이제이션
+  // 업데이트 상세 페이지로 이동 - useCallback으로 메모이제이션
   const handleNoticeClick = useCallback((notice: NoticeResponse) => {
     if (!notice?.docId) return
-    router.push(`/announcements/${notice.docId}`)
+    router.push(`/updates/${notice.docId}`)
   }, [router])
 
   // 선택 변경 핸들러 - useCallback으로 메모이제이션
@@ -92,10 +92,10 @@ export default function AnnouncementsList({user}: NoticeListProps) {
         >
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
-              공지사항
+              업데이트
             </span>
           </h1>
-          <p className="text-muted-foreground mt-2">{guildName}의 중요 소식과 안내사항을 확인하세요.</p>
+          <p className="text-muted-foreground mt-2">{guildName} 홈페이지의 중요 소식과 안내사항을 확인하세요.</p>
         </motion.div>
 
         <motion.div
@@ -110,7 +110,7 @@ export default function AnnouncementsList({user}: NoticeListProps) {
               <Button
                 variant="outline"
                 className={"bg-primary text-black"}
-                onClick={() => router.push('/announcements/create')}
+                onClick={() => router.push('/updates/create')}
               >
                 작성하기
               </Button>
@@ -122,7 +122,7 @@ export default function AnnouncementsList({user}: NoticeListProps) {
               <CardContent className="p-3 sm:p-6">
                 {isMounted && !isPending ? (
                   <DataTable
-                    key={`announcements-table-${noticeData.length}`}
+                    key={`updates-table-${noticeData.length}`}
                     columns={noticeColumns}
                     data={noticeData}
                     searchKey="title"

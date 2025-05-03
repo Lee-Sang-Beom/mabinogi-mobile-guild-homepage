@@ -6,21 +6,21 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button'
 import { Bell, Calendar, User as UserIcon } from 'lucide-react'
 import DisplayEditorContent from '@/components/editor/display-editor-content'
-import { useDeleteAnnouncement } from '@/app/(auth)/announcements/hooks/use-delete-announcement'
 import { isRoleAdmin } from '@/shared/utils/utils'
 import { cn } from '@/lib/utils'
 import { NoticeDetailProps } from '@/shared/notice/internal'
 import { getPriorityBadge } from '@/shared/notice/utils'
+import { useDeleteUpdate } from '../../hooks/use-delete-update'
 
-export default function AnnouncementDetailPage({ user, noticeData }: NoticeDetailProps) {
+export default function UpdateDetailPage({ user, noticeData }: NoticeDetailProps) {
   const router = useRouter()
-  const { mutate: deleteAnnouncements } = useDeleteAnnouncement()
+  const { mutate: deleteUpdates } = useDeleteUpdate()
   const isAdmin = isRoleAdmin(user)
 
   // 공지사항 삭제
-  const handleDeleteAnnouncements = async () => {
-    await deleteAnnouncements(noticeData.docId)
-    router.push('/announcements')
+  const handleDeleteNotice = async () => {
+    await deleteUpdates(noticeData.docId)
+    router.push('/updates')
   }
 
   return (
@@ -67,18 +67,18 @@ export default function AnnouncementDetailPage({ user, noticeData }: NoticeDetai
               <DisplayEditorContent content={noticeData.content || ''} />
             </CardContent>
             <CardFooter className={cn('flex justify-between', !isAdmin && "flex-row-reverse")}>
-              <Button variant="outline" onClick={() => router.push('/announcements')}>
+              <Button variant="outline" onClick={() => router.push('/updates')}>
                 목록으로
               </Button>
               {
                 isAdmin &&
                 <div className="flex gap-2">
-                  <Button variant="destructive" onClick={()=>{handleDeleteAnnouncements()}}>삭제하기</Button>
+                  <Button variant="destructive" onClick={()=>{handleDeleteNotice()}}>삭제하기</Button>
                   <Button
                     variant="outline"
                     className={'text-black bg-primary'}
                     onClick={() => {
-                      router.push(`/announcements/${noticeData.docId}/edit`)
+                      router.push(`/updates/${noticeData.docId}/edit`)
                     }}
                   >
                     수정하기

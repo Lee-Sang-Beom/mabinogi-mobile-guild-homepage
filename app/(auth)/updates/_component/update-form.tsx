@@ -12,15 +12,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import EditorComponent from '@/components/editor/ck-editor'
 import { compressContentImages, isRoleAdmin } from '@/shared/utils/utils'
-import { useCreateAnnouncement } from '@/app/(auth)/announcements/hooks/use-create-announcement'
 import moment from 'moment'
 import { useMemo, useState } from 'react'
-import { useUpdateAnnouncement } from '@/app/(auth)/announcements/hooks/use-update-announcement'
 import { noticeFormSchema, NoticeFormSchema } from '@/shared/notice/schema'
 import { NoticeFormProps } from '@/shared/notice/internal'
+import { useCreateUpdate } from '../hooks/use-create-update'
+import { useUpdateUpdates } from '../hooks/use-update-update'
 
 
-export default function AnnouncementForm({ user, type, noticeResponse }: NoticeFormProps) {
+export default function UpdateForm({ user, type, noticeResponse }: NoticeFormProps) {
   const router = useRouter()
   const isAdmin = isRoleAdmin(user)
 
@@ -28,7 +28,7 @@ export default function AnnouncementForm({ user, type, noticeResponse }: NoticeF
   const defaultValues = useMemo<NoticeFormSchema>(() => {
     if (type === 'UPDATE' && noticeResponse) {
       const { docId, ...rest } = noticeResponse
-      setDocId(docId) // 단, 이 줄은 여전히 부작용이므로 useEffect 밖에서 사용하면 안 됩니다.
+      setDocId(docId) 
       return rest
     }
 
@@ -42,8 +42,8 @@ export default function AnnouncementForm({ user, type, noticeResponse }: NoticeF
     }
   }, [type, noticeResponse, user])
 
-  const { mutateAsync: createAnnouncement, isPending: isCreateSubmitting } = useCreateAnnouncement()
-  const { mutateAsync: updateAnnouncement, isPending: isUpdateSubmitting } = useUpdateAnnouncement()
+  const { mutateAsync: createUpdate, isPending: isCreateSubmitting } = useCreateUpdate()
+  const { mutateAsync: updateUpdates, isPending: isUpdateSubmitting } = useUpdateUpdates()
   const form = useForm<NoticeFormSchema>({
     resolver: zodResolver(noticeFormSchema),
     defaultValues: defaultValues,
@@ -60,18 +60,18 @@ export default function AnnouncementForm({ user, type, noticeResponse }: NoticeF
       }
 
       if (type === 'CREATE') {
-        await createAnnouncement(postData)
-        router.push('/announcements')
+        await createUpdate(postData)
+        router.push('/updates')
       } else {
-        await updateAnnouncement({
+        await updateUpdates({
           docId: docId!,
           data: postData,
         })
 
-        router.push(`/announcements/${docId}`)
+        router.push(`/updates/${docId}`)
       }
     } catch (error) {
-      console.error('공지사항 등록 오류:', error)
+      console.error('업데이트 등록 오류:', error)
     }
   }
 
@@ -105,7 +105,7 @@ export default function AnnouncementForm({ user, type, noticeResponse }: NoticeF
         >
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
-              공지사항 작성
+              업데이트 작성
             </span>
           </h1>
           <p className="text-muted-foreground mt-2">길드원들에게 전달할 중요한 소식을 작성해주세요.</p>
@@ -120,7 +120,7 @@ export default function AnnouncementForm({ user, type, noticeResponse }: NoticeF
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardHeader>
-                  <CardTitle className="sr-only">새 공지사항</CardTitle>
+                  <CardTitle className="sr-only">새 업데이트</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -133,7 +133,7 @@ export default function AnnouncementForm({ user, type, noticeResponse }: NoticeF
                             제목 <span className="text-red-500">*</span>
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="공지사항 제목을 입력하세요" {...field} />
+                            <Input placeholder="업데이트 제목을 입력하세요" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
