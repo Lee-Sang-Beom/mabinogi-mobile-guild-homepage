@@ -1,9 +1,9 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/AuthOptions'
-import { redirect } from 'next/navigation'
-import NotFound from '@/app/not-found'
-import UpdateForm from '../../_component/update-form'
-import { updateService } from '@/service/update-service'
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/AuthOptions";
+import { redirect } from "next/navigation";
+import NotFound from "@/app/not-found";
+import UpdateForm from "../../_component/update-form";
+import { updateService } from "@/service/update-service";
 
 interface PageProps {
   params: Promise<{
@@ -21,8 +21,14 @@ export default async function Page(props: PageProps) {
 
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
-    redirect('/login');
+    redirect("/login");
   }
 
-  return <UpdateForm user={session.user} type={"UPDATE"} noticeResponse={response.data} />
+  return (
+    <UpdateForm
+      user={session.user}
+      type={"UPDATE"}
+      noticeData={response.data}
+    />
+  );
 }
