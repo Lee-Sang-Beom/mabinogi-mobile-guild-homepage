@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SkeletonLoading } from '@/components/animated-loading'
 import { toast } from 'sonner'
-import { isRoleAdmin } from '@/shared/utils/utils'
+import { isHomePageAdmin } from '@/shared/utils/utils'
 import { NoticeListProps } from '@/shared/notice/internal'
 import { noticeColumnLabels, noticeColumns } from '@/shared/notice/columns'
 import { NoticeResponse } from '@/shared/notice/api'
@@ -19,7 +19,7 @@ import { useDeleteUpdate } from '../hooks/use-delete-update'
 
 export default function UpdateList({user}: NoticeListProps) {
   const router = useRouter()
-  const isAdmin = isRoleAdmin(user)
+  const isAdmin = isHomePageAdmin(user)
   const [isMounted, setIsMounted] = useState<boolean>(false)
   const { data: notice, isPending } = useGetUpdates()
   const { mutate: deleteUpdates } = useDeleteUpdate()

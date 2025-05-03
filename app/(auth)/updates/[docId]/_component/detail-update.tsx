@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button'
 import { Bell, Calendar, User as UserIcon } from 'lucide-react'
 import DisplayEditorContent from '@/components/editor/display-editor-content'
-import { isRoleAdmin } from '@/shared/utils/utils'
+import { isHomePageAdmin } from '@/shared/utils/utils'
 import { cn } from '@/lib/utils'
 import { NoticeDetailProps } from '@/shared/notice/internal'
 import { getPriorityBadge } from '@/shared/notice/utils'
@@ -15,7 +15,7 @@ import { useDeleteUpdate } from '../../hooks/use-delete-update'
 export default function UpdateDetailPage({ user, noticeData }: NoticeDetailProps) {
   const router = useRouter()
   const { mutate: deleteUpdates } = useDeleteUpdate()
-  const isAdmin = isRoleAdmin(user)
+  const isAdmin = isHomePageAdmin(user)
 
   // 공지사항 삭제
   const handleDeleteNotice = async () => {

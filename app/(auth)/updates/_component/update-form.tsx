@@ -11,7 +11,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import EditorComponent from '@/components/editor/ck-editor'
-import { compressContentImages, isRoleAdmin } from '@/shared/utils/utils'
+import { compressContentImages, isHomePageAdmin } from '@/shared/utils/utils'
 import moment from 'moment'
 import { useMemo, useState } from 'react'
 import { noticeFormSchema, NoticeFormSchema } from '@/shared/notice/schema'
@@ -22,7 +22,7 @@ import { useUpdateUpdates } from '../hooks/use-update-update'
 
 export default function UpdateForm({ user, type, noticeResponse }: NoticeFormProps) {
   const router = useRouter()
-  const isAdmin = isRoleAdmin(user)
+  const isAdmin = isHomePageAdmin(user)
 
   const [docId, setDocId] = useState<string | null>(null)
   const defaultValues = useMemo<NoticeFormSchema>(() => {
