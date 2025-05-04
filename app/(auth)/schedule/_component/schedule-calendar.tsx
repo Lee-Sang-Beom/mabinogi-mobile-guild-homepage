@@ -1,51 +1,51 @@
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar as ReactCalendar } from 'react-calendar'
-import { Dispatch, SetStateAction, useState } from 'react'
-import { Value } from '@/shared/types/common'
-import { scheduleFormSchema, ScheduleFormSchema } from '@/app/(auth)/schedule/schema'
-import AddScheduleDialog from '@/app/(auth)/schedule/_component/add-schedule-dialog'
-import { generateTimeOptions } from '@/shared/utils/utils'
-import { User } from 'next-auth'
-import { ScheduleRecruitForm } from '@/app/(auth)/schedule/internal'
-import moment from 'moment/moment'
-import { useCreateSchedule } from '@/app/(auth)/schedule/hooks/use-create-schedule'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { ScheduleResponse } from '@/app/(auth)/schedule/api'
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar as ReactCalendar } from "react-calendar";
+import { Dispatch, SetStateAction, useState } from "react";
+import { Value } from "@/shared/types/common";
+import {
+  scheduleFormSchema,
+  ScheduleFormSchema,
+} from "@/app/(auth)/schedule/schema";
+import AddScheduleDialog from "@/app/(auth)/schedule/_component/add-schedule-dialog";
+import { generateTimeOptions } from "@/shared/utils/utils";
+import { User } from "next-auth";
+import { ScheduleRecruitForm } from "@/app/(auth)/schedule/internal";
+import moment from "moment/moment";
+import { useCreateSchedule } from "@/app/(auth)/schedule/hooks/use-create-schedule";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ScheduleResponse } from "@/app/(auth)/schedule/api";
 
 interface ScheduleCalendarProps {
-  selectedDate: Date
-  setSelectedDate: Dispatch<SetStateAction<Date>>
-  user: User
-  scheduleData: ScheduleResponse[]
-
+  selectedDate: Date;
+  setSelectedDate: Dispatch<SetStateAction<Date>>;
+  user: User;
+  allSchedules: ScheduleResponse[];
 }
 
 export default function ScheduleCalendar({
-                                           selectedDate,
-                                           setSelectedDate,
-                                           user,
-                                           scheduleData
-                                         }: ScheduleCalendarProps) {
-  const addScheduleMutation = useCreateSchedule()
-  const timeOptions = generateTimeOptions()
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  selectedDate,
+  setSelectedDate,
+  user,
+  allSchedules,
+}: ScheduleCalendarProps) {
+  const addScheduleMutation = useCreateSchedule();
+  const timeOptions = generateTimeOptions();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const handleDateChange = (
-    value: Value,
-  ) => {
+  const handleDateChange = (value: Value) => {
     if (value instanceof Date) {
-      setSelectedDate(value)
+      setSelectedDate(value);
     } else if (Array.isArray(value) && value[0] instanceof Date) {
-      setSelectedDate(value[0])
+      setSelectedDate(value[0]);
     } else {
     }
-  }
+  };
 
   const tileContent = ({ date, view }: { date: Date; view: string }) => {
-    if (view === 'month') {
-      const eventCount = scheduleData.filter((event) => {
+    if (view === "month") {
+      const eventCount = allSchedules.filter((event) => {
         const eventDate = new Date(event.date);
         return (
           eventDate.getFullYear() === date.getFullYear() &&
@@ -69,24 +69,23 @@ export default function ScheduleCalendar({
     resolver: zodResolver(scheduleFormSchema),
     defaultValues: {
       date: new Date(),
-      time: '00:00',
+      time: "00:00",
 
       title: `${user.id}님의 파티에서 파티원을 모집합니다.`,
-      content: '',
-      maxParticipateCount: '4',
+      content: "",
+      maxParticipateCount: "4",
 
-      participateWriteUser:{
+      participateWriteUser: {
         participateUserIsSubUser: false,
         participateUserParentDocId: user.docId,
         participateUserDocId: user.docId,
         participateUserId: user.id,
-        participateUserJob: user.job
+        participateUserJob: user.job,
       },
 
-      participateEtcUser: []
+      participateEtcUser: [],
     },
-  })
-
+  });
 
   const onAdd = (values: ScheduleFormSchema) => {
     const postData: ScheduleRecruitForm = {
@@ -95,15 +94,15 @@ export default function ScheduleCalendar({
       maxParticipateCount: Number(values.maxParticipateCount),
       userDocId: user.docId,
       mngDt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-    }
+    };
 
     addScheduleMutation.mutate(postData, {
       onSuccess: () => {
-        addScheduleForm.reset()
-        setIsAddDialogOpen(false)
-      }
-    })
-  }
+        addScheduleForm.reset();
+        setIsAddDialogOpen(false);
+      },
+    });
+  };
 
   return (
     <motion.div
@@ -125,8 +124,7 @@ export default function ScheduleCalendar({
           />
         </CardHeader>
         <CardContent>
-          <div
-            className="calendar-wrapper [&_.react-calendar]:bg-background [&_.react-calendar__tile]:text-foreground [&_.react-calendar__month-view__days__day]:bg-background/80 [&_.react-calendar__navigation button]:text-foreground [&_.react-calendar__tile--now]:bg-primary/20 [&_.react-calendar__tile--active]:bg-primary [&_.react-calendar__tile--active]:text-primary-foreground">
+          <div className="calendar-wrapper [&_.react-calendar]:bg-background [&_.react-calendar__tile]:text-foreground [&_.react-calendar__month-view__days__day]:bg-background/80 [&_.react-calendar__navigation button]:text-foreground [&_.react-calendar__tile--now]:bg-primary/20 [&_.react-calendar__tile--active]:bg-primary [&_.react-calendar__tile--active]:text-primary-foreground">
             <ReactCalendar
               onChange={handleDateChange}
               value={selectedDate}
@@ -137,5 +135,5 @@ export default function ScheduleCalendar({
         </CardContent>
       </Card>
     </motion.div>
-  )
+  );
 }
