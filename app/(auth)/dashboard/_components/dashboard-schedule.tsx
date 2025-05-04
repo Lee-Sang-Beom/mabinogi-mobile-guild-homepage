@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { guildInfo } from "@/shared/constants/game";
 import { motion } from "framer-motion";
 import { ArrowRight, Clock, Info, Shield } from "lucide-react";
 import Link from "next/link";
