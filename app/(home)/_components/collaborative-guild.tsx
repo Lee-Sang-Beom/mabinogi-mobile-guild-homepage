@@ -1,61 +1,70 @@
-'use client'
+"use client";
 
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
-import { guildName } from '@/shared/constants/game'
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { guildName } from "@/shared/constants/game";
 
 const collaborationIntroduceDescriptions = [
   {
-    title: '천상힐러',
-    description:
-      '럭키비키와 함께하는 최강힐러분들이 모인 길드입니다. 보스의 뚝배기를 박살내고, 빈사상태의 파티원을 살려주는 것을 아마도 누구보다 좋아하시는 활기찬 분들이 모여게십니다.',
+    title: "천상힐러",
+    description: `${guildName}와 함께하는 최강힐러분들이 모인 길드입니다. 보스의 뚝배기를 박살내고, 빈사상태의 파티원을 살려주는 것을 아마도 누구보다 좋아하시는 활기찬 분들이 모여게십니다.`,
     images: [
-      '/images/(home)/img-collaboration-guild-thumbnail-1.jpg',
-      '/images/(home)/img-collaboration-guild-thumbnail-2.jpg',
+      "/images/(home)/img-collaboration-guild-thumbnail-1.jpg",
+      "/images/(home)/img-collaboration-guild-thumbnail-2.jpg",
     ],
   },
-]
+];
 
 export default function CollaborativeGuild() {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ['start end', 'end start'],
-  })
+    offset: ["start end", "end start"],
+  });
 
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
-  const scale = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.8, 1, 1, 0.8])
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
+  const scale = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.8, 1],
+    [0.8, 1, 1, 0.8]
+  );
 
   // 이미지 캐러셀을 위한 상태 관리
-  const [currentImageIndex, setCurrentImageIndex] = useState<Record<string, number>>({})
+  const [currentImageIndex, setCurrentImageIndex] = useState<
+    Record<string, number>
+  >({});
 
   // 이미지 이전/다음 함수
   const prevImage = (title: string, maxIndex: number) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
       [title]: (prev[title] - 1 + maxIndex) % maxIndex,
-    }))
-  }
+    }));
+  };
 
   const nextImage = (title: string, maxIndex: number) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
       [title]: (prev[title] + 1) % maxIndex,
-    }))
-  }
+    }));
+  };
 
   // 컴포넌트 마운트 시 초기 인덱스 설정
   useEffect(() => {
-    const initialIndexes: Record<string, number> = {}
+    const initialIndexes: Record<string, number> = {};
     collaborationIntroduceDescriptions.forEach((activity) => {
-      initialIndexes[activity.title] = 0
-    })
-    setCurrentImageIndex(initialIndexes)
-  }, [])
+      initialIndexes[activity.title] = 0;
+    });
+    setCurrentImageIndex(initialIndexes);
+  }, []);
 
   return (
-    <section id="collaborative-guild" className="py-24 relative overflow-hidden" ref={containerRef}>
+    <section
+      id="collaborative-guild"
+      className="py-24 relative overflow-hidden"
+      ref={containerRef}
+    >
       <motion.div className="absolute inset-0 -z-10" style={{ opacity }}>
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/50 to-background"></div>
         <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] rounded-full bg-amber-500/10 blur-3xl"></div>
@@ -76,7 +85,8 @@ export default function CollaborativeGuild() {
             </span>
           </h2>
           <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            마비노기 모바일에서 {guildName}와 함께해주시는 멋지고 자랑스러운 길드를 소개합니다!
+            마비노기 모바일에서 {guildName}와 함께해주시는 멋지고 자랑스러운
+            길드를 소개합니다!
           </p>
         </motion.div>
 
@@ -84,7 +94,7 @@ export default function CollaborativeGuild() {
           {collaborationIntroduceDescriptions.map((activity, index) => (
             <motion.div
               key={activity.title}
-              className={`flex flex-col ${index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'} gap-8 items-center`}
+              className={`flex flex-col ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"} gap-8 items-center`}
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: index * 0.2 }}
@@ -92,14 +102,17 @@ export default function CollaborativeGuild() {
             >
               <div className="lg:w-1/2">
                 <div className="relative">
-                  <div
-                    className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-purple-600 rounded-2xl blur opacity-30"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-purple-600 rounded-2xl blur opacity-30"></div>
                   <div className="relative overflow-hidden rounded-xl shadow-2xl">
                     {currentImageIndex[activity.title] !== undefined && (
                       <>
                         <div className="relative">
                           <Image
-                            src={activity.images[currentImageIndex[activity.title]] || '/placeholder.svg'}
+                            src={
+                              activity.images[
+                                currentImageIndex[activity.title]
+                              ] || "/placeholder.svg"
+                            }
                             alt={`${activity.title} - 이미지 ${currentImageIndex[activity.title] + 1}`}
                             width={800}
                             height={600}
@@ -112,7 +125,9 @@ export default function CollaborativeGuild() {
                               <div
                                 key={idx}
                                 className={`w-2 h-2 rounded-full ${
-                                  idx === currentImageIndex[activity.title] ? 'bg-amber-500' : 'bg-gray-400'
+                                  idx === currentImageIndex[activity.title]
+                                    ? "bg-amber-500"
+                                    : "bg-gray-400"
                                 }`}
                               />
                             ))}
@@ -124,8 +139,11 @@ export default function CollaborativeGuild() {
                           <>
                             <button
                               onClick={(e) => {
-                                e.preventDefault()
-                                prevImage(activity.title, activity.images.length)
+                                e.preventDefault();
+                                prevImage(
+                                  activity.title,
+                                  activity.images.length
+                                );
                               }}
                               className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
                               aria-label="이전 이미지"
@@ -147,8 +165,11 @@ export default function CollaborativeGuild() {
                             </button>
                             <button
                               onClick={(e) => {
-                                e.preventDefault()
-                                nextImage(activity.title, activity.images.length)
+                                e.preventDefault();
+                                nextImage(
+                                  activity.title,
+                                  activity.images.length
+                                );
                               }}
                               className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
                               aria-label="다음 이미지"
@@ -160,7 +181,12 @@ export default function CollaborativeGuild() {
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
                               >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5l7 7-7 7"
+                                />
                               </svg>
                             </button>
                           </>
@@ -171,13 +197,17 @@ export default function CollaborativeGuild() {
                 </div>
               </div>
               <div className="lg:w-1/2">
-                <h3 className="text-2xl font-bold text-foreground mb-4 font-cinzel">{activity.title}</h3>
-                <p className="text-muted-foreground mb-6">{activity.description}</p>
+                <h3 className="text-2xl font-bold text-foreground mb-4 font-cinzel">
+                  {activity.title}
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  {activity.description}
+                </p>
               </div>
             </motion.div>
           ))}
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
