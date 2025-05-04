@@ -1,45 +1,45 @@
-import { Clock, Edit, Trash2, UserPlus, Users } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ScheduleResponse } from '@/app/(auth)/schedule/api'
-import { User } from 'next-auth'
-import { useEffect, useState } from 'react'
+import { Clock, Edit, Trash2, UserPlus, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScheduleResponse } from "@/app/(auth)/schedule/api";
+import { User } from "next-auth";
+import { useEffect, useState } from "react";
 
 interface ScheduleListItemProps {
-  schData: ScheduleResponse
-  user: User
-  handleEditEvent: (data: ScheduleResponse) => void
-  handleDeleteEvent: (docId: string) => void
-  handleParticipateEvent: (data: ScheduleResponse) => void
+  schData: ScheduleResponse;
+  user: User;
+  handleEditEvent: (data: ScheduleResponse) => void;
+  handleDeleteEvent: (docId: string) => void;
+  handleParticipateEvent: (data: ScheduleResponse) => void;
 }
 
 interface PartipateCountObjType {
-  currentParticipateUserCount: number
-  maxParticipateUserCount: number
+  currentParticipateUserCount: number;
+  maxParticipateUserCount: number;
 }
 
 export default function ScheduleListItem({
-                                           schData,
-                                           user,
-                                           handleEditEvent,
-                                           handleDeleteEvent,
-                                           handleParticipateEvent,
-                                         }: ScheduleListItemProps) {
+  schData,
+  user,
+  handleEditEvent,
+  handleDeleteEvent,
+  handleParticipateEvent,
+}: ScheduleListItemProps) {
   const [partipateUserCountObj, setPartipateUserCountObj] =
     useState<PartipateCountObjType>({
       currentParticipateUserCount: 0,
       maxParticipateUserCount: 0,
-    })
+    });
 
   useEffect(() => {
     const currentParticipateUserCount =
-      1 + (schData.participateEtcUser.length || 0)
-    const maxParticipateUserCount = schData.maxParticipateCount
+      1 + (schData.participateEtcUser.length || 0);
+    const maxParticipateUserCount = schData.maxParticipateCount;
 
     setPartipateUserCountObj({
       currentParticipateUserCount,
       maxParticipateUserCount,
-    })
-  }, [schData])
+    });
+  }, [schData]);
 
   return (
     <div className="p-4 bg-background/50 rounded-lg border border-primary/10 space-y-3">
@@ -51,7 +51,7 @@ export default function ScheduleListItem({
         </div>
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Users className="h-4 w-4" />
-          {partipateUserCountObj.currentParticipateUserCount} /{' '}
+          {partipateUserCountObj.currentParticipateUserCount} /{" "}
           {partipateUserCountObj.maxParticipateUserCount}
         </div>
       </div>
@@ -103,5 +103,5 @@ export default function ScheduleListItem({
         등록일: {new Date(schData.mngDt).toLocaleDateString()}
       </div>
     </div>
-  )
+  );
 }
