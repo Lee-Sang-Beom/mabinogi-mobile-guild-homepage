@@ -62,6 +62,37 @@ class ScheduleService {
   }
 
   /**
+   * @name getAll
+   * @description 전체 날짜의 파티구인글 목록 조회
+   */
+  async getAll(): Promise<ApiResponse<ScheduleResponse[]>> {
+    try {
+      const q = query(this.scheduleCollection);
+
+      const querySnapshot = await getDocs(q);
+      const schedules: ScheduleResponse[] = querySnapshot.docs
+        .map((doc) => ({
+          ...(doc.data() as Omit<ScheduleResponse, "docId">),
+          docId: doc.id,
+        }))
+        .sort((a, b) => b.time.localeCompare(a.time));
+
+      return {
+        success: true,
+        message: "파티원 모집 정보 목록을 불러왔습니다.",
+        data: schedules,
+      };
+    } catch (error) {
+      console.error("파티원 모집 정보 조회 중 오류가 발생했습니다.", error);
+      return {
+        success: false,
+        message: "파티원 모집 정보 조회 중 오류가 발생했습니다.",
+        data: [],
+      };
+    }
+  }
+
+  /**
    * @name getLatest
    * @description mngDt 기준으로 가장 최근의 하나의 파티구인글을 조회
    */

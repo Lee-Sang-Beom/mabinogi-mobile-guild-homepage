@@ -7,6 +7,7 @@ import ScheduleList from "@/app/(auth)/schedule/_component/schedule-list";
 import { User } from "next-auth";
 import { useGetSchedules } from "@/app/(auth)/schedule/hooks/use-get-schedules";
 import { useDeleteSchedule } from "./hooks/use-delete-schedule";
+import { useGetAllSchedules } from "./hooks/use-get-all-schedule";
 
 interface ScheduleFormProps {
   user: User;
@@ -17,6 +18,7 @@ export default function SchedulePage({ user }: ScheduleFormProps) {
 
   // hooks
   const { data: schedules } = useGetSchedules(selectedDate);
+  const { data: allSchedules } = useGetAllSchedules();
   const { mutate: deleteSchedule } = useDeleteSchedule();
 
   // 파티구인글 삭제
@@ -67,7 +69,7 @@ export default function SchedulePage({ user }: ScheduleFormProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* 캘린더 UI 표시 영역 */}
           <ScheduleCalendar
-            scheduleData={schedules?.data || []}
+            allSchedules={allSchedules?.data || []}
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             user={user}
