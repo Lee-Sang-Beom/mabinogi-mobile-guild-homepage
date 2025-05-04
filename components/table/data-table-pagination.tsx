@@ -1,20 +1,37 @@
-"use client"
+"use client";
 
-import type { Table } from "@tanstack/react-table"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import type { Table } from "@tanstack/react-table";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DataTablePaginationProps<TData> {
-  table: Table<TData>
+  table: Table<TData>;
+  isDisplaySelectionCount: boolean;
 }
 
-export function DataTablePagination<TData>({ table }: DataTablePaginationProps<TData>) {
+export function DataTablePagination<TData>({
+  table,
+  isDisplaySelectionCount,
+}: DataTablePaginationProps<TData>) {
+  const selectionCountDesc = `${table.getFilteredSelectedRowModel().rows.length}개 선택됨 / `;
+  const totalCountDesc = `총 ${table.getFilteredRowModel().rows.length}건`;
   return (
     <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
       <div className="flex-1 text-sm text-muted-foreground text-center sm:text-left">
-        {table.getFilteredSelectedRowModel().rows.length}개 선택됨 (총 {table.getFilteredRowModel().rows.length}개)
+        {isDisplaySelectionCount ? selectionCountDesc : ""} {totalCountDesc}
       </div>
       <div className="flex flex-col sm:flex-row items-center gap-4 sm:space-x-6 lg:space-x-8">
         <div className="flex items-center justify-center sm:justify-end gap-2">
@@ -22,7 +39,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value))
+              table.setPageSize(Number(value));
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">
@@ -86,5 +103,5 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
         </div>
       </div>
     </div>
-  )
+  );
 }

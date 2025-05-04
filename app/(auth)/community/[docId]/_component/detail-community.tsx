@@ -12,23 +12,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Bell, Calendar, User as UserIcon } from "lucide-react";
 import DisplayEditorContent from "@/components/editor/display-editor-content";
-import { useDeleteAnnouncement } from "@/app/(auth)/announcements/hooks/use-delete-announcement";
-import { isRoleAdmin } from "@/shared/utils/utils";
 import { cn } from "@/lib/utils";
-import { NoticeDetailProps } from "@/shared/notice/internal";
+import { CommunityNoticeDetailProps } from "@/shared/notice/internal";
 import { getPriorityBadge } from "@/shared/notice/utils";
+import { useDeleteCommunity } from "../../hooks/use-delete-community";
 
-export default function AnnouncementDetailPage({
+export default function CommunityDetailPage({
   user,
   noticeData,
-}: NoticeDetailProps) {
+  tabType,
+}: CommunityNoticeDetailProps) {
   const router = useRouter();
-  const { mutate: deleteNotice } = useDeleteAnnouncement();
-  const isAdmin = isRoleAdmin(user);
+  const { mutate: deleteCommunity } = useDeleteCommunity(tabType);
+  const isMe = user.docId === noticeData.writeUserDocId;
 
-  const handleDeleteAnnouncements = async () => {
-    await deleteNotice(noticeData.docId);
-    router.push("/announcements");
+  const handleDeleteNotice = async () => {
+    await deleteCommunity(noticeData.docId);
+    router.push(`/community?tab=${tabType}`);
   };
 
   return (
@@ -90,21 +90,23 @@ export default function AnnouncementDetailPage({
             <CardFooter
               className={cn(
                 "flex justify-between",
-                !isAdmin && "flex-row-reverse"
+                !isMe && "flex-row-reverse"
               )}
             >
               <Button
                 variant="outline"
-                onClick={() => router.push("/announcements")}
+                onClick={() => {
+                  router.push(`/community?tab=${tabType}`);
+                }}
               >
                 목록으로
               </Button>
-              {isAdmin && (
+              {isMe && (
                 <div className="flex gap-2">
                   <Button
                     variant="destructive"
                     onClick={() => {
-                      handleDeleteAnnouncements();
+                      handleDeleteNotice();
                     }}
                   >
                     삭제하기
@@ -113,7 +115,9 @@ export default function AnnouncementDetailPage({
                     variant="outline"
                     className={"text-black bg-primary"}
                     onClick={() => {
-                      router.push(`/announcements/${noticeData.docId}/edit`);
+                      router.push(
+                        `/community/${noticeData.docId}/edit?tab=${tabType}`
+                      );
                     }}
                   >
                     수정하기

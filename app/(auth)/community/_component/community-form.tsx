@@ -30,23 +30,31 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import EditorComponent from "@/components/editor/ck-editor";
-import { compressContentImages, isHomePageAdmin } from "@/shared/utils/utils";
+import { compressContentImages } from "@/shared/utils/utils";
 import moment from "moment";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { noticeFormSchema, NoticeFormSchema } from "@/shared/notice/schema";
-import { NoticeFormProps } from "@/shared/notice/internal";
-import { useCreateUpdate } from "../hooks/use-create-update";
-import { useUpdateUpdates } from "../hooks/use-update-update";
+import {
+  CommunityNoticeFormProps,
+  CommunityNoticeType,
+} from "@/shared/notice/internal";
+import { EnumType } from "@/shared/types/common";
+import { useCreateCommunity } from "../hooks/use-create-community";
+import { useUpdateCommunity } from "../hooks/use-update-community";
 
-export default function UpdateForm({
+export default function CommunityForm({
   user,
   type,
+  tabType,
   noticeData,
-}: NoticeFormProps) {
+}: CommunityNoticeFormProps) {
   const router = useRouter();
-  const isAdmin = isHomePageAdmin(user);
-
   const [docId, setDocId] = useState<string | null>(null);
+  const [tabTypeObj, setTabTypeObj] = useState<EnumType<CommunityNoticeType>>({
+    type: "artwork",
+    name: "아트워크",
+  });
+
   const defaultValues = useMemo<NoticeFormSchema>(() => {
     if (type === "UPDATE" && noticeData) {
       const { docId, ...rest } = noticeData;
@@ -64,10 +72,11 @@ export default function UpdateForm({
     };
   }, [type, noticeData, user]);
 
-  const { mutateAsync: createNotice, isPending: isCreateSubmitting } =
-    useCreateUpdate();
-  const { mutateAsync: updateNotice, isPending: isUpdateSubmitting } =
-    useUpdateUpdates();
+  const { mutateAsync: createCommunity, isPending: isCreateSubmitting } =
+    useCreateCommunity();
+  const { mutateAsync: updateCommunity, isPending: isUpdateSubmitting } =
+    useUpdateCommunity();
+
   const form = useForm<NoticeFormSchema>({
     resolver: zodResolver(noticeFormSchema),
     defaultValues: defaultValues,
@@ -86,24 +95,46 @@ export default function UpdateForm({
       };
 
       if (type === "CREATE") {
-        await createNotice(postData);
-        router.push("/updates");
+        await createCommunity({ type: tabTypeObj.type, data: postData });
+        router.push(`/community?tab=${tabTypeObj.type}`);
       } else {
-        await updateNotice({
+        await updateCommunity({
+          type: tabTypeObj.type,
           docId: docId!,
           data: postData,
         });
-
-        router.push(`/updates/${docId}`);
+        router.push(`/community/${docId}?tab=${tabTypeObj.type}`);
       }
     } catch (error) {
-      console.error("업데이트 등록 오류:", error);
+      console.error(`${tabTypeObj.name} 저장 중 오류 발생:`, error);
     }
   };
 
+  useEffect(() => {
+    switch (tabType) {
+      case "artwork":
+        setTabTypeObj({
+          type: "artwork",
+          name: "아트워크",
+        });
+        break;
+      case "tips":
+        setTabTypeObj({
+          type: "tips",
+          name: "정보(팁)",
+        });
+        break;
+      default:
+        setTabTypeObj({
+          type: "artwork",
+          name: "아트워크",
+        });
+        break;
+    }
+  }, [tabType]);
+
   return (
     <div className="min-h-[calc(100vh-200px)] py-8 sm:py-12 px-3 sm:px-6 lg:px-8 relative w-full max-w-full overflow-x-hidden">
-      {/* Animated background elements */}
       <motion.div
         className="absolute left-1/4 top-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-purple-500/10 to-blue-500/10 blur-3xl"
         animate={{
@@ -139,11 +170,11 @@ export default function UpdateForm({
         >
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
-              업데이트 작성
+              {tabTypeObj.name} 작성
             </span>
           </h1>
           <p className="text-muted-foreground mt-2">
-            길드원들에게 전달할 중요한 소식을 작성해주세요.
+            길드원들에게 공유할 {tabTypeObj.name} 내용을 작성해주세요.
           </p>
         </motion.div>
 
@@ -156,7 +187,9 @@ export default function UpdateForm({
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardHeader>
-                  <CardTitle className="sr-only">새 업데이트</CardTitle>
+                  <CardTitle className="sr-only">
+                    새 {tabTypeObj.name}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -169,10 +202,7 @@ export default function UpdateForm({
                             제목 <span className="text-red-500">*</span>
                           </FormLabel>
                           <FormControl>
-                            <Input
-                              placeholder="업데이트 제목을 입력하세요"
-                              {...field}
-                            />
+                            <Input placeholder="제목을 입력하세요" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -236,43 +266,41 @@ export default function UpdateForm({
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     돌아가기
                   </Button>
-                  {isAdmin && (
-                    <Button
-                      type="submit"
-                      disabled={isCreateSubmitting || isUpdateSubmitting}
-                    >
-                      {isCreateSubmitting || isUpdateSubmitting ? (
-                        <span className="flex items-center">
-                          <svg
-                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                          저장 중...
-                        </span>
-                      ) : (
-                        <span className="flex items-center">
-                          <Save className="mr-2 h-4 w-4" />
-                          저장하기
-                        </span>
-                      )}
-                    </Button>
-                  )}
+                  <Button
+                    type="submit"
+                    disabled={isCreateSubmitting || isUpdateSubmitting}
+                  >
+                    {isCreateSubmitting || isUpdateSubmitting ? (
+                      <span className="flex items-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        저장 중...
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <Save className="mr-2 h-4 w-4" />
+                        저장하기
+                      </span>
+                    )}
+                  </Button>
                 </CardFooter>
               </form>
             </Form>

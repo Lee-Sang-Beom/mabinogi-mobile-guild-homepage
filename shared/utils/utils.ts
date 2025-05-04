@@ -3,8 +3,19 @@ import { User } from 'next-auth'
 import { homePageAdminId } from '@/shared/constants/game'
 
 /**
+ * @name isHomePageAdmin
+ * @description 홈페이지 관리자 계정인지 검사
+ * @returns true / false
+ */
+export function isHomePageAdmin(user: User) {
+  return (
+    user.id === homePageAdminId
+  );
+}
+
+/**
  * @name isRoleAdmin
- * @description 홈페이지 관리자인지 검사
+ * @description 관리자인지 검사
  * @returns true / false
  */
 export function isRoleAdmin(user: User) {
