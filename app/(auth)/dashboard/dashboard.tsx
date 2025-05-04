@@ -11,6 +11,7 @@ import DashboardUpdate from "./_components/dashboard-update";
 import DashboardArtwork from "./_components/dashboard-artwork";
 import DashboardJobClass from "./_components/dashboard-job-class";
 import DashboardIntroduceGuildMember from "./_components/dashboard-introduce-guild-member";
+import DashboardSchedule from "./_components/dashboard-schedule";
 
 interface DashboardProps {
   user: User;
@@ -102,7 +103,7 @@ export default function Dashboard({ user }: DashboardProps) {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
           {/* 길드 정보 */}
           <motion.div
             custom={0}
@@ -113,9 +114,19 @@ export default function Dashboard({ user }: DashboardProps) {
             <DashboardGuildInfo />
           </motion.div>
 
-          {/* 공지사항 */}
+          {/* 파티찾기 */}
           <motion.div
             custom={1}
+            initial="hidden"
+            animate={controls}
+            variants={fadeInUpVariants}
+          >
+            <DashboardSchedule />
+          </motion.div>
+
+          {/* 공지사항 */}
+          <motion.div
+            custom={2}
             initial="hidden"
             animate={controls}
             variants={fadeInUpVariants}
@@ -125,7 +136,7 @@ export default function Dashboard({ user }: DashboardProps) {
 
           {/* 업데이트 */}
           <motion.div
-            custom={2}
+            custom={3}
             initial="hidden"
             animate={controls}
             variants={fadeInUpVariants}
@@ -137,7 +148,7 @@ export default function Dashboard({ user }: DashboardProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
           {/* 아트워크 */}
           <motion.div
-            custom={3}
+            custom={4}
             initial="hidden"
             animate={controls}
             variants={fadeInUpVariants}
@@ -147,7 +158,7 @@ export default function Dashboard({ user }: DashboardProps) {
 
           {/* 직업별 길드원 분포 */}
           <motion.div
-            custom={4}
+            custom={5}
             initial="hidden"
             animate={controls}
             variants={fadeInUpVariants}
@@ -158,7 +169,7 @@ export default function Dashboard({ user }: DashboardProps) {
 
         {/* 길드원 소개 */}
         <motion.div
-          custom={5}
+          custom={6}
           initial="hidden"
           animate={controls}
           variants={fadeInUpVariants}
