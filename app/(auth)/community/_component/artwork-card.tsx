@@ -14,6 +14,7 @@ import {
 } from "@/shared/notice/utils";
 import { motion } from "framer-motion";
 import { Calendar, User } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 export interface ArtworkCardProps {
@@ -25,13 +26,24 @@ export default function ArtworkCard({ noticeData }: ArtworkCardProps) {
     <motion.div transition={{ type: "spring", stiffness: 400, damping: 10 }}>
       <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl overflow-hidden h-full">
         <div className="relative aspect-video overflow-hidden">
-          <img
+          {/* <img
             src={
               getNoticeThumbnailImageSrc(noticeData.content) ||
               "/images/bg-mabinogi-mobile-sky-user.jpg"
             }
             alt={noticeData.title}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          /> */}
+          <Image
+            src={
+              getNoticeThumbnailImageSrc(noticeData.content) ||
+              "/images/bg-mabinogi-mobile-sky-user.jpg"
+            }
+            alt={noticeData.title}
+            fill
+            className="object-cover transition-transform duration-300 hover:scale-105"
+            sizes="100vw"
+            priority
           />
         </div>
         <CardHeader className="pb-2">

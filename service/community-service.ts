@@ -104,6 +104,49 @@ class CommunityService {
     }
   }
 
+  // 아트워크 최신 내용 1개만 반환
+  async getLatestArtwork(): Promise<ApiResponse<NoticeResponse | null>> {
+    try {
+      const targetCollection = this.getCollectionByType("artwork");
+      const snapshot = await getDocs(targetCollection);
+      const notices: NoticeResponse[] = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          ...data,
+          docId: docSnap.id,
+        } as NoticeResponse;
+      });
+
+      if (notices.length === 0) {
+        return {
+          success: true,
+          message: "최신 아트워크 내용이 없습니다.",
+          data: null,
+        };
+      }
+
+      // 최신순 정렬 후 첫 번째 항목 반환
+      const latestNotice = notices.sort((a, b) => {
+        const dateA = new Date(a.mngDt);
+        const dateB = new Date(b.mngDt);
+        return dateB.getTime() - dateA.getTime(); // 최신순
+      })[0];
+
+      return {
+        success: true,
+        message: "최신 아트워크를 불러왔습니다.",
+        data: latestNotice,
+      };
+    } catch (error) {
+      console.error("최신 아트워크 조회 실패:", error);
+      return {
+        success: false,
+        message: "최신 아트워크 조회 중 오류가 발생했습니다.",
+        data: null,
+      };
+    }
+  }
+
   // 생성
   async create(
     type: CommunityNoticeType,

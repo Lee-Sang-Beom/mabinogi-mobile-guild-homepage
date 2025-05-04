@@ -119,7 +119,7 @@ export default function UpdateList({ user }: NoticeListProps) {
             </span>
           </h1>
           <p className="text-muted-foreground mt-2">
-            {guildName} 홈페이지의 중요 소식과 안내사항을 확인하세요.
+            {guildName} 홈페이지의 개편사항을 확인하세요.
           </p>
         </motion.div>
 
