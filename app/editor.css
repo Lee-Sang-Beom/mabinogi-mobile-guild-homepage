@@ -23,3 +23,11 @@ ul li {
 .todo-list__label {
   margin-left: 0.8rem;
 }
+
+.ck-content iframe {
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  display: block;
+  margin: 1rem auto;
+}
