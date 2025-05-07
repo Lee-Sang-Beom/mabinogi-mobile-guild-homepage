@@ -1,4 +1,5 @@
-import { GuildRoleType, JobType, YnFlag } from "@/shared/types/game";
+import { GuildRoleType, JobType } from "@/shared/types/game";
+import { YnFlag } from "@/shared/types/common";
 
 declare module "next-auth" {
   interface User {
