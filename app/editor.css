@@ -13,6 +13,8 @@
   color: black;
 }
 
+
+
 /* 리스트 타입 */
 ol li {
   margin-left: 0.8rem;
@@ -24,6 +26,15 @@ ul li {
   margin-left: 0.8rem;
 }
 
+/* hr */
+.ck-content hr {
+  margin: 15px 0;
+  height: 4px;
+  background: hsl(0, 0%, 87%);
+  border: 0;
+}
+
+/* 동영상 */
 .ck-content iframe {
   max-width: 100%;
   height: auto;
@@ -32,6 +43,7 @@ ul li {
   margin: 1rem auto;
 }
 
+/* 테이블 */
 .ck-content table {
   width: 100%;
   border-spacing: 0;
