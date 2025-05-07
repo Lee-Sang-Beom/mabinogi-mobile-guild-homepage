@@ -85,7 +85,7 @@ export default function DashboardGuildUserBubbleDialog({
                   {" "}
                   {
                     guildRoleOptions.find(
-                      (role) => role.value === selectedUser.role
+                      (role) => role.value === selectedUser.role,
                     )!.name
                   }
                 </span>
@@ -93,7 +93,7 @@ export default function DashboardGuildUserBubbleDialog({
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">가입일</span>
+                <span className="text-muted-foreground">최종 수정일</span>
                 <span className="font-medium">{selectedUser.mngDt}</span>
               </div>
             </div>
