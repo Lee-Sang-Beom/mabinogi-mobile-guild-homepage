@@ -31,3 +31,17 @@ ul li {
   display: block;
   margin: 1rem auto;
 }
+
+.ck-content table {
+  width: 100%;
+  border-spacing: 0;
+  border: 1px solid #000;
+}
+.ck-content th,
+.ck-content td {
+  border: 1px solid #000;
+  padding: 8px;
+}
+.ck-content th {
+  font-weight: bold;
+}

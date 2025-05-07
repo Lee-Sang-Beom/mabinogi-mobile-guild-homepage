@@ -1,10 +1,15 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 
 interface DisplayEditorContentProps {
   content: string;
 }
 
 function convertOembedToIframe(html: string): string {
+  // 서버 환경에서는 빈 문자열 반환
+  if (typeof window === "undefined") return html;
+
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
   const oembeds = doc.querySelectorAll("oembed[url]");
@@ -12,7 +17,7 @@ function convertOembedToIframe(html: string): string {
   oembeds.forEach((oembed) => {
     const url = oembed.getAttribute("url")!;
     const videoIdMatch = url.match(
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/,
     );
     if (videoIdMatch) {
       const videoId = videoIdMatch[1];
@@ -37,7 +42,11 @@ function convertOembedToIframe(html: string): string {
 export default function DisplayEditorContent({
   content,
 }: DisplayEditorContentProps) {
-  const convertedHtml = convertOembedToIframe(content);
+  const [convertedHtml, setConvertedHtml] = useState("");
+
+  useEffect(() => {
+    setConvertedHtml(convertOembedToIframe(content));
+  }, [content]);
 
   return (
     <div
