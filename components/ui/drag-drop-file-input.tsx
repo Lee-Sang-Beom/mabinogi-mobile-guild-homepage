@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X, FileIcon, Download, Upload } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { toast } from "sonner";
 
 interface DragDropFileInputProps
   extends Omit<
@@ -155,6 +156,11 @@ export function DragDropFileInput({
 
     const droppedFiles = event.dataTransfer.files;
     if (!droppedFiles || droppedFiles.length === 0) return;
+    if (!multiple && droppedFiles.length > 1) {
+      toast.error("단일 파일만 업로드할 수 있습니다.");
+      return;
+    }
+
     const newFiles = Array.from(droppedFiles);
 
     // multiple이 아닐때는 기존에 올려두었던 파일이 사라짐

@@ -30,7 +30,12 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ req, token }) => {
-        const tokenAccessPage = ["/dashboard", "/schedule", "/community"];
+        const tokenAccessPage = [
+          "/dashboard",
+          "/schedule",
+          "/community",
+          "/org",
+        ];
         const { pathname } = req.nextUrl;
         if (tokenAccessPage.includes(pathname)) {
           return !!token;
@@ -41,7 +46,7 @@ export default withAuth(
     pages: {
       signIn: "/login", // 인증 실패시 리다이렉트할 로그인 페이지
     },
-  }
+  },
 );
 
 export const config = {
