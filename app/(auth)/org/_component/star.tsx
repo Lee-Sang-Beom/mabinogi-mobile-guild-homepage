@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { hexToRgba } from "@/shared/utils/utils";
-import { User } from "next-auth";
-import { UserStar } from "@/app/(auth)/org/internal";
+import type { User } from "next-auth";
+import type { UserStar } from "@/app/(auth)/org/internal";
 
 interface StarProps {
   user: User;
@@ -93,6 +93,7 @@ export function Star({ user, star, mousePosition, onClickAction }: StarProps) {
   return (
     <motion.div
       className="absolute cursor-pointer"
+      data-star-id={star.docId}
       style={{
         left: position.x,
         top: position.y,
