@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import { guildName } from "@/shared/constants/game";
 
 export default function JoinGuild() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,7 +18,7 @@ export default function JoinGuild() {
   const scale = useTransform(
     scrollYProgress,
     [0, 0.2, 0.8, 1],
-    [0.8, 1, 1, 0.8]
+    [0.8, 1, 1, 0.8],
   );
 
   return (
@@ -66,8 +67,8 @@ export default function JoinGuild() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 viewport={{ once: true }}
               >
-                마비노기 모바일의 세계에서 함께 모험을 떠날 준비가 되셨나요?
-                지금 가입하고 특별한 길드 혜택을 받아보세요.
+                마비노기 모바일의 세계에서 {guildName}와 함께 모험을 떠날 준비가
+                되셨나요? 지금 가입하고 특별한 경험을 느껴보세요.
               </motion.p>
 
               <motion.div
@@ -81,10 +82,14 @@ export default function JoinGuild() {
                   size="lg"
                   className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-cinzel p-0"
                 >
-                  <Link href="/join" className={"px-6 py-3"}>길드 가입하기</Link>
+                  <Link href="/join" className={"px-6 py-3"}>
+                    길드 가입하기
+                  </Link>
                 </Button>
                 <Button variant="outline" size="lg" className={"p-0"}>
-                  <Link href="/login" className={"px-6 py-3"}>로그인</Link>
+                  <Link href="/login" className={"px-6 py-3"}>
+                    로그인
+                  </Link>
                 </Button>
               </motion.div>
             </div>

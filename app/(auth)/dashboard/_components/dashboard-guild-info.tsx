@@ -52,7 +52,7 @@ export default function DashboardGuildInfo() {
               className="w-full group-hover:bg-primary/10 transition-colors duration-300"
             >
               <Link
-                href="/members"
+                href="/org"
                 className="flex items-center justify-center w-full"
               >
                 길드 정보 상세보기

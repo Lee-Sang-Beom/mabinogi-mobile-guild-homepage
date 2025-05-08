@@ -1,16 +1,11 @@
 import {
   LayoutDashboard,
   Users,
-  BarChart,
-  Briefcase,
   FileText,
   Search,
-  Settings,
   Info,
   Bell,
   RefreshCw,
-  UserCog,
-  UserPlus,
   ImageIcon,
 } from "lucide-react";
 import { MenuItem } from "../types/menu";
@@ -27,23 +22,11 @@ export const loggedInMenuStructure: MenuItem[] = [
     href: "/schedule",
     icon: Search,
   },
-  // {
-  //   name: "길드원 정보",
-  //   href: "/members",
-  //   icon: Users,
-  //   submenu: [
-  //     {
-  //       name: "직급별 분포",
-  //       href: "/members?tab=rank",
-  //       icon: BarChart,
-  //     },
-  //     {
-  //       name: "직업별 분포",
-  //       href: "/members?tab=job",
-  //       icon: Briefcase,
-  //     },
-  //   ],
-  // },
+  {
+    name: "길드원 정보",
+    href: "/org",
+    icon: Users,
+  },
   {
     name: "게시판",
     href: "/community",
