@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { User } from 'next-auth'
-import { homePageAdminId } from '@/shared/constants/game'
+import { User } from "next-auth";
+import { homePageAdminId } from "@/shared/constants/game";
 
 /**
  * @name isHomePageAdmin
@@ -8,9 +8,7 @@ import { homePageAdminId } from '@/shared/constants/game'
  * @returns true / false
  */
 export function isHomePageAdmin(user: User) {
-  return (
-    user.id === homePageAdminId
-  );
+  return user.id === homePageAdminId;
 }
 
 /**
@@ -46,7 +44,7 @@ export function encryptPassword(password: string): string {
  */
 export function verifyPassword(
   plainPassword: string,
-  hashedPassword: string
+  hashedPassword: string,
 ): boolean {
   return bcrypt.compareSync(plainPassword, hashedPassword);
 }
@@ -71,21 +69,21 @@ export const clearCache = () => {
  * @description (00:00, 00:30, 01:00, ...)
  */
 export const generateTimeOptions = () => {
-  const options = []
+  const options = [];
   for (let hour = 0; hour < 24; hour++) {
     for (let minute = 0; minute < 60; minute += 30) {
-      const formattedHour = hour.toString().padStart(2, '0')
-      const formattedMinute = minute.toString().padStart(2, '0')
-      options.push(`${formattedHour}:${formattedMinute}`)
+      const formattedHour = hour.toString().padStart(2, "0");
+      const formattedMinute = minute.toString().padStart(2, "0");
+      options.push(`${formattedHour}:${formattedMinute}`);
     }
   }
-  return options
-}
+  return options;
+};
 
 export function compressImages(
   base64Str: string,
   maxWidth = 1280, // 해상도를 높이기 위해 최대 크기 확장
-  maxHeight = 1280 // 해상도를 높이기 위해 최대 크기 확장
+  maxHeight = 1280, // 해상도를 높이기 위해 최대 크기 확장
 ): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -122,7 +120,7 @@ export function compressImages(
 export async function compressContentImages(
   content: string,
   maxWidth?: number, // 선택적 파라미터 추가
-  maxHeight?: number // 선택적 파라미터 추가
+  maxHeight?: number, // 선택적 파라미터 추가
 ): Promise<string> {
   const imageRegex = /<img[^>]*src=["']([^"']+)["'][^>]*>/g; // img 태그에서 src 추출
   let match;
@@ -134,14 +132,30 @@ export async function compressContentImages(
       const compressedBase64 = await compressImages(
         originalBase64,
         maxWidth,
-        maxHeight
+        maxHeight,
       ); // 이미지 압축
       compressedContent = compressedContent.replace(
         originalBase64,
-        compressedBase64
+        compressedBase64,
       ); // HTML 업데이트
     }
   }
 
   return compressedContent;
+}
+
+/**
+ * HEX 색상 코드를 RGBA로 변환하는 함수
+ */
+export function hexToRgba(hex: string, alpha = 1): string {
+  // # 기호 제거
+  hex = hex.replace("#", "");
+
+  // HEX 값을 RGB로 변환
+  const r = Number.parseInt(hex.substring(0, 2), 16);
+  const g = Number.parseInt(hex.substring(2, 4), 16);
+  const b = Number.parseInt(hex.substring(4, 6), 16);
+
+  // RGBA 문자열 반환
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }

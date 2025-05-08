@@ -32,7 +32,7 @@ export default function DashboardGuildUserBubbleDialog({
       open={!!selectedUser}
       onOpenChange={(open) => !open && setSelectedUser(null)}
     >
-      <DialogContent className="sm:max-w-md bg-background/80 backdrop-blur-sm ">
+      <DialogContent className="sm:max-w-md bg-background/80 backdrop-blur-sm">
         <DialogHeader>
           <DialogTitle>길드원 정보</DialogTitle>
           <DialogDescription>
@@ -100,7 +100,7 @@ export default function DashboardGuildUserBubbleDialog({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
-                  자랑스런 길드원 여부
+                  이벤트 뱃지 보유 여부
                 </span>
                 <span className="font-medium">
                   {isBadge ? <CheckCircle /> : <XCircle />}
