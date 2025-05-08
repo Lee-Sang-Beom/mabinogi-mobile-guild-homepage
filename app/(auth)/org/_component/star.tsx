@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { hexToRgba } from "@/shared/utils/utils";
-import { User } from "next-auth";
-import { UserStar } from "@/app/(auth)/org/internal";
+import type { User } from "next-auth";
+import type { UserStar } from "@/app/(auth)/org/internal";
 
 interface StarProps {
   user: User;
@@ -93,6 +93,7 @@ export function Star({ user, star, mousePosition, onClickAction }: StarProps) {
   return (
     <motion.div
       className="absolute cursor-pointer"
+      data-star-id={star.docId}
       style={{
         left: position.x,
         top: position.y,
@@ -111,14 +112,8 @@ export function Star({ user, star, mousePosition, onClickAction }: StarProps) {
       <div
         className="rounded-full transition-all duration-300"
         style={{
-          width:
-            star.docId === user.docId
-              ? "10px"
-              : `${(star.size || 3) * (isHovered ? 1.5 : 1)}px`,
-          height:
-            star.docId === user.docId
-              ? "10px"
-              : `${(star.size || 3) * (isHovered ? 1.5 : 1)}px`,
+          width: `${(star.size || 3) * (isHovered ? 1.5 : 1)}px`,
+          height: `${(star.size || 3) * (isHovered ? 1.5 : 1)}px`,
           backgroundImage:
             star.docId === user.docId
               ? "linear-gradient(135deg, #ffffff, #f0f0f0, #eaeaea)"

@@ -5,19 +5,20 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
+import type {
   BackgroundStar,
-  ConstellationLine,
   RenderedPlanet,
   StarryOrganizationProps,
   UserStar,
 } from "@/app/(auth)/org/internal";
-import { User } from "next-auth";
+import type { User } from "next-auth";
 import { planets } from "@/app/(auth)/org/constants";
 import { jobCategoryMap } from "@/shared/constants/game";
 import { Planet } from "./planet";
 import { UserDialog } from "@/app/(auth)/org/_component/user-dialog";
 import { Star } from "@/app/(auth)/org/_component/star";
+import { getUserStarSize } from "@/app/(auth)/org/utils";
+import { ConstellationLines } from "./constellation-lines";
 
 export default function StarryOrganization({
   user,
@@ -132,11 +133,8 @@ export default function StarryOrganization({
         const orbitSpeed = 0.003 + Math.random() * 0.005; // 공전 속도 (더 느리게)
         const orbitOffset = (userIndex / categoryUsers.length) * Math.PI * 2; // 시작 위치 (균등 분포)
 
-        // 별의 크기는 역할에 따라 다르게 (전체적으로 크기 증가)
-        let size = 3 + Math.random() * 2;
-        if (user.role === "GUILD_MASTER") size = 6 + Math.random() * 1.5;
-        else if (user.role === "GUILD_SUB_MASTER")
-          size = 5 + Math.random() * 1.5;
+        // 별의 크기는 "길드 영향력(이벤트 뱃지)"에 따라 다르게!!!!!!!!!!
+        const size = getUserStarSize(user);
 
         // 별의 색상은 직업에 따라 다르게
         const jobInfo = jobCategoryMap[user.job];
@@ -173,88 +171,99 @@ export default function StarryOrganization({
     }
   };
 
+  // Add this function to the StarryOrganization component
+  // const updateStarPosition = (id: string, x: number, y: number) => {
+  //   setStars((prevStars) => prevStars.map((s) => (s.docId === id ? { ...s, x, y } : s)))
+  // }
+
   // 별자리 연결선 그리기
-  const renderConstellationLines = () => {
-    if (stars.length === 0) return null;
+  // const renderConstellationLines = () => {
+  //   if (stars.length === 0) return null
 
-    const lines: ConstellationLine[] = [];
-    const planetGroups: Record<string, UserStar[]> = {};
+  //   const lines: ConstellationLine[] = []
+  //   const planetGroups: Record<string, UserStar[]> = {}
 
-    // 행성 ID별로 그룹화 (같은 행성 주변을 공전하는 별들끼리 그룹화)
-    stars.forEach((star) => {
-      if (!star.planetId) return;
+  //   // 행성 ID별로 그룹화 (같은 행성 주변을 공전하는 별들끼리 그룹화)
+  //   stars.forEach((star) => {
+  //     if (!star.planetId) return
 
-      if (!planetGroups[star.planetId]) {
-        planetGroups[star.planetId] = [];
-      }
-      planetGroups[star.planetId].push(star);
-    });
+  //     if (!planetGroups[star.planetId]) {
+  //       planetGroups[star.planetId] = []
+  //     }
+  //     planetGroups[star.planetId].push(star)
+  //   })
 
-    // 각 행성 그룹별로 별자리 연결선 생성
-    Object.values(planetGroups).forEach((planetStars, planetIndex) => {
-      // 같은 행성 주변의 별들을 연결
-      for (let i = 0; i < planetStars.length; i++) {
-        const current = planetStars[i];
-        const next = planetStars[(i + 1) % planetStars.length];
+  //   // 각 행성 그룹별로 별자리 연결선 생성
+  //   Object.values(planetGroups).forEach((planetStars, planetIndex) => {
+  //     // 같은 행성 주변의 별들을 연결
+  //     for (let i = 0; i < planetStars.length; i++) {
+  //       const current = planetStars[i]
+  //       const next = planetStars[(i + 1) % planetStars.length]
 
-        // 별들 사이의 거리 계산
-        const dx = next.x! - current.x!;
-        const dy = next.y! - current.y!;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+  //       // Skip if positions aren't calculated yet
+  //       if (!current.x || !current.y || !next.x || !next.y) continue
 
-        // 거리가 너무 멀면 연결하지 않음
-        if (distance < 300) {
-          lines.push(
-            <line
-              key={`line-${planetIndex}-${i}`}
-              x1={current.x}
-              y1={current.y}
-              x2={next.x}
-              y2={next.y}
-              stroke={`rgba(255, 255, 255, 0.15)`}
-              strokeWidth="0.5"
-              strokeDasharray="5,5"
-            />,
-          );
-        }
-      }
+  //       // 별들 사이의 거리 계산
+  //       const dx = next.x - current.x
+  //       const dy = next.y - current.y
+  //       const distance = Math.sqrt(dx * dx + dy * dy)
 
-      // 추가적인 연결선 (더 풍부한 네트워크 형성)
-      for (let i = 0; i < planetStars.length; i++) {
-        for (let j = i + 2; j < planetStars.length; j++) {
-          if (j !== (i + 1) % planetStars.length) {
-            // 이미 연결된 선은 제외
-            const current = planetStars[i];
-            const other = planetStars[j];
+  //       // 거리가 너무 멀면 연결하지 않음
+  //       if (distance < 300) {
+  //         lines.push(
+  //           <line
+  //             key={`line-${planetIndex}-${i}`}
+  //             x1={current.x}
+  //             y1={current.y}
+  //             x2={next.x}
+  //             y2={next.y}
+  //             stroke={`rgba(255, 255, 255, 0.15)`}
+  //             strokeWidth="0.5"
+  //             strokeDasharray="5,5"
+  //           />,
+  //         )
+  //       }
+  //     }
 
-            // 별들 사이의 거리 계산
-            const dx = other.x! - current.x!;
-            const dy = other.y! - current.y!;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+  //     // 추가적인 연결선 (더 풍부한 네트워크 형성)
+  //     for (let i = 0; i < planetStars.length; i++) {
+  //       for (let j = i + 2; j < planetStars.length; j++) {
+  //         if (j !== (i + 1) % planetStars.length) {
+  //           // 이미 연결된 선은 제외
+  //           const current = planetStars[i]
+  //           const other = planetStars[j]
 
-            // 거리가 너무 멀면 연결하지 않음
-            if (distance < 200 && Math.random() > 0.7) {
-              // 70% 확률로 연결 (너무 복잡해지지 않도록)
-              lines.push(
-                <line
-                  key={`extra-line-${planetIndex}-${i}-${j}`}
-                  x1={current.x}
-                  y1={current.y}
-                  x2={other.x}
-                  y2={other.y}
-                  stroke={`rgba(255, 255, 255, 0.08)`} // 더 투명하게
-                  strokeWidth="0.3"
-                  strokeDasharray="3,7"
-                />,
-              );
-            }
-          }
-        }
-      }
-    });
+  //           // Skip if positions aren't calculated yet
+  //           if (!current.x || !current.y || !other.x || !other.y) continue
 
-    return lines;
-  };
+  //           // 별들 사이의 거리 계산
+  //           const dx = other.x - current.x
+  //           const dy = other.y - current.y
+  //           const distance = Math.sqrt(dx * dx + dy * dy)
+
+  //           // 거리가 너무 멀면 연결하지 않음
+  //           if (distance < 200 && Math.random() > 0.7) {
+  //             // 70% 확률로 연결 (너무 복잡해지지 않도록)
+  //             lines.push(
+  //               <line
+  //                 key={`extra-line-${planetIndex}-${i}-${j}`}
+  //                 x1={current.x}
+  //                 y1={current.y}
+  //                 x2={other.x}
+  //                 y2={other.y}
+  //                 stroke={`rgba(255, 255, 255, 0.08)`} // 더 투명하게
+  //                 strokeWidth="0.3"
+  //                 strokeDasharray="3,7"
+  //               />,
+  //             )
+  //           }
+  //         }
+  //       }
+  //     }
+  //   })
+
+  //   return lines
+  // }
 
   return (
     <div
@@ -286,9 +295,7 @@ export default function StarryOrganization({
       ))}
 
       {/* SVG 별자리 */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none">
-        {renderConstellationLines()}
-      </svg>
+      <ConstellationLines stars={stars} />
 
       {/* 멤버 별 */}
       {stars.map((star) => (
@@ -320,19 +327,23 @@ export default function StarryOrganization({
             exit={{ opacity: 0, y: -20 }}
             className="absolute top-16 right-4 w-72 bg-black/70 backdrop-blur-md p-4 rounded-lg text-white/90 text-sm border border-white/20 z-10"
           >
-            <h3 className="font-medium mb-2">별자리 조직도 안내</h3>
-            <p className="mb-2">
-              각 별은 길드의 구성원을 나타냅니다. 별의 크기는 길드 등급에 따라
-              조금씩 다릅니다.
+            <h3 className="font-medium mb-2 text-md">
+              「 별자리 조직도 안내 」
+            </h3>
+            <p className="mb-2 text-xs">
+              ※ 각 별은 길드의 구성원을 나타냅니다. 별의 크기는 차후 길드 내
+              영향력(이벤트 뱃지의 보유 개수)에 따라 달라지게 됩니다.
             </p>
-            <p className="mb-2">
-              별의 색상은 직업 계열에 따라 다르게 표시됩니다.
-            </p>
-            <p className="mb-2">
-              행성은 각 직업 계열을 나타내며, 주변에 해당 계열 구성원들이
+            <p className="mb-2 text-xs">
+              ※ 행성은 각 직업 계열을 나타내며, 주변에 해당 계열 구성원들이
               배치됩니다.
             </p>
-            <p>별을 클릭하면 해당 구성원의 상세 정보를 볼 수 있습니다.</p>
+            <p className="mb-2 text-xs">
+              ※ 별의 색상은 직업 계열에 따라 다르게 표시됩니다.
+            </p>
+            <p className="mb-2 text-xs">
+              ※ 별을 클릭하면 해당 구성원의 상세 정보를 볼 수 있습니다.
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
