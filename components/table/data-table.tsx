@@ -45,6 +45,7 @@ interface DataTableProps<TData, TValue> {
   columnLabels?: Record<string, string>;
   deleteButtonText?: string;
   isAvailableDelete: boolean;
+  getRowId?: (row: TData) => string;
 }
 
 export function DataTable<TData, TValue>({
@@ -58,6 +59,7 @@ export function DataTable<TData, TValue>({
   columnLabels = {},
   deleteButtonText = "선택 삭제",
   isAvailableDelete,
+  getRowId,
 }: DataTableProps<TData, TValue>) {
   // 상태를 useRef로 초기화하여 첫 렌더링에만 설정
   const initialState = React.useRef({
@@ -68,10 +70,10 @@ export function DataTable<TData, TValue>({
   }).current;
 
   const [sorting, setSorting] = React.useState<SortingState>(
-    initialState.sorting
+    initialState.sorting,
   );
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    initialState.columnFilters
+    initialState.columnFilters,
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>(initialState.columnVisibility);
@@ -96,6 +98,7 @@ export function DataTable<TData, TValue>({
       rowSelection,
     },
     enableRowSelection: true,
+    getRowId,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
@@ -112,13 +115,10 @@ export function DataTable<TData, TValue>({
 
       // 선택된 행 데이터를 외부로 전달
       if (onSelectionChange) {
-        const selectedRows = Object.keys(newRowSelection)
-          .filter((idx) => newRowSelection[idx])
-          .map((idx) => {
-            const rowIndex = parseInt(idx, 10);
-            return table.getRowModel().rows[rowIndex]?.original as TData;
-          })
-          .filter(Boolean);
+        const selectedRows = table
+          .getFilteredRowModel()
+          .rows.filter((row) => newRowSelection[row.id])
+          .map((row) => row.original as TData);
 
         onSelectionChange(selectedRows);
       }
@@ -141,19 +141,16 @@ export function DataTable<TData, TValue>({
         column.setFilterValue(value);
       }
     },
-    [searchKey, table]
+    [searchKey, table],
   );
 
   // 선택된 항목 삭제 핸들러
   const handleDeleteSelected = React.useCallback(() => {
     if (onDeleteSelected) {
-      const selectedRows = Object.keys(rowSelection)
-        .filter((idx) => rowSelection[idx])
-        .map((idx) => {
-          const rowIndex = parseInt(idx, 10);
-          return table.getRowModel().rows[rowIndex]?.original as TData;
-        })
-        .filter(Boolean);
+      const selectedRows = table
+        .getFilteredRowModel()
+        .rows.filter((row) => rowSelection[row.id])
+        .map((row) => row.original as TData);
 
       onDeleteSelected(selectedRows);
       setRowSelection({});
@@ -167,7 +164,7 @@ export function DataTable<TData, TValue>({
         onRowClick(row.original);
       }
     },
-    [onRowClick]
+    [onRowClick],
   );
 
   // 컬럼 라벨 가져오기
@@ -175,7 +172,7 @@ export function DataTable<TData, TValue>({
     (columnId: string) => {
       return columnLabels[columnId] || columnId;
     },
-    [columnLabels]
+    [columnLabels],
   );
 
   return (
@@ -244,7 +241,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   ))}
@@ -261,7 +258,7 @@ export function DataTable<TData, TValue>({
                     onClick={(e) => {
                       if (
                         (e.target as HTMLElement).closest(
-                          '[data-prevent-row-click="true"]'
+                          '[data-prevent-row-click="true"]',
                         )
                       ) {
                         return;
@@ -275,12 +272,12 @@ export function DataTable<TData, TValue>({
                         className={cn(
                           "py-3 md:py-4",
                           "max-w-[150px] truncate whitespace-nowrap overflow-hidden",
-                          index === 0 && "pl-4"
+                          index === 0 && "pl-4",
                         )}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </TableCell>
                     ))}
@@ -304,7 +301,7 @@ export function DataTable<TData, TValue>({
       {/* 페이지네이션 */}
       <DataTablePagination
         table={table}
-        isDisplaySelectionCount={isAvailableDelete ? true : false}
+        isDisplaySelectionCount={isAvailableDelete}
       />
     </div>
   );

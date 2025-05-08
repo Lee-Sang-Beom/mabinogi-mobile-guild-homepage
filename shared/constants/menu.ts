@@ -7,6 +7,9 @@ import {
   Bell,
   RefreshCw,
   ImageIcon,
+  Settings,
+  UserCog,
+  UserPlus,
 } from "lucide-react";
 import { MenuItem } from "../types/menu";
 
@@ -61,23 +64,23 @@ export const loggedInMenuStructure: MenuItem[] = [
       },
     ],
   },
-  // {
-  //   name: "서비스 관리",
-  //   href: "/admin",
-  //   icon: Settings,
-  //   submenu: [
-  //     {
-  //       name: "길드원 관리",
-  //       href: "/admin",
-  //       icon: UserCog,
-  //     },
-  //     {
-  //       name: "회원가입 관리",
-  //       href: "/admin?tab=applications",
-  //       icon: UserPlus,
-  //     },
-  //   ],
-  // },
+  {
+    name: "서비스 관리",
+    href: "/admin",
+    icon: Settings,
+    submenu: [
+      {
+        name: "길드원 관리",
+        href: "/admin",
+        icon: UserCog,
+      },
+      {
+        name: "회원가입 관리",
+        href: "/admin?tab=approval",
+        icon: UserPlus,
+      },
+    ],
+  },
 ];
 export const loggedOutMenuStructure: MenuItem[] = [
   { name: "소개", href: "/#about" },

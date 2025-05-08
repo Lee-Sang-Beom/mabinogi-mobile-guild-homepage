@@ -1,16 +1,24 @@
-import { ApiResponse } from '@/shared/types/api'
-import { encryptPassword, verifyPassword } from '@/shared/utils/utils'
-import { Session, User } from 'next-auth'
-import { z } from 'zod'
-import { joinFormSchema } from '@/app/(no-auth)/join/schema'
-import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
-import { db } from '@/shared/firestore'
-import moment from 'moment'
-import { forgotPasswordStep1FormSchema } from '@/app/(no-auth)/forgot-password/schema'
-import { DashboardJobDistributionResponse } from '@/app/(auth)/dashboard/api'
-import { jobTypeOptions } from '@/shared/constants/game'
-import { profileFormSchema } from '@/app/(auth)/profile/schema'
-
+import { ApiResponse } from "@/shared/types/api";
+import { encryptPassword, verifyPassword } from "@/shared/utils/utils";
+import { Session, User } from "next-auth";
+import { z } from "zod";
+import { joinFormSchema } from "@/app/(no-auth)/join/schema";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { db } from "@/shared/firestore";
+import moment from "moment";
+import { forgotPasswordStep1FormSchema } from "@/app/(no-auth)/forgot-password/schema";
+import { DashboardJobDistributionResponse } from "@/app/(auth)/dashboard/api";
+import { jobTypeOptions } from "@/shared/constants/game";
+import { profileFormSchema } from "@/app/(auth)/profile/schema";
 
 class UserService {
   /**
@@ -20,7 +28,10 @@ class UserService {
   async getUsers(): Promise<User[] | null> {
     try {
       const snapshot = await getDocs(
-        query(collection(db, "collection_user"), where("approvalJoinYn", "==", "Y"))
+        query(
+          collection(db, "collection_user"),
+          where("approvalJoinYn", "==", "Y"),
+        ),
       );
 
       if (snapshot.empty) return null;
@@ -37,13 +48,39 @@ class UserService {
   }
 
   /**
+   * @name getUnapprovedUsers
+   * @description approvalJoinYn이 'N'인 유저들을 조회
+   */
+  async getUnapprovedUsers(): Promise<User[] | null> {
+    try {
+      const snapshot = await getDocs(
+        query(
+          collection(db, "collection_user"),
+          where("approvalJoinYn", "==", "N"),
+        ),
+      );
+
+      if (snapshot.empty) return null;
+
+      // 모든 문서를 순회하여 User[] 형태로 반환
+      return snapshot.docs.map((doc) => ({
+        docId: doc.id,
+        ...doc.data(),
+      })) as User[];
+    } catch (e) {
+      console.error("미승인 유저 조회 중 오류가 발생했습니다. ", e);
+      throw new Error("미승인 유저 조회 중 오류가 발생했습니다.");
+    }
+  }
+
+  /**
    * @name getUserById
    * @description Firestore에서 특정 ID를 가진 유저를 조회
    */
   async getUserById(id: string): Promise<User | null> {
     try {
       const snapshot = await getDocs(
-        query(collection(db, "collection_user"), where("id", "==", id))
+        query(collection(db, "collection_user"), where("id", "==", id)),
       );
 
       // 문서가 없으면 null 반환
@@ -62,7 +99,10 @@ class UserService {
    * @name getCollectionUserByIdAndPassword
    * @description ID/PW 기반 사용자 인증 처리
    */
-  async getCollectionUserByIdAndPassword(id: string, password: string): Promise<User | null> {
+  async getCollectionUserByIdAndPassword(
+    id: string,
+    password: string,
+  ): Promise<User | null> {
     const user = await this.getUserById(id);
     return user && verifyPassword(password, user.password) ? user : null;
   }
@@ -81,7 +121,10 @@ class UserService {
     };
 
     try {
-      return (await checkCollection("collection_user")) || (await checkCollection("collection_sub_user"));
+      return (
+        (await checkCollection("collection_user")) ||
+        (await checkCollection("collection_sub_user"))
+      );
     } catch (e) {
       console.error("중복된 아이디 검증 중 오류가 발생했습니다. ", e);
       throw new Error("중복된 아이디 검증 중 오류가 발생했습니다.");
@@ -93,7 +136,9 @@ class UserService {
    * @param data 회원가입 유저 정보
    * @description 회원가입
    */
-  async join(data: z.infer<typeof joinFormSchema>): Promise<ApiResponse<string | null>> {
+  async join(
+    data: z.infer<typeof joinFormSchema>,
+  ): Promise<ApiResponse<string | null>> {
     try {
       // ID 중복 확인
       if (await this.checkDuplicateId(data.id)) {
@@ -118,11 +163,15 @@ class UserService {
       };
 
       // Firestore에 유저 추가
-      const docRef = await addDoc(collection(db, "collection_user"), userWithEncryptedPassword);
+      const docRef = await addDoc(
+        collection(db, "collection_user"),
+        userWithEncryptedPassword,
+      );
 
       return {
         success: true,
-        message: "회원가입이 완료되었습니다. 관리자 승인 후 로그인하실 수 있습니다.",
+        message:
+          "회원가입이 완료되었습니다. 관리자 승인 후 로그인하실 수 있습니다.",
         data: docRef.id,
       };
     } catch (e) {
@@ -141,7 +190,7 @@ class UserService {
    * @description 비밀번호 찾기 (실질적 쿼리 발생)
    */
   private async getCollectionUserByDetails(
-    data: z.infer<typeof forgotPasswordStep1FormSchema>
+    data: z.infer<typeof forgotPasswordStep1FormSchema>,
   ): Promise<User | null> {
     try {
       const q = query(
@@ -149,17 +198,22 @@ class UserService {
         where("id", "==", data.id),
         where("job", "==", data.job),
         where("role", "==", data.role),
-        where("otp", "==", data.otp)
+        where("otp", "==", data.otp),
       );
 
-      const snapshot  = await getDocs(q);
+      const snapshot = await getDocs(q);
       if (snapshot.empty) return null;
 
       const doc = snapshot.docs[0];
       return { docId: doc.id, ...doc.data() } as User;
     } catch (e) {
-      console.error("비밀번호 찾기를 위한 대상 유저 조회 중 오류가 발생했습니다.: ", e);
-      throw new Error("비밀번호 찾기를 위한 대상 유저 조회 중 오류가 발생했습니다.");
+      console.error(
+        "비밀번호 찾기를 위한 대상 유저 조회 중 오류가 발생했습니다.: ",
+        e,
+      );
+      throw new Error(
+        "비밀번호 찾기를 위한 대상 유저 조회 중 오류가 발생했습니다.",
+      );
     }
   }
 
@@ -169,7 +223,7 @@ class UserService {
    * @description 비밀번호 찾기
    */
   async findUserForPasswordReset(
-    values: z.infer<typeof forgotPasswordStep1FormSchema>
+    values: z.infer<typeof forgotPasswordStep1FormSchema>,
   ): Promise<ApiResponse<User | null>> {
     try {
       const existingUser = await this.getCollectionUserByDetails(values);
@@ -189,7 +243,7 @@ class UserService {
         };
       }
     } catch (e) {
-      console.error('error is ', e)
+      console.error("error is ", e);
       return {
         success: false,
         message: "비밀번호 찾기 과정 중 오류가 발생했습니다.",
@@ -197,7 +251,6 @@ class UserService {
       };
     }
   }
-
 
   /**
    * @name changePassword
@@ -211,9 +264,14 @@ class UserService {
   ): Promise<ApiResponse<string | null>> {
     try {
       const { id, job, role, otp } = user;
-      
+
       // step1: 바꾸려고하는 유저 한번 더 검사
-      const existingUser = await this.getCollectionUserByDetails({ id, job, role, otp });
+      const existingUser = await this.getCollectionUserByDetails({
+        id,
+        job,
+        role,
+        otp,
+      });
       if (!existingUser) {
         return {
           success: false,
@@ -227,7 +285,10 @@ class UserService {
         ...user,
         password: encryptPassword(password),
       };
-      await updateDoc(doc(db, "collection_user", existingUser.docId), updatedUser);
+      await updateDoc(
+        doc(db, "collection_user", existingUser.docId),
+        updatedUser,
+      );
 
       return {
         success: true,
@@ -251,10 +312,10 @@ class UserService {
    * @param update next-auth session update
    * @description 개인정보 수정
    */
-   async updateUser(
+  async updateUser(
     data: z.infer<typeof profileFormSchema>,
     currentUser: User,
-    update: (data: { user: User }) => Promise<Session | null>
+    update: (data: { user: User }) => Promise<Session | null>,
   ): Promise<ApiResponse<string | null>> {
     try {
       /**
@@ -262,10 +323,8 @@ class UserService {
        * @description 변경하고자 하는 닉네임을 가진 다른 정보가 DB에 있는지 확인
        * @description 이 때, 내 닉네임은 예외에서 제외해야 함
        */
-      if(data.id !== currentUser.id) {
-        const isDuplicated = await this.checkDuplicateId(
-          data.id
-        );
+      if (data.id !== currentUser.id) {
+        const isDuplicated = await this.checkDuplicateId(data.id);
         if (isDuplicated) {
           return {
             success: false,
@@ -274,7 +333,6 @@ class UserService {
           };
         }
       }
-
 
       /**
        * STEP2
@@ -321,29 +379,71 @@ class UserService {
   }
 
   /**
+   * @name updateApprovalJoinYn
+   * @description 주어진 docId를 가진 유저의 approvalJoinYn을 "Y"로 변경
+   * @param docId Firestore 문서 ID
+   */
+  async updateApprovalJoinYn(
+    docId: string,
+  ): Promise<ApiResponse<string | null>> {
+    try {
+      // Firestore 문서 참조 생성
+      const userDocRef = doc(db, "collection_user", docId);
+
+      // approvalJoinYn 업데이트
+      await updateDoc(userDocRef, { approvalJoinYn: "Y" });
+
+      return {
+        success: true,
+        message: "승인 상태가 정상적으로 변경되었습니다.",
+        data: docId,
+      };
+    } catch (e) {
+      console.error("승인 상태 변경 중 오류가 발생했습니다.", e);
+      return {
+        success: false,
+        message: "승인 상태 변경 중 오류가 발생했습니다.",
+        data: null,
+      };
+    }
+  }
+
+  /**
    * @name withDrawnUser
-   * @param user 삭제하기를 원하는 유저 정보
+   * @param user 단일 유저 또는 유저 배열
    * @param type REJECTED: 승인반려용도, WITHDRAWN: 삭제용도
    * @description 개인정보 수정
    */
-   async withDrawnUser(
-    user: User,
-    type: "REJECTED" | "WITHDRAWN"
+  async withDrawnUser(
+    user: User | User[],
+    type: "REJECTED" | "WITHDRAWN",
   ): Promise<ApiResponse<string | null>> {
-    const userDocRef = doc(db, "collection_user", user.docId);
+    // 단일 객체를 배열로 변환
+    const users = Array.isArray(user) ? user : [user];
 
     try {
-      // 서브 유저 삭제 - parentDocId가 user.docId인 문서 삭제
-      const subUserRef = collection(db, "collection_sub_user");
-      const q = query(subUserRef, where("parentDocId", "==", user.docId));
-      const querySnapshot = await getDocs(q);
+      // 모든 유저 삭제 처리
+      const deletePromises = users.map(async (user) => {
+        const userDocRef = doc(db, "collection_user", user.docId);
 
-      // 서브 유저 문서가 있으면 삭제
-      const deletePromises = querySnapshot.docs.map((doc) => deleteDoc(doc.ref));
-      await Promise.all(deletePromises);
+        // 서브 유저 삭제 - parentDocId가 user.docId인 문서 삭제
+        const subUserRef = collection(db, "collection_sub_user");
+        const q = query(subUserRef, where("parentDocId", "==", user.docId));
+        const querySnapshot = await getDocs(q);
 
-      // 회원 탈퇴 처리
-      await deleteDoc(userDocRef);
+        // 서브 유저 문서가 있으면 삭제
+        const subUserDeletePromises = querySnapshot.docs.map((doc) =>
+          deleteDoc(doc.ref),
+        );
+        await Promise.all(subUserDeletePromises);
+
+        // 메인 유저 삭제
+        await deleteDoc(userDocRef);
+        return userDocRef.id;
+      });
+
+      // 모든 삭제가 완료될 때까지 대기
+      const deletedIds = await Promise.all(deletePromises);
 
       return {
         success: true,
@@ -351,15 +451,18 @@ class UserService {
           type === "WITHDRAWN"
             ? "회원탈퇴가 완료되었습니다."
             : "정상적으로 승인요청을 반려했습니다.",
-        data: userDocRef.id,
+        data: deletedIds.join(", "),
       };
     } catch (error) {
-      console.error("Error adding user: ", error);
+      const msg =
+        type === "WITHDRAWN"
+          ? "회원탈퇴 요청 중 오류가 발생했습니다."
+          : "승인요청 반려 중 오류가 발생했습니다.";
+
+      console.error(msg, error);
       return {
         success: false,
-        message: type === "WITHDRAWN"
-          ? "회원탈퇴가 요청 중 오류가 발생했습니다.."
-          : "승인요청 반려 중 오류가 발생했습니다.",
+        message: msg,
         data: null,
       };
     }
@@ -370,28 +473,35 @@ class UserService {
    * @description 직업 별 유저 정보 불러오기 (대표/서브캐릭터 포함)
    * @return DashboardJobDistributionResponse[] | null
    */
-  async findJobDistributionList(): Promise<DashboardJobDistributionResponse[] | null> {
+  async findJobDistributionList(): Promise<
+    DashboardJobDistributionResponse[] | null
+  > {
     try {
       // 1. 컬렉션 참조
-      const userCollection = collection(db, 'collection_user');
-      const subUserCollection = collection(db, 'collection_sub_user');
+      const userCollection = collection(db, "collection_user");
+      const subUserCollection = collection(db, "collection_sub_user");
 
       // 2. 병렬로 데이터 조회
       const [userSnapshot, subUserSnapshot] = await Promise.all([
-        getDocs(query(userCollection, where('approvalJoinYn', '==', 'Y'))),
+        getDocs(query(userCollection, where("approvalJoinYn", "==", "Y"))),
         getDocs(query(subUserCollection)),
       ]);
 
       // 3. 직업별 카운트 맵 초기화
-      const jobCountMap = jobTypeOptions.reduce<Record<string, { representCount: number; subCount: number }>>(
-        (acc, { value }) => ({ ...acc, [value]: { representCount: 0, subCount: 0 } }),
-        {}
+      const jobCountMap = jobTypeOptions.reduce<
+        Record<string, { representCount: number; subCount: number }>
+      >(
+        (acc, { value }) => ({
+          ...acc,
+          [value]: { representCount: 0, subCount: 0 },
+        }),
+        {},
       );
 
       // 4. 공통 카운트 함수
       const countJobs = (
         snapshot: typeof userSnapshot,
-        type: 'representCount' | 'subCount'
+        type: "representCount" | "subCount",
       ) => {
         snapshot.forEach((doc) => {
           const job = doc.data().job;
@@ -402,22 +512,26 @@ class UserService {
       };
 
       // 5. 카운트 처리
-      countJobs(userSnapshot, 'representCount');
-      countJobs(subUserSnapshot, 'subCount');
+      countJobs(userSnapshot, "representCount");
+      countJobs(subUserSnapshot, "subCount");
 
       // 6. 결과 반환
-      return Object.entries(jobCountMap).map(([job, { representCount, subCount }]) => ({
-        job,
-        representCount,
-        subCount,
-        totalCount: representCount + subCount,
-      }));
+      return Object.entries(jobCountMap).map(
+        ([job, { representCount, subCount }]) => ({
+          job,
+          representCount,
+          subCount,
+          totalCount: representCount + subCount,
+        }),
+      );
     } catch (error) {
-      console.error('직업별 유저 정보를 불러오는 중 에러가 발생했습니다. ', error);
+      console.error(
+        "직업별 유저 정보를 불러오는 중 에러가 발생했습니다. ",
+        error,
+      );
       return null;
     }
   }
-
 }
 
 // 싱글톤 인스턴스 생성하여 export
