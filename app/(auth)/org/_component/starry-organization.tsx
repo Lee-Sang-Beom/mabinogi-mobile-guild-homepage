@@ -18,6 +18,7 @@ import { jobCategoryMap } from "@/shared/constants/game";
 import { Planet } from "./planet";
 import { UserDialog } from "@/app/(auth)/org/_component/user-dialog";
 import { Star } from "@/app/(auth)/org/_component/star";
+import { getUserStarSize } from "@/app/(auth)/org/utils";
 
 export default function StarryOrganization({
   user,
@@ -132,11 +133,8 @@ export default function StarryOrganization({
         const orbitSpeed = 0.003 + Math.random() * 0.005; // 공전 속도 (더 느리게)
         const orbitOffset = (userIndex / categoryUsers.length) * Math.PI * 2; // 시작 위치 (균등 분포)
 
-        // 별의 크기는 역할에 따라 다르게 (전체적으로 크기 증가)
-        let size = 3 + Math.random() * 2;
-        if (user.role === "GUILD_MASTER") size = 6 + Math.random() * 1.5;
-        else if (user.role === "GUILD_SUB_MASTER")
-          size = 5 + Math.random() * 1.5;
+        // 별의 크기는 "길드 영향력(이벤트 뱃지)"에 따라 다르게!!!!!!!!!!
+        const size = getUserStarSize(user);
 
         // 별의 색상은 직업에 따라 다르게
         const jobInfo = jobCategoryMap[user.job];

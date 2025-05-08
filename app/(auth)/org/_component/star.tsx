@@ -111,14 +111,8 @@ export function Star({ user, star, mousePosition, onClickAction }: StarProps) {
       <div
         className="rounded-full transition-all duration-300"
         style={{
-          width:
-            star.docId === user.docId
-              ? "10px"
-              : `${(star.size || 3) * (isHovered ? 1.5 : 1)}px`,
-          height:
-            star.docId === user.docId
-              ? "10px"
-              : `${(star.size || 3) * (isHovered ? 1.5 : 1)}px`,
+          width: `${(star.size || 3) * (isHovered ? 1.5 : 1)}px`,
+          height: `${(star.size || 3) * (isHovered ? 1.5 : 1)}px`,
           backgroundImage:
             star.docId === user.docId
               ? "linear-gradient(135deg, #ffffff, #f0f0f0, #eaeaea)"
