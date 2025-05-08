@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
+import "@/app/display-editor-content.scss";
 interface DisplayEditorContentProps {
   content: string;
 }
