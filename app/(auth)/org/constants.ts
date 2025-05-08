@@ -5,7 +5,10 @@ import { hexToRgba } from "@/shared/utils/utils";
 export const planets = jobcategoryKeys.map((category, index) => {
   // 행성 위치 계산 (원형으로 배치)
   const angle = (index / jobcategoryKeys.length) * Math.PI * 2;
-  const centerX = 50; // 화면 중앙 X 좌표 (%)
+
+  // 화면 크기에 따라 centerX 값 설정
+  const centerX =
+    typeof window !== "undefined" && window.innerWidth < 768 ? 40 : 50; // 화면 중앙 X 좌표 (%)
   const centerY = 50; // 화면 중앙 Y 좌표 (%)
 
   // 행성 색상은 해당 카테고리의 대표 색상 사용

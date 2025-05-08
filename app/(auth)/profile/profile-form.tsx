@@ -1,38 +1,63 @@
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { motion } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
-  DialogDescription, DialogFooter,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertTriangle } from 'lucide-react'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
-import { profileFormSchema } from './schema'
-import { User } from 'next-auth'
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
-import { guildRoleOptions, jobTypeOptions } from '@/shared/constants/game'
-import { useUpdateUser } from '@/app/(auth)/profile/hooks/use-update-user'
-import { useWithdrawnUser } from './hooks/use-withdrawn-user'
-import { useSession } from 'next-auth/react'
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { profileFormSchema } from "./schema";
+import { User } from "next-auth";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { guildRoleOptions, jobTypeOptions } from "@/shared/constants/game";
+import { useUpdateUser } from "@/app/(auth)/profile/hooks/use-update-user";
+import { useWithdrawnUser } from "./hooks/use-withdrawn-user";
+import { useSession } from "next-auth/react";
 
 interface ProfileForm {
   user: User;
 }
 
 export default function ProfileForm({ user }: ProfileForm) {
-  const {update} = useSession()
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { update } = useSession();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const updateUserMutation = useUpdateUser(); // 유저 업데이트 tanstack-query
   const withdrawnUserMutation = useWithdrawnUser(); // 유저 회원탈퇴 tanstack-query
   const form = useForm<z.infer<typeof profileFormSchema>>({
@@ -40,26 +65,35 @@ export default function ProfileForm({ user }: ProfileForm) {
     defaultValues: {
       docId: user.docId,
       id: user.id,
-      password: '',
+      password: "",
       otp: user.otp,
       job: user.job,
       role: user.role,
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof profileFormSchema>) {
-    updateUserMutation.mutate({ data: values, currentUser: user,update:update });
+    updateUserMutation.mutate({
+      data: values,
+      currentUser: user,
+      update: update,
+    });
   }
 
   function handleWithdrawn(user: User) {
     withdrawnUserMutation.mutate({
       user,
-      type: 'WITHDRAWN', // 또는 'REJECTED'
+      type: "WITHDRAWN", // 또는 'REJECTED'
+      redirect: true,
     });
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <Card className="relative bg-background/50 backdrop-blur-sm border-primary/10 shadow-xl">
         <CardHeader>
           <CardTitle>프로필 정보 수정</CardTitle>
@@ -89,7 +123,11 @@ export default function ProfileForm({ user }: ProfileForm) {
                   <FormItem>
                     <FormLabel>비밀번호 (변경하려면 입력하세요)</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="새 비밀번호" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="새 비밀번호"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -101,12 +139,11 @@ export default function ProfileForm({ user }: ProfileForm) {
                 name="otp"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>PIN 번호 (비밀번호 찾기 시 사용되는 고유한 번호입니다.)</FormLabel>
+                    <FormLabel>
+                      PIN 번호 (비밀번호 찾기 시 사용되는 고유한 번호입니다.)
+                    </FormLabel>
                     <FormControl>
-                      <InputOTP
-                        {...field}
-                        maxLength={6}
-                      >
+                      <InputOTP {...field} maxLength={6}>
                         <InputOTPGroup>
                           <InputOTPSlot index={0} />
                           <InputOTPSlot index={1} />
@@ -149,7 +186,7 @@ export default function ProfileForm({ user }: ProfileForm) {
                               <SelectItem value={job.value} key={job.value}>
                                 {job.name}
                               </SelectItem>
-                            )
+                            );
                           })}
                         </SelectContent>
                       </Select>
@@ -181,7 +218,7 @@ export default function ProfileForm({ user }: ProfileForm) {
                               <SelectItem value={role.value} key={role.value}>
                                 {role.name}
                               </SelectItem>
-                            )
+                            );
                           })}
                         </SelectContent>
                       </Select>
@@ -194,7 +231,10 @@ export default function ProfileForm({ user }: ProfileForm) {
               </div>
 
               <div className="flex justify-between pt-4">
-                <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <Dialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={setIsDeleteDialogOpen}
+                >
                   <DialogTrigger asChild>
                     <Button variant="destructive" type="button">
                       회원 탈퇴
@@ -204,21 +244,31 @@ export default function ProfileForm({ user }: ProfileForm) {
                     <DialogHeader>
                       <DialogTitle>회원 탈퇴</DialogTitle>
                       <DialogDescription>
-                        정말로 회원 탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                        정말로 회원 탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수
+                        없습니다.
                       </DialogDescription>
                     </DialogHeader>
                     <Alert variant="destructive">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertTitle>주의</AlertTitle>
                       <AlertDescription>
-                        회원 탈퇴 시 모든 계정 정보가 삭제되며 복구할 수 없습니다.
+                        회원 탈퇴 시 모든 계정 정보가 삭제되며 복구할 수
+                        없습니다.
                       </AlertDescription>
                     </Alert>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsDeleteDialogOpen(false)}
+                      >
                         취소
                       </Button>
-                      <Button variant="destructive" onClick={()=>{handleWithdrawn(user)}}>
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          handleWithdrawn(user);
+                        }}
+                      >
                         탈퇴 확인
                       </Button>
                     </DialogFooter>
@@ -230,7 +280,9 @@ export default function ProfileForm({ user }: ProfileForm) {
                   className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
                   disabled={updateUserMutation.isPending}
                 >
-                  {updateUserMutation.isPending ? '저장 중...' : '변경사항 저장'}
+                  {updateUserMutation.isPending
+                    ? "저장 중..."
+                    : "변경사항 저장"}
                 </Button>
               </div>
             </form>
@@ -238,5 +290,5 @@ export default function ProfileForm({ user }: ProfileForm) {
         </CardContent>
       </Card>
     </motion.div>
-  )
+  );
 }

@@ -37,7 +37,7 @@ export default function AnnouncementsList({ user }: NoticeListProps) {
       if (selectedRows.length === 0) return;
       if (!isAdmin) {
         toast.error(
-          "삭제할 권한이 없습니다. 길드 마스터 혹은 서브 마스터만 삭제할 수 있습니다."
+          "삭제할 권한이 없습니다. 길드 마스터 혹은 서브 마스터만 삭제할 수 있습니다.",
         );
         return;
       }
@@ -45,7 +45,7 @@ export default function AnnouncementsList({ user }: NoticeListProps) {
       const selectedDocIds = selectedRows.map((row) => row.docId);
       deleteNotice(selectedDocIds);
     },
-    [deleteNotice, isAdmin]
+    [deleteNotice, isAdmin],
   );
 
   // 공지사항 상세 페이지로 이동 - useCallback으로 메모이제이션
@@ -54,7 +54,7 @@ export default function AnnouncementsList({ user }: NoticeListProps) {
       if (!notice?.docId) return;
       router.push(`/announcements/${notice.docId}`);
     },
-    [router]
+    [router],
   );
 
   // 선택 변경 핸들러 - useCallback으로 메모이제이션
@@ -63,7 +63,7 @@ export default function AnnouncementsList({ user }: NoticeListProps) {
       // 필요한 경우 여기서 선택된 행 처리
       console.log("선택된 행:", selectedRows.length);
     },
-    []
+    [],
   );
 
   // 컴포넌트 마운트 시 한 번만 실행
@@ -157,7 +157,8 @@ export default function AnnouncementsList({ user }: NoticeListProps) {
                     onDeleteSelected={handleDeleteNotices}
                     columnLabels={noticeColumnLabels}
                     deleteButtonText={"선택 삭제"}
-                    isAvailableDelete={isAdmin ? true : false}
+                    isAvailableDelete={isAdmin}
+                    getRowId={(notice) => notice.docId}
                   />
                 ) : (
                   <SkeletonLoading />

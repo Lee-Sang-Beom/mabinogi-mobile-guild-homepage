@@ -32,7 +32,7 @@ export default function CommunityTips() {
       const selectedDocIds = selectedRows.map((row) => row.docId);
       deleteNotice(selectedDocIds);
     },
-    [deleteNotice]
+    [deleteNotice],
   );
 
   const handleNoticeClick = useCallback(
@@ -40,14 +40,14 @@ export default function CommunityTips() {
       if (!notice?.docId) return;
       router.push(`/community/${notice.docId}?tab=tips`);
     },
-    [router]
+    [router],
   );
 
   const handleSelectionChange = useCallback(
     (selectedRows: NoticeResponse[]) => {
       console.log("선택된 행:", selectedRows.length);
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -90,6 +90,7 @@ export default function CommunityTips() {
               columnLabels={noticeColumnLabels}
               deleteButtonText="선택 삭제"
               isAvailableDelete={false}
+              getRowId={(notice) => notice.docId}
             />
           ) : (
             <SkeletonLoading />

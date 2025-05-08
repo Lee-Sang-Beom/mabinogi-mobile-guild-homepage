@@ -1,0 +1,13 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/AuthOptions";
+import { redirect } from "next/navigation";
+import AdminTabs from "@/app/(auth)/admin/_components/AdminTabs";
+
+export default async function Page() {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    redirect("/login");
+  }
+
+  return <AdminTabs user={session.user} />;
+}
