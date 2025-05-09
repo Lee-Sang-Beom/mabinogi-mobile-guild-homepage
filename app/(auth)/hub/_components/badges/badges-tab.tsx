@@ -10,8 +10,11 @@ import { BadgeCard } from "@/app/(auth)/hub/_components/badges/badge-card";
 import { BadgeDialog } from "@/app/(auth)/hub/_components/badges/badge-dialog";
 import { BadgeForm } from "./badge-form";
 import { BadgeFormSchemaType } from "@/app/(auth)/hub/schema";
+import { isRoleAdmin } from "@/shared/utils/utils";
+import { User } from "next-auth";
 
 interface BadgesTabProps {
+  user: User;
   badges: BadgeResponse[];
   onBadgeAddAction: (badge: BadgeFormSchemaType) => void;
   onBadgeEditAction: (docId: string | null, badge: BadgeFormSchemaType) => void;
@@ -20,12 +23,14 @@ interface BadgesTabProps {
 }
 
 export function BadgesTab({
+  user,
   badges,
   onBadgeAddAction,
   onBadgeEditAction,
   onBadgeDeleteAction,
   viewMode,
 }: BadgesTabProps) {
+  const isAdmin = isRoleAdmin(user);
   const [selectedBadge, setSelectedBadge] = useState<BadgeResponse | null>(
     null,
   );
@@ -70,11 +75,13 @@ export function BadgesTab({
 
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <Button onClick={handleAddBadge} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" /> 뱃지 추가
-        </Button>
-      </div>
+      {isAdmin && (
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <Button onClick={handleAddBadge} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" /> 뱃지 추가
+          </Button>
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         {badges.length > 0 ? (
@@ -119,6 +126,7 @@ export function BadgesTab({
 
       {selectedBadge && (
         <BadgeDialog
+          isAdmin={isAdmin}
           badge={selectedBadge}
           isOpen={isDialogOpen}
           onCloseAction={() => setIsDialogOpen(false)}

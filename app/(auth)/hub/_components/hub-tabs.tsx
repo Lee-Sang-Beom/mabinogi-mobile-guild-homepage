@@ -17,8 +17,9 @@ import {
   AnimatedLoading,
   SkeletonCardLoading,
 } from "@/components/animated-loading";
+import { NoticeListProps } from "@/shared/notice/internal";
 
-export default function HubTabs() {
+export default function HubTabs({ user }: NoticeListProps) {
   const [viewMode, setViewMode] = useState<"grid" | "cards">("grid");
   const [activeTab, setActiveTab] = useState("badges");
 
@@ -111,6 +112,7 @@ export default function HubTabs() {
             <SkeletonCardLoading className="bg-background/60 backdrop-blur-sm border-primary/10 shadow-xl overflow-hidden rounded-2xl p-4" />
           ) : (
             <BadgesTab
+              user={user}
               badges={badgeData?.data || []}
               onBadgeAddAction={handleBadgeAdd}
               onBadgeEditAction={handleBadgeEdit}

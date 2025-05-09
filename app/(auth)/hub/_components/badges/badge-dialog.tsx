@@ -25,6 +25,7 @@ import { BadgeResponse } from "../../api";
 import { BadgeImage } from "@/app/(auth)/hub/_components/badges/badge-image";
 
 interface BadgeDialogProps {
+  isAdmin: boolean;
   badge: BadgeResponse | null;
   isOpen: boolean;
   onCloseAction: () => void;
@@ -33,6 +34,7 @@ interface BadgeDialogProps {
 }
 
 export function BadgeDialog({
+  isAdmin,
   badge,
   isOpen,
   onCloseAction,
@@ -137,20 +139,22 @@ export function BadgeDialog({
               </div>
             </div>
 
-            <DialogFooter className="flex justify-between sm:justify-end gap-2">
-              <Button
-                variant="outline"
-                className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
-                onClick={() => setIsDeleteDialogOpen(true)}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                삭제
-              </Button>
-              <Button onClick={handleEdit}>
-                <Edit className="h-4 w-4 mr-2" />
-                수정
-              </Button>
-            </DialogFooter>
+            {isAdmin && (
+              <DialogFooter className="flex justify-between sm:justify-end gap-2">
+                <Button
+                  variant="outline"
+                  className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  삭제
+                </Button>
+                <Button onClick={handleEdit}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  수정
+                </Button>
+              </DialogFooter>
+            )}
           </>
           {/* BadgeForm 부분 제거 */}
         </DialogContent>
