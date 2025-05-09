@@ -4,11 +4,14 @@ import { ArrowRight, ImageIcon, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { useGetLatestArtworkCommunity } from "../hooks/use-get-latest-artwork-community";
 import { getNoticeThumbnailImageSrc } from "@/shared/notice/utils";
-export default function DashboardArtwork() {
-  const { data } = useGetLatestArtworkCommunity();
+import { ApiResponse } from "@/shared/types/api";
+import { NoticeResponse } from "@/shared/notice/api";
 
+interface IProps {
+  data: ApiResponse<NoticeResponse | null> | undefined;
+}
+export default function DashboardArtwork({ data }: IProps) {
   return (
     <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full overflow-hidden group">
       <CardHeader className="pb-2 relative z-10">

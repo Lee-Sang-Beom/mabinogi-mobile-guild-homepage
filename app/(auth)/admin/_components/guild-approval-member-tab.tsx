@@ -11,9 +11,10 @@ import {
 import { useUpdateApprovalJoinYn } from "../hooks/use-update-approval-join";
 import { useWithdrawnUser } from "@/app/(auth)/profile/hooks/use-withdrawn-user";
 import { User } from "next-auth";
+import { AnimatedLoading } from "@/components/animated-loading";
 
 export default function GuildApprovalMemberTab() {
-  const { data: pendingMembers } = useGetUnapprovedUsers();
+  const { data: pendingMembers, isPending } = useGetUnapprovedUsers();
   const updateApprovalJoinYnMutation = useUpdateApprovalJoinYn();
   const withdrawnUserMutation = useWithdrawnUser(); // 유저 회원탈퇴 tanstack-query
 
@@ -27,6 +28,11 @@ export default function GuildApprovalMemberTab() {
       redirect: false,
     });
   };
+
+  // 로딩 컴포넌트
+  if (isPending) {
+    return <AnimatedLoading />;
+  }
 
   return (
     <TabsContent value="approval">

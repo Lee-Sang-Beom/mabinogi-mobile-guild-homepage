@@ -1,15 +1,17 @@
 import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  Search,
-  Info,
   Bell,
-  RefreshCw,
+  BookmarkIcon,
+  FileText,
   ImageIcon,
+  Info,
+  LayoutDashboard,
+  Link as LinkIcon,
+  RefreshCw,
+  Search,
   Settings,
   UserCog,
   UserPlus,
+  Users,
 } from "lucide-react";
 import { MenuItem } from "../types/menu";
 
@@ -78,6 +80,18 @@ export const loggedInMenuStructure: MenuItem[] = [
         name: "회원가입 관리",
         href: "/admin?tab=approval",
         icon: UserPlus,
+      },
+    ],
+  },
+  {
+    name: "허브",
+    href: "/hub",
+    icon: LinkIcon,
+    submenu: [
+      {
+        name: "도감",
+        href: "/hub?tab=badge",
+        icon: BookmarkIcon,
       },
     ],
   },
