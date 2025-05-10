@@ -28,7 +28,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { badgeFormSchema, BadgeFormSchemaType } from "../../schema";
-import { formDefaultValues } from "@/app/(auth)/hub/data";
 
 interface BadgeFormProps {
   defaultValues?: BadgeFormSchemaType;
@@ -45,7 +44,7 @@ export function BadgeForm({
 }: BadgeFormProps) {
   const form = useForm<BadgeFormSchemaType>({
     resolver: zodResolver(badgeFormSchema),
-    defaultValues: defaultValues || formDefaultValues,
+    defaultValues: defaultValues,
   });
 
   const handleSubmit = (data: BadgeFormSchemaType) => {
@@ -164,7 +163,7 @@ export function BadgeForm({
             name="imgName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>이미지 파일명</FormLabel>
+                <FormLabel>{`이미지 파일명 (확장자 포함)`}</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="이미지 이름을 입력하세요 (예: badge-champion.png)"
@@ -172,9 +171,8 @@ export function BadgeForm({
                   />
                 </FormControl>
                 <FormDescription className={"text-red-400 text-xs"}>
-                  이미지 파일은 뱃지 등록 전 반드시{" "}
-                  <strong>홈페이지 개발 담당자</strong>
-                  에게 미리 전달해야합니다.
+                  이미지 파일은 <strong>홈페이지 개발 담당자</strong>
+                  에게 따로 전달해 주셔야 도감 썸네일이 등록됩니다.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

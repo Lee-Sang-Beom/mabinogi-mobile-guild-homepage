@@ -3,10 +3,10 @@ import { ApiResponse } from "@/shared/types/api";
 import { badgeService } from "@/service/badge-service";
 import { BadgeResponse } from "@/app/(auth)/hub/api";
 
-export function useGetBadges() {
+export function useGetApprovalBadges() {
   return useQuery<ApiResponse<BadgeResponse[]>, Error>({
-    queryKey: ["useGetBadges"],
-    queryFn: () => badgeService.getAll(),
+    queryKey: ["useGetApprovedBadges"],
+    queryFn: () => badgeService.getAllApproved(),
     enabled: true,
   });
 }

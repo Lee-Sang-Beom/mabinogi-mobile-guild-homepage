@@ -8,6 +8,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   query,
   updateDoc,
@@ -30,8 +31,8 @@ class UserService {
       const snapshot = await getDocs(
         query(
           collection(db, "collection_user"),
-          where("approvalJoinYn", "==", "Y"),
-        ),
+          where("approvalJoinYn", "==", "Y")
+        )
       );
 
       if (snapshot.empty) return null;
@@ -56,8 +57,8 @@ class UserService {
       const snapshot = await getDocs(
         query(
           collection(db, "collection_user"),
-          where("approvalJoinYn", "==", "N"),
-        ),
+          where("approvalJoinYn", "==", "N")
+        )
       );
 
       if (snapshot.empty) return null;
@@ -74,13 +75,34 @@ class UserService {
   }
 
   /**
+   * @name getUserByDocId
+   * @description Firestore에서 특정 docId를 가진 유저를 조회
+   */
+  async getUserByDocId(docId: string): Promise<User | null> {
+    try {
+      // 🔄 docId로 직접 접근
+      const docRef = doc(db, "collection_user", docId);
+      const docSnap = await getDoc(docRef);
+
+      // 문서가 없으면 null 반환
+      if (!docSnap.exists()) return null;
+
+      // 문서가 있으면 데이터 반환
+      return { docId: docSnap.id, ...docSnap.data() } as User;
+    } catch (e) {
+      console.error("유저의 정보를 조회하는 도중에 오류가 발생했습니다. ", e);
+      throw new Error("유저의 정보를 조회하는 도중에 오류가 발생했습니다.");
+    }
+  }
+
+  /**
    * @name getUserById
    * @description Firestore에서 특정 ID를 가진 유저를 조회
    */
   async getUserById(id: string): Promise<User | null> {
     try {
       const snapshot = await getDocs(
-        query(collection(db, "collection_user"), where("id", "==", id)),
+        query(collection(db, "collection_user"), where("id", "==", id))
       );
 
       // 문서가 없으면 null 반환
@@ -101,7 +123,7 @@ class UserService {
    */
   async getCollectionUserByIdAndPassword(
     id: string,
-    password: string,
+    password: string
   ): Promise<User | null> {
     const user = await this.getUserById(id);
     return user && verifyPassword(password, user.password) ? user : null;
@@ -137,7 +159,7 @@ class UserService {
    * @description 회원가입
    */
   async join(
-    data: z.infer<typeof joinFormSchema>,
+    data: z.infer<typeof joinFormSchema>
   ): Promise<ApiResponse<string | null>> {
     try {
       // ID 중복 확인
@@ -165,7 +187,7 @@ class UserService {
       // Firestore에 유저 추가
       const docRef = await addDoc(
         collection(db, "collection_user"),
-        userWithEncryptedPassword,
+        userWithEncryptedPassword
       );
 
       return {
@@ -190,7 +212,7 @@ class UserService {
    * @description 비밀번호 찾기 (실질적 쿼리 발생)
    */
   private async getCollectionUserByDetails(
-    data: z.infer<typeof forgotPasswordStep1FormSchema>,
+    data: z.infer<typeof forgotPasswordStep1FormSchema>
   ): Promise<User | null> {
     try {
       const q = query(
@@ -198,7 +220,7 @@ class UserService {
         where("id", "==", data.id),
         where("job", "==", data.job),
         where("role", "==", data.role),
-        where("otp", "==", data.otp),
+        where("otp", "==", data.otp)
       );
 
       const snapshot = await getDocs(q);
@@ -209,10 +231,10 @@ class UserService {
     } catch (e) {
       console.error(
         "비밀번호 찾기를 위한 대상 유저 조회 중 오류가 발생했습니다.: ",
-        e,
+        e
       );
       throw new Error(
-        "비밀번호 찾기를 위한 대상 유저 조회 중 오류가 발생했습니다.",
+        "비밀번호 찾기를 위한 대상 유저 조회 중 오류가 발생했습니다."
       );
     }
   }
@@ -223,7 +245,7 @@ class UserService {
    * @description 비밀번호 찾기
    */
   async findUserForPasswordReset(
-    values: z.infer<typeof forgotPasswordStep1FormSchema>,
+    values: z.infer<typeof forgotPasswordStep1FormSchema>
   ): Promise<ApiResponse<User | null>> {
     try {
       const existingUser = await this.getCollectionUserByDetails(values);
@@ -260,7 +282,7 @@ class UserService {
    */
   async changePassword(
     password: string,
-    user: User,
+    user: User
   ): Promise<ApiResponse<string | null>> {
     try {
       const { id, job, role, otp } = user;
@@ -287,7 +309,7 @@ class UserService {
       };
       await updateDoc(
         doc(db, "collection_user", existingUser.docId),
-        updatedUser,
+        updatedUser
       );
 
       return {
@@ -315,7 +337,7 @@ class UserService {
   async updateUser(
     data: z.infer<typeof profileFormSchema>,
     currentUser: User,
-    update: (data: { user: User }) => Promise<Session | null>,
+    update: (data: { user: User }) => Promise<Session | null>
   ): Promise<ApiResponse<string | null>> {
     try {
       /**
@@ -384,7 +406,7 @@ class UserService {
    * @param docId Firestore 문서 ID
    */
   async updateApprovalJoinYn(
-    docId: string,
+    docId: string
   ): Promise<ApiResponse<string | null>> {
     try {
       // Firestore 문서 참조 생성
@@ -416,7 +438,7 @@ class UserService {
    */
   async withDrawnUser(
     user: User | User[],
-    type: "REJECTED" | "WITHDRAWN",
+    type: "REJECTED" | "WITHDRAWN"
   ): Promise<ApiResponse<string | null>> {
     // 단일 객체를 배열로 변환
     const users = Array.isArray(user) ? user : [user];
@@ -433,7 +455,7 @@ class UserService {
 
         // 서브 유저 문서가 있으면 삭제
         const subUserDeletePromises = querySnapshot.docs.map((doc) =>
-          deleteDoc(doc.ref),
+          deleteDoc(doc.ref)
         );
         await Promise.all(subUserDeletePromises);
 
@@ -495,13 +517,13 @@ class UserService {
           ...acc,
           [value]: { representCount: 0, subCount: 0 },
         }),
-        {},
+        {}
       );
 
       // 4. 공통 카운트 함수
       const countJobs = (
         snapshot: typeof userSnapshot,
-        type: "representCount" | "subCount",
+        type: "representCount" | "subCount"
       ) => {
         snapshot.forEach((doc) => {
           const job = doc.data().job;
@@ -522,12 +544,12 @@ class UserService {
           representCount,
           subCount,
           totalCount: representCount + subCount,
-        }),
+        })
       );
     } catch (error) {
       console.error(
         "직업별 유저 정보를 불러오는 중 에러가 발생했습니다. ",
-        error,
+        error
       );
       return null;
     }

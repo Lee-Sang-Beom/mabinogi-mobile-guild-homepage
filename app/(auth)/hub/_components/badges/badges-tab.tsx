@@ -10,8 +10,8 @@ import { BadgeCard } from "@/app/(auth)/hub/_components/badges/badge-card";
 import { BadgeDialog } from "@/app/(auth)/hub/_components/badges/badge-dialog";
 import { BadgeForm } from "./badge-form";
 import { BadgeFormSchemaType } from "@/app/(auth)/hub/schema";
-import { isRoleAdmin } from "@/shared/utils/utils";
 import { User } from "next-auth";
+import { formDefaultValues } from "../../data";
 
 interface BadgesTabProps {
   user: User;
@@ -30,9 +30,8 @@ export function BadgesTab({
   onBadgeDeleteAction,
   viewMode,
 }: BadgesTabProps) {
-  const isAdmin = isRoleAdmin(user);
   const [selectedBadge, setSelectedBadge] = useState<BadgeResponse | null>(
-    null,
+    null
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -61,7 +60,7 @@ export function BadgesTab({
 
   const handleSaveBadge = (
     docId: string | null,
-    badge: BadgeFormSchemaType,
+    badge: BadgeFormSchemaType
   ) => {
     if (editingBadge) {
       // 기존 뱃지 수정
@@ -75,13 +74,11 @@ export function BadgesTab({
 
   return (
     <>
-      {isAdmin && (
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <Button onClick={handleAddBadge} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" /> 뱃지 추가
-          </Button>
-        </div>
-      )}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <Button onClick={handleAddBadge} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" /> 뱃지 추가
+        </Button>
+      </div>
 
       <AnimatePresence mode="wait">
         {badges.length > 0 ? (
@@ -126,7 +123,7 @@ export function BadgesTab({
 
       {selectedBadge && (
         <BadgeDialog
-          isAdmin={isAdmin}
+          user={user}
           badge={selectedBadge}
           isOpen={isDialogOpen}
           onCloseAction={() => setIsDialogOpen(false)}
@@ -150,8 +147,13 @@ export function BadgesTab({
                     acquisitionConditions: editingBadge.acquisitionConditions,
                     difficultyLevel: editingBadge.difficultyLevel,
                     imgName: editingBadge.imgName,
+                    approvalYn: "Y",
+                    registerUserDocId: user.docId,
                   }
-                : undefined
+                : {
+                    ...formDefaultValues,
+                    registerUserDocId: user.docId,
+                  }
             }
             onSubmitAction={(data: BadgeFormSchemaType) => {
               if (editingBadge) {

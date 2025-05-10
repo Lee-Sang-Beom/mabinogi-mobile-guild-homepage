@@ -10,6 +10,8 @@ export const badgeFormSchema = z.object({
   acquisitionConditions: z.string().min(1, "획득 조건을 입력해주세요."),
   difficultyLevel: z.enum(["쉬움", "보통", "어려움", "매우 어려움"] as const),
   imgName: z.string().min(1, "이미지 이름을 입력해주세요."),
+  approvalYn: z.enum(["Y", "N"] as const),
+  registerUserDocId: z.string(),
 });
 
 export type BadgeFormSchemaType = z.infer<typeof badgeFormSchema>;

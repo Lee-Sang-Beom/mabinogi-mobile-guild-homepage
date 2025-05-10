@@ -11,8 +11,12 @@ export function useCreateBadge() {
     mutationFn: (data) => badgeService.create(data),
     onSuccess: (response) => {
       if (response.success) {
-        toast.success("뱃지가 성공적으로 생성되었습니다.");
-        queryClient.invalidateQueries({ queryKey: ["useGetBadges"] });
+        toast.success(
+          "뱃지 추가 요청을 진행했습니다. 승인 후 도감에 표시됩니다."
+        );
+
+        queryClient.invalidateQueries({ queryKey: ["useGetApprovedBadges"] });
+        queryClient.invalidateQueries({ queryKey: ["useGetUnApprovedBadges"] });
       } else {
         toast.error(response.message);
       }

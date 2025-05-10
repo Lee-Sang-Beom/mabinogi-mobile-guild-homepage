@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { useEffect, useState } from "react"
-import { Cog, Home, Hammer, Wrench } from "lucide-react"
-import { guildName } from '@/shared/constants/game'
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Cog, Home, Hammer, Wrench } from "lucide-react";
+import { guildName } from "@/shared/constants/game";
 
 export default function AnimatedUnderDevelopment() {
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
+    setMounted(true);
     // Prevent scrolling
-    document.body.style.overflow = "hidden"
+    document.body.style.overflow = "hidden";
 
     return () => {
-      document.body.style.overflow = ""
-    }
-  }, [])
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
-  if (!mounted) return null
+  if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 w-screen h-screen flex flex-col items-center justify-center bg-black/90 text-white z-50 p-4">
@@ -99,8 +99,8 @@ export default function AnimatedUnderDevelopment() {
         >
           현재 이 페이지는 개발중입니다!
           <br />
-          하루빨리 <span className={"font-semibold"}>{guildName}</span>와 함께할 수 있는 공간을 만들 수 있도록
-          노력하겠습니다.
+          하루빨리 <span className={"font-semibold"}>{guildName}</span>와 함께할
+          수 있는 공간을 만들 수 있도록 노력하겠습니다.
         </motion.p>
 
         <motion.div
@@ -126,5 +126,5 @@ export default function AnimatedUnderDevelopment() {
         © 마비노기 모바일 {guildName} 커뮤니티
       </motion.div>
     </div>
-  )
+  );
 }

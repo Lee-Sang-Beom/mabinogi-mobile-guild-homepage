@@ -17,8 +17,11 @@ export function useUpdateBadge() {
     mutationFn: ({ docId, data }) => badgeService.update(docId, data),
     onSuccess: (response, variables) => {
       if (response.success) {
-        toast.success("뱃지가 성공적으로 수정되었습니다.");
-        queryClient.invalidateQueries({ queryKey: ["useGetBadges"] });
+        toast.success(
+          "뱃지 수정 요청을 진행했습니다. 승인 후 도감에 표시됩니다."
+        );
+        queryClient.invalidateQueries({ queryKey: ["useGetApprovedBadges"] });
+        queryClient.invalidateQueries({ queryKey: ["useGetUnApprovedBadges"] });
         queryClient.invalidateQueries({
           queryKey: ["useGetBadgeById", variables.docId],
         });

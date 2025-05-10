@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { AchievementsTab } from "@/app/(auth)/hub/_components/achievements/achievements-tab";
 import { CollectionsTab } from "@/app/(auth)/hub/_components/collections/collections-tab";
 import { BadgesTab } from "@/app/(auth)/hub/_components/badges/badges-tab";
-import { useGetBadges } from "@/app/(auth)/hub/hooks/badges/use-get-badges";
 import { useCreateBadge } from "../hooks/badges/use-create-badge";
 import { useDeleteBadge } from "@/app/(auth)/hub/hooks/badges/use-delete-badge";
 import { useUpdateBadge } from "@/app/(auth)/hub/hooks/badges/use-update-badge";
@@ -18,13 +17,14 @@ import {
   SkeletonCardLoading,
 } from "@/components/animated-loading";
 import { NoticeListProps } from "@/shared/notice/internal";
+import { useGetApprovalBadges } from "../hooks/badges/use-get-approval-badges";
 
 export default function HubTabs({ user }: NoticeListProps) {
   const [viewMode, setViewMode] = useState<"grid" | "cards">("grid");
   const [activeTab, setActiveTab] = useState("badges");
 
   // hooks
-  const { data: badgeData, isPending: badgesLoading } = useGetBadges();
+  const { data: badgeData, isPending: badgesLoading } = useGetApprovalBadges();
   const createBadge = useCreateBadge();
   const updateBadge = useUpdateBadge();
   const deleteBadge = useDeleteBadge();
@@ -35,19 +35,26 @@ export default function HubTabs({ user }: NoticeListProps) {
 
   // 뱃지 추가 핸들러
   const handleBadgeAdd = (badge: BadgeFormSchemaType) => {
-    createBadge.mutate(badge);
+    createBadge.mutate({
+      ...badge,
+      approvalYn: "N",
+    });
   };
 
   // 뱃지 수정 핸들러
   const handleBadgeEdit = (
     docId: string | null,
-    badge: BadgeFormSchemaType,
+    badge: BadgeFormSchemaType
   ) => {
     if (docId) {
-      updateBadge.mutate({ docId: docId!, data: badge });
+      // 수정요청은 승인상태를 다시 N으로!
+      updateBadge.mutate({
+        docId: docId!,
+        data: { ...badge, approvalYn: "N" },
+      });
     } else {
       toast.error(
-        "수정할 뱃지정보를 찾을 수 없습니다. 페이지 새로고침 후 다시 시도해주세요.",
+        "수정할 뱃지정보를 찾을 수 없습니다. 페이지 새로고침 후 다시 시도해주세요."
       );
     }
   };

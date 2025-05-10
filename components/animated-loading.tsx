@@ -47,6 +47,10 @@ export function AnimatedLoading({
     setMounted(true);
 
     document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [variant]);
 
   if (!mounted) return null;
@@ -63,7 +67,7 @@ export function AnimatedLoading({
         bgStyle,
         "flex flex-col items-center justify-center",
         variant === "container" && "rounded-md",
-        className,
+        className
       )}
       aria-live="polite"
       aria-busy={!error}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Dialog,
@@ -10,60 +9,41 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Edit, Lock, Trash2, Unlock } from "lucide-react";
-import { BadgeResponse } from "../../api";
 import { BadgeImage } from "@/app/(auth)/hub/_components/badges/badge-image";
-import { User } from "next-auth";
-import { useGetUserByDocId } from "@/app/(auth)/admin/hooks/use-get-user-by-doc-id";
+import { BadgeResponse } from "../../hub/api";
 import { AnimatedLoading } from "@/components/animated-loading";
-import { isHomePageAdmin } from "@/shared/utils/utils";
+import { useGetUserByDocId } from "../hooks/use-get-user-by-doc-id";
 
 interface BadgeDialogProps {
-  user: User;
+  isHomePageAdmin: boolean;
   badge: BadgeResponse | null;
   isOpen: boolean;
   onCloseAction: () => void;
-  onEditAction: (badge: BadgeResponse) => void;
-  onDeleteAction: (docId: string) => void;
+  onApprovalAction: (docId: string) => void;
+  onUnApprovalAction: (docId: string) => void;
 }
 
-export function BadgeDialog({
-  user,
+export function BadgeApprovalDialog({
+  isHomePageAdmin,
   badge,
   isOpen,
   onCloseAction,
-  onEditAction,
-  onDeleteAction,
+  onApprovalAction,
+  onUnApprovalAction,
 }: BadgeDialogProps) {
-  // isEditing 상태 제거
   const { data: badgeUser, isPending } = useGetUserByDocId(
     badge ? badge.registerUserDocId : ""
   );
 
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   if (!badge) return null;
 
-  const isMe = badge.registerUserDocId === user.docId ? true : false;
-  const isHAdmin = isHomePageAdmin(user);
-
-  // 수정된 handleEdit 함수
-  const handleEdit = () => {
-    onEditAction(badge);
+  const handleApproval = () => {
+    onApprovalAction(badge.docId);
   };
 
-  const handleDelete = () => {
-    onDeleteAction(badge.docId);
-    setIsDeleteDialogOpen(false);
+  const handleUnApproval = () => {
+    onUnApprovalAction(badge.docId);
     onCloseAction();
   };
 
@@ -78,7 +58,6 @@ export function BadgeDialog({
         onOpenChange={(open) => {
           if (!open) {
             onCloseAction();
-            // setIsEditing(false) 제거
           }
         }}
       >
@@ -151,7 +130,7 @@ export function BadgeDialog({
                   )}
                 </div>
 
-                {badge.isAcquisitionConditionsOpen || isHAdmin ? (
+                {badge.isAcquisitionConditionsOpen || isHomePageAdmin ? (
                   <p className="text-sm">{badge.acquisitionConditions}</p>
                 ) : (
                   <div className="bg-muted/50 p-3 rounded-md text-sm text-muted-foreground italic">
@@ -161,49 +140,24 @@ export function BadgeDialog({
               </div>
             </div>
 
-            {isMe && (
-              <DialogFooter className="flex justify-between sm:justify-end gap-2">
-                <Button
-                  variant="outline"
-                  className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  삭제
-                </Button>
-                <Button onClick={handleEdit}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  수정
-                </Button>
-              </DialogFooter>
-            )}
+            <DialogFooter className="flex justify-between sm:justify-end gap-2">
+              <Button
+                variant="outline"
+                className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                onClick={handleUnApproval}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                거절
+              </Button>
+              <Button onClick={handleApproval}>
+                <Edit className="h-4 w-4 mr-2" />
+                승인
+              </Button>
+            </DialogFooter>
           </>
+          {/* BadgeForm 부분 제거 */}
         </DialogContent>
       </Dialog>
-
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>뱃지 삭제</AlertDialogTitle>
-            <AlertDialogDescription>
-              {`정말로 '${badge.badge.name}' 뱃지를 삭제하시겠습니까? 이 작업은
-              되돌릴 수 없습니다.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

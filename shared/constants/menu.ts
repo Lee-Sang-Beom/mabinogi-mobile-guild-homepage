@@ -1,4 +1,5 @@
 import {
+  Badge,
   Bell,
   BookmarkIcon,
   FileText,
@@ -80,6 +81,11 @@ export const loggedInMenuStructure: MenuItem[] = [
         name: "회원가입 관리",
         href: "/admin?tab=approval",
         icon: UserPlus,
+      },
+      {
+        name: "뱃지 관리",
+        href: "/admin?tab=badge",
+        icon: Badge,
       },
     ],
   },

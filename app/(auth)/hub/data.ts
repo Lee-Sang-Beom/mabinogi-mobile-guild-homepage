@@ -10,4 +10,6 @@ export const formDefaultValues: BadgeFormSchemaType = {
   acquisitionConditions: "",
   difficultyLevel: "보통",
   imgName: "",
+  approvalYn: "N",
+  registerUserDocId: "",
 };
