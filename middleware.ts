@@ -35,6 +35,7 @@ export default withAuth(
           "/schedule",
           "/community",
           "/org",
+          "/hub",
         ];
         const { pathname } = req.nextUrl;
         if (tokenAccessPage.includes(pathname)) {

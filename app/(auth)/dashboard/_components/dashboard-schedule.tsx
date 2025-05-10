@@ -3,18 +3,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowRight, Clock, Info, Shield } from "lucide-react";
 import Link from "next/link";
-import { useGetLatestSchedule } from "../hooks/use-get-latest-schedule";
 import { useEffect, useState } from "react";
 import moment from "moment";
 import { cn } from "@/lib/utils";
+import { ApiResponse } from "@/shared/types/api";
+import { ScheduleResponse } from "@/app/(auth)/schedule/api";
 
 interface PartipateCountObjType {
   currentParticipateUserCount: number;
   maxParticipateUserCount: number;
 }
 
-export default function DashboardSchedule() {
-  const { data } = useGetLatestSchedule();
+interface IProps {
+  data: ApiResponse<ScheduleResponse | null> | undefined;
+}
+export default function DashboardSchedule({ data }: IProps) {
   const [partipateUserCountObj, setPartipateUserCountObj] =
     useState<PartipateCountObjType>({
       currentParticipateUserCount: 0,
@@ -23,6 +26,7 @@ export default function DashboardSchedule() {
 
   const [isPartyDepartCurrentDate, setIsPartyDepartCurrentDate] =
     useState<boolean>(false);
+
   useEffect(() => {
     if (!data || !data.data) {
       setIsPartyDepartCurrentDate(false);
@@ -101,7 +105,7 @@ export default function DashboardSchedule() {
                 <span
                   className={cn(
                     "font-medium",
-                    isPartyDepartCurrentDate && "text-red-400"
+                    isPartyDepartCurrentDate && "text-red-400",
                   )}
                 >
                   {`${data.data.date} ${data.data.time} `}

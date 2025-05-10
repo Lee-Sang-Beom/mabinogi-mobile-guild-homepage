@@ -3,12 +3,14 @@ import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useGetLatestUpdate } from "../hooks/use-get-latest-update";
 import { getPriorityBadge } from "@/shared/notice/utils";
+import { ApiResponse } from "@/shared/types/api";
+import { NoticeResponse } from "@/shared/notice/api";
 
-export default function DashboardUpdate() {
-  const { data } = useGetLatestUpdate();
-
+interface IProps {
+  data: ApiResponse<NoticeResponse | null> | undefined;
+}
+export default function DashboardUpdate({ data }: IProps) {
   return (
     <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full overflow-hidden group">
       <motion.div

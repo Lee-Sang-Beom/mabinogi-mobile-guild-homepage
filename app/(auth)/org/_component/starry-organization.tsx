@@ -12,7 +12,7 @@ import type {
   UserStar,
 } from "@/app/(auth)/org/internal";
 import type { User } from "next-auth";
-import { planets } from "@/app/(auth)/org/constants";
+import { planets } from "@/app/(auth)/org/data";
 import { jobCategoryMap } from "@/shared/constants/game";
 import { Planet } from "./planet";
 import { UserDialog } from "@/app/(auth)/org/_component/user-dialog";
@@ -170,100 +170,6 @@ export default function StarryOrganization({
       });
     }
   };
-
-  // Add this function to the StarryOrganization component
-  // const updateStarPosition = (id: string, x: number, y: number) => {
-  //   setStars((prevStars) => prevStars.map((s) => (s.docId === id ? { ...s, x, y } : s)))
-  // }
-
-  // 별자리 연결선 그리기
-  // const renderConstellationLines = () => {
-  //   if (stars.length === 0) return null
-
-  //   const lines: ConstellationLine[] = []
-  //   const planetGroups: Record<string, UserStar[]> = {}
-
-  //   // 행성 ID별로 그룹화 (같은 행성 주변을 공전하는 별들끼리 그룹화)
-  //   stars.forEach((star) => {
-  //     if (!star.planetId) return
-
-  //     if (!planetGroups[star.planetId]) {
-  //       planetGroups[star.planetId] = []
-  //     }
-  //     planetGroups[star.planetId].push(star)
-  //   })
-
-  //   // 각 행성 그룹별로 별자리 연결선 생성
-  //   Object.values(planetGroups).forEach((planetStars, planetIndex) => {
-  //     // 같은 행성 주변의 별들을 연결
-  //     for (let i = 0; i < planetStars.length; i++) {
-  //       const current = planetStars[i]
-  //       const next = planetStars[(i + 1) % planetStars.length]
-
-  //       // Skip if positions aren't calculated yet
-  //       if (!current.x || !current.y || !next.x || !next.y) continue
-
-  //       // 별들 사이의 거리 계산
-  //       const dx = next.x - current.x
-  //       const dy = next.y - current.y
-  //       const distance = Math.sqrt(dx * dx + dy * dy)
-
-  //       // 거리가 너무 멀면 연결하지 않음
-  //       if (distance < 300) {
-  //         lines.push(
-  //           <line
-  //             key={`line-${planetIndex}-${i}`}
-  //             x1={current.x}
-  //             y1={current.y}
-  //             x2={next.x}
-  //             y2={next.y}
-  //             stroke={`rgba(255, 255, 255, 0.15)`}
-  //             strokeWidth="0.5"
-  //             strokeDasharray="5,5"
-  //           />,
-  //         )
-  //       }
-  //     }
-
-  //     // 추가적인 연결선 (더 풍부한 네트워크 형성)
-  //     for (let i = 0; i < planetStars.length; i++) {
-  //       for (let j = i + 2; j < planetStars.length; j++) {
-  //         if (j !== (i + 1) % planetStars.length) {
-  //           // 이미 연결된 선은 제외
-  //           const current = planetStars[i]
-  //           const other = planetStars[j]
-
-  //           // Skip if positions aren't calculated yet
-  //           if (!current.x || !current.y || !other.x || !other.y) continue
-
-  //           // 별들 사이의 거리 계산
-  //           const dx = other.x - current.x
-  //           const dy = other.y - current.y
-  //           const distance = Math.sqrt(dx * dx + dy * dy)
-
-  //           // 거리가 너무 멀면 연결하지 않음
-  //           if (distance < 200 && Math.random() > 0.7) {
-  //             // 70% 확률로 연결 (너무 복잡해지지 않도록)
-  //             lines.push(
-  //               <line
-  //                 key={`extra-line-${planetIndex}-${i}-${j}`}
-  //                 x1={current.x}
-  //                 y1={current.y}
-  //                 x2={other.x}
-  //                 y2={other.y}
-  //                 stroke={`rgba(255, 255, 255, 0.08)`} // 더 투명하게
-  //                 strokeWidth="0.3"
-  //                 strokeDasharray="3,7"
-  //               />,
-  //             )
-  //           }
-  //         }
-  //       }
-  //     }
-  //   })
-
-  //   return lines
-  // }
 
   return (
     <div

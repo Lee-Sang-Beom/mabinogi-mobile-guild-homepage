@@ -9,7 +9,10 @@ import { useRouter } from "next/navigation";
 import { useGetAnnouncements } from "@/app/(auth)/announcements/hooks/use-get-announcements";
 import { useDeleteAnnouncement } from "@/app/(auth)/announcements/hooks/use-delete-announcement";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SkeletonLoading } from "@/components/animated-loading";
+import {
+  AnimatedLoading,
+  SkeletonLoading,
+} from "@/components/animated-loading";
 import { toast } from "sonner";
 import { isRoleAdmin } from "@/shared/utils/utils";
 import { NoticeListProps } from "@/shared/notice/internal";
@@ -75,6 +78,11 @@ export default function AnnouncementsList({ user }: NoticeListProps) {
       setIsMounted(false);
     };
   }, []);
+
+  // 로딩 컴포넌트
+  if (isPending) {
+    return <AnimatedLoading />;
+  }
 
   return (
     <div className="min-h-[calc(100vh-200px)] py-8 sm:py-12 px-3 sm:px-6 lg:px-8 relative w-full max-w-full overflow-x-hidden">

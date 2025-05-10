@@ -7,7 +7,10 @@ import { guildName } from "@/shared/constants/game";
 import { DataTable } from "@/components/table/data-table";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SkeletonLoading } from "@/components/animated-loading";
+import {
+  AnimatedLoading,
+  SkeletonLoading,
+} from "@/components/animated-loading";
 import { toast } from "sonner";
 import { isHomePageAdmin } from "@/shared/utils/utils";
 import { NoticeListProps } from "@/shared/notice/internal";
@@ -76,6 +79,11 @@ export default function UpdateList({ user }: NoticeListProps) {
       setIsMounted(false);
     };
   }, []);
+
+  // 로딩 컴포넌트
+  if (isPending) {
+    return <AnimatedLoading />;
+  }
 
   return (
     <div className="min-h-[calc(100vh-200px)] py-8 sm:py-12 px-3 sm:px-6 lg:px-8 relative w-full max-w-full overflow-x-hidden">
