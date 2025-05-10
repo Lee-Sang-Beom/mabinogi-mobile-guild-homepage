@@ -1,8 +1,27 @@
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { motion } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -11,58 +30,72 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Plus, Trash2, User as UserIcon } from 'lucide-react'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
-import { subUsersFormSchema } from '@/app/(auth)/profile/schema'
-import { User } from 'next-auth'
-import { useGetSubusersBydocId } from '@/app/(auth)/profile/hooks/use-get-subusers-bydocid'
-import { jobTypeOptions } from '@/shared/constants/game'
-import { JobType } from '@/shared/types/game'
-import { useCreateSubUser } from '@/app/(auth)/profile/hooks/user-create-subusers'
-import { useDeleteSubUser } from '@/app/(auth)/profile/hooks/user-delete-subusers'
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2, User as UserIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { subUsersFormSchema } from "@/app/(auth)/profile/schema";
+import { User } from "next-auth";
+import { useGetSubusersBydocId } from "@/app/(auth)/profile/hooks/use-get-subusers-bydocid";
+import { jobTypeOptions } from "@/shared/constants/game";
+import { JobType } from "@/shared/types/game";
+import { useCreateSubUser } from "@/app/(auth)/profile/hooks/user-create-subusers";
+import { useDeleteSubUser } from "@/app/(auth)/profile/hooks/user-delete-subusers";
+import { AnimatedLoading } from "@/components/animated-loading";
 
 interface SubcharactersFormProps {
   user: User;
 }
 
-export default function SubUsersForm({user}: SubcharactersFormProps) {
-  const { data } = useGetSubusersBydocId(user.docId);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+export default function SubUsersForm({ user }: SubcharactersFormProps) {
+  const { data, isPending } = useGetSubusersBydocId(user.docId);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const { mutate: createSubUser, isPending: isAddUserPending } = useCreateSubUser(user.docId, setIsAddDialogOpen)
-  const { mutate: deleteSubUser, isPending: isDeleteUserPending } = useDeleteSubUser(user.docId)
+  const { mutate: createSubUser, isPending: isAddUserPending } =
+    useCreateSubUser(user.docId, setIsAddDialogOpen);
+  const { mutate: deleteSubUser, isPending: isDeleteUserPending } =
+    useDeleteSubUser(user.docId);
 
   const form = useForm<z.infer<typeof subUsersFormSchema>>({
     resolver: zodResolver(subUsersFormSchema),
     defaultValues: {
       parentDocId: user.docId,
-      id: '',
+      id: "",
       job: jobTypeOptions[0].value as JobType,
     },
-  })
+  });
 
   function onCreateSubUser(values: z.infer<typeof subUsersFormSchema>) {
-    createSubUser(values)
-    form.reset()
+    createSubUser(values);
+    form.reset();
   }
 
   function onDeleteSubUser(docId: string) {
     deleteSubUser(docId);
   }
 
+  // 로딩 컴포넌트
+  if (isPending) {
+    return <AnimatedLoading />;
+  }
+
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <Card className="bg-background/50 backdrop-blur-sm border-primary/10 shadow-xl">
         <CardHeader>
           <div className="flex flex-col items-start gap-2 md:gap-0 md:flex-row md:justify-between md:items-center">
             <div>
               <CardTitle>서브캐릭터 관리</CardTitle>
-              <CardDescription>내 서브캐릭터를 추가하고 관리할 수 있습니다.</CardDescription>
+              <CardDescription>
+                내 서브캐릭터를 추가하고 관리할 수 있습니다.
+              </CardDescription>
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
@@ -73,10 +106,15 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>서브캐릭터 추가</DialogTitle>
-                  <DialogDescription>새로운 서브캐릭터 정보를 입력하세요.</DialogDescription>
+                  <DialogDescription>
+                    새로운 서브캐릭터 정보를 입력하세요.
+                  </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onCreateSubUser)} className="space-y-4">
+                  <form
+                    onSubmit={form.handleSubmit(onCreateSubUser)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={form.control}
                       name="id"
@@ -112,7 +150,7 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
                                   <SelectItem value={job.value} key={job.value}>
                                     {job.name}
                                   </SelectItem>
-                                )
+                                );
                               })}
                             </SelectContent>
                           </Select>
@@ -124,10 +162,16 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
                     />
 
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} type="button">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsAddDialogOpen(false)}
+                        type="button"
+                      >
                         취소
                       </Button>
-                      <Button type="submit" disabled={isAddUserPending}>{isAddUserPending ? '추가중...' : '추가'}</Button>
+                      <Button type="submit" disabled={isAddUserPending}>
+                        {isAddUserPending ? "추가중..." : "추가"}
+                      </Button>
                     </DialogFooter>
                   </form>
                 </Form>
@@ -174,5 +218,5 @@ export default function SubUsersForm({user}: SubcharactersFormProps) {
         </CardContent>
       </Card>
     </motion.div>
-  )
+  );
 }

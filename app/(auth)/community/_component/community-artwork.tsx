@@ -7,10 +7,16 @@ import ArtworkCard from "./artwork-card";
 import { useGetCommunity } from "../hooks/use-get-community";
 import { Palette } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { AnimatedLoading } from "@/components/animated-loading";
 
 export default function CommunityArtwork() {
   const router = useRouter();
-  const { data: noticeData } = useGetCommunity("artwork");
+  const { data: noticeData, isPending } = useGetCommunity("artwork");
+
+  // 로딩 컴포넌트
+  if (isPending) {
+    return <AnimatedLoading />;
+  }
 
   return (
     <div className="w-full h-auto">

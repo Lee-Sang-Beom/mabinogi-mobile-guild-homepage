@@ -4,7 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCallback, useMemo } from "react";
 import { useGetUserList } from "@/app/(auth)/dashboard/hooks/use-get-user-list";
 import { DataTable } from "@/components/table/data-table";
-import { SkeletonLoading } from "@/components/animated-loading";
+import {
+  AnimatedLoading,
+  SkeletonLoading,
+} from "@/components/animated-loading";
 import { userColumnLabels, userColumns } from "@/app/(auth)/admin/columns";
 import { useWithdrawnUser } from "@/app/(auth)/profile/hooks/use-withdrawn-user";
 import { User } from "next-auth";
@@ -36,6 +39,11 @@ export default function GuildMemberTab({ user }: NoticeListProps) {
     },
     [withdrawnUser, user],
   );
+
+  // 로딩 컴포넌트
+  if (isPending) {
+    return <AnimatedLoading />;
+  }
 
   return (
     <>

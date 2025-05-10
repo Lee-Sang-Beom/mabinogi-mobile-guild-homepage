@@ -44,7 +44,7 @@ export function encryptPassword(password: string): string {
  */
 export function verifyPassword(
   plainPassword: string,
-  hashedPassword: string,
+  hashedPassword: string
 ): boolean {
   return bcrypt.compareSync(plainPassword, hashedPassword);
 }
@@ -83,7 +83,7 @@ export const generateTimeOptions = () => {
 export function compressImages(
   base64Str: string,
   maxWidth = 1280, // 해상도를 높이기 위해 최대 크기 확장
-  maxHeight = 1280, // 해상도를 높이기 위해 최대 크기 확장
+  maxHeight = 1280 // 해상도를 높이기 위해 최대 크기 확장
 ): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -120,7 +120,7 @@ export function compressImages(
 export async function compressContentImages(
   content: string,
   maxWidth?: number, // 선택적 파라미터 추가
-  maxHeight?: number, // 선택적 파라미터 추가
+  maxHeight?: number // 선택적 파라미터 추가
 ): Promise<string> {
   const imageRegex = /<img[^>]*src=["']([^"']+)["'][^>]*>/g; // img 태그에서 src 추출
   let match;
@@ -132,11 +132,11 @@ export async function compressContentImages(
       const compressedBase64 = await compressImages(
         originalBase64,
         maxWidth,
-        maxHeight,
+        maxHeight
       ); // 이미지 압축
       compressedContent = compressedContent.replace(
         originalBase64,
-        compressedBase64,
+        compressedBase64
       ); // HTML 업데이트
     }
   }

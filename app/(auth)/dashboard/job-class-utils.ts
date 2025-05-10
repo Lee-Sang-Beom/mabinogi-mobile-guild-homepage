@@ -23,7 +23,11 @@ import {
   Target,
   Wand,
 } from "lucide-react";
-import { jobTypeOptions } from "@/shared/constants/game";
+import {
+  jobCategoryRepresentColors,
+  jobTypeOptions,
+  kindRepresentJob,
+} from "@/shared/constants/game";
 
 // Define icon mapping type
 type IconMap = Record<string, React.ElementType>;
@@ -63,13 +67,13 @@ export const JobClassIcons: Record<string, React.ElementType> =
   }, {});
 
 // Define job class color mappings
-const jobClassColorMap: { [key: string]: string } = {
-  warrior: "rgba(239, 68, 68, 0.8)", // Red
-  archer: "rgba(34, 197, 94, 0.8)", // Green
-  mage: "rgba(59, 130, 246, 0.8)", // Blue
-  healer: "rgba(245, 158, 11, 0.8)", // Amber
-  bard: "rgba(168, 85, 247, 0.8)", // Purple
-  rouge: "rgba(44, 62, 80, 0.8)", // Dark Gray
+const jobClassColorMap: Record<kindRepresentJob, string> = {
+  warrior: jobCategoryRepresentColors["warrior"],
+  archer: jobCategoryRepresentColors["archer"],
+  mage: jobCategoryRepresentColors["mage"],
+  healer: jobCategoryRepresentColors["healer"],
+  bard: jobCategoryRepresentColors["bard"],
+  rouge: jobCategoryRepresentColors["rouge"],
 };
 
 // Keywords that map to job class categories

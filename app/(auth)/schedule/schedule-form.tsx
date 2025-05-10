@@ -8,6 +8,7 @@ import { User } from "next-auth";
 import { useGetSchedules } from "@/app/(auth)/schedule/hooks/use-get-schedules";
 import { useDeleteSchedule } from "./hooks/use-delete-schedule";
 import { useGetAllSchedules } from "./hooks/use-get-all-schedule";
+import { AnimatedLoading } from "@/components/animated-loading";
 
 interface ScheduleFormProps {
   user: User;
@@ -17,14 +18,21 @@ export default function SchedulePage({ user }: ScheduleFormProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   // hooks
-  const { data: schedules } = useGetSchedules(selectedDate);
-  const { data: allSchedules } = useGetAllSchedules();
+  const { data: schedules, isPending: schedulesPending } =
+    useGetSchedules(selectedDate);
+  const { data: allSchedules, isPending: allSchedulesPending } =
+    useGetAllSchedules();
   const { mutate: deleteSchedule } = useDeleteSchedule();
 
   // 파티구인글 삭제
   const handleDeleteEvent = (docId: string) => {
     deleteSchedule(docId);
   };
+
+  // 로딩 컴포넌트
+  if (schedulesPending || allSchedulesPending) {
+    return <AnimatedLoading />;
+  }
 
   return (
     <div className="min-h-[calc(100vh-200px)] py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">

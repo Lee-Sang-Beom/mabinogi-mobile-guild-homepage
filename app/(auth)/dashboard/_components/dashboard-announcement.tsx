@@ -3,11 +3,15 @@ import { motion } from "framer-motion";
 import { ArrowRight, Bell, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useGetLatestAnnouncement } from "../hooks/use-get-latest-announcement";
 import { getPriorityBadge } from "@/shared/notice/utils";
+import { ApiResponse } from "@/shared/types/api";
+import { NoticeResponse } from "@/shared/notice/api";
 
-export default function DashboardAnnouncement() {
-  const { data } = useGetLatestAnnouncement();
+interface IProps {
+  data: ApiResponse<NoticeResponse | null> | undefined;
+}
+
+export default function DashboardAnnouncement({ data }: IProps) {
   return (
     <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full overflow-hidden group">
       <motion.div

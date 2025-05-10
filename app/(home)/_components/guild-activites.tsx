@@ -3,6 +3,8 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const activities = [
   {
@@ -42,7 +44,7 @@ export default function GuildActivities() {
   const scale = useTransform(
     scrollYProgress,
     [0, 0.2, 0.8, 1],
-    [0.8, 1, 1, 0.8]
+    [0.8, 1, 1, 0.8],
   );
 
   // 이미지 캐러셀을 위한 상태 관리
@@ -157,7 +159,7 @@ export default function GuildActivities() {
                                 e.preventDefault();
                                 prevImage(
                                   activity.title,
-                                  activity.images.length
+                                  activity.images.length,
                                 );
                               }}
                               className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
@@ -183,7 +185,7 @@ export default function GuildActivities() {
                                 e.preventDefault();
                                 nextImage(
                                   activity.title,
-                                  activity.images.length
+                                  activity.images.length,
                                 );
                               }}
                               className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
@@ -218,14 +220,14 @@ export default function GuildActivities() {
                 <p className="text-muted-foreground mb-6">
                   {activity.description}
                 </p>
-                {/* <Button
+                <Button
                   variant="outline"
                   className="border-primary text-primary hover:bg-primary hover:text-primary-foreground p-0"
                 >
                   <Link href="/community" className={"p-3"}>
                     커뮤니티 페이지 이동
                   </Link>
-                </Button> */}
+                </Button>
               </div>
             </motion.div>
           ))}

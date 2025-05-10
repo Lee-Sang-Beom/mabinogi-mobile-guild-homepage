@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/table/data-table";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SkeletonLoading } from "@/components/animated-loading";
+import {
+  AnimatedLoading,
+  SkeletonLoading,
+} from "@/components/animated-loading";
 import {
   nonSelectionNoticeColumns,
   noticeColumnLabels,
@@ -57,6 +60,11 @@ export default function CommunityTips() {
       setIsMounted(false);
     };
   }, []);
+
+  // 로딩 컴포넌트
+  if (isPending) {
+    return <AnimatedLoading />;
+  }
 
   return (
     <motion.div
