@@ -8,11 +8,11 @@ import {
   AnimatedLoading,
   SkeletonLoading,
 } from "@/components/animated-loading";
-import { userColumnLabels, userColumns } from "@/app/(auth)/admin/columns";
 import { useWithdrawnUser } from "@/app/(auth)/profile/hooks/use-withdrawn-user";
 import { User } from "next-auth";
 import { NoticeListProps } from "@/shared/notice/internal";
 import { toast } from "sonner";
+import { userColumnLabels, userColumns } from "../columns";
 
 export default function GuildMemberTab({ user }: NoticeListProps) {
   const { data: guildMembers, isPending } = useGetUserList();

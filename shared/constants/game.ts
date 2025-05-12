@@ -18,7 +18,7 @@ export const guildName = "럭키비키";
  */
 export const guildInfo = {
   name: guildName,
-  level: 3,
+  level: 4,
   memberCount: 25,
   maxMembers: 25,
   regDt: "2025-03-25",

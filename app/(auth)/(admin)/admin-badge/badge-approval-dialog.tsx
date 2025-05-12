@@ -13,7 +13,7 @@ import { Edit, Lock, Trash2, Unlock } from "lucide-react";
 import { BadgeImage } from "@/app/(auth)/hub/_components/badges/badge-image";
 import { BadgeResponse } from "../../hub/api";
 import { AnimatedLoading } from "@/components/animated-loading";
-import { useGetUserByDocId } from "../hooks/use-get-user-by-doc-id";
+import { useGetUserByDocId } from "@/app/(auth)/(admin)/admin-badge/hooks/use-get-user-by-doc-id";
 
 interface BadgeDialogProps {
   isHomePageAdmin: boolean;
@@ -33,7 +33,7 @@ export function BadgeApprovalDialog({
   onUnApprovalAction,
 }: BadgeDialogProps) {
   const { data: badgeUser, isPending } = useGetUserByDocId(
-    badge ? badge.registerUserDocId : ""
+    badge ? badge.registerUserDocId : "",
   );
 
   if (!badge) return null;

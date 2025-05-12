@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge, Clock, User } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Clock, User } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import GuildApprovalMemberTab from "@/app/(auth)/admin/_components/guild-approval-member-tab";
-import GuildMemberTab from "@/app/(auth)/admin/_components/guild-member-tab";
 import { NoticeListProps } from "@/shared/notice/internal";
 import { isRoleAdmin } from "@/shared/utils/utils";
 import { toast } from "sonner";
@@ -16,12 +14,12 @@ interface TextObjType {
   title: string;
   desc: string;
 }
-export default function AdminTabs({ user }: NoticeListProps) {
+export default function AdminBadgeTabs({ user }: NoticeListProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState("members");
+  const [activeTab, setActiveTab] = useState("approval");
   const [activeTextObj, setActiveTextObj] = useState<TextObjType>({
     title: "",
     desc: "",
@@ -32,12 +30,10 @@ export default function AdminTabs({ user }: NoticeListProps) {
     setMounted(true);
 
     // URL 파라미터에서 탭 설정
-    if (!tabParam || tabParam === "members") {
-      setActiveTab("members");
-    } else if (tabParam === "approval") {
+    if (!tabParam || tabParam === "approval") {
       setActiveTab("approval");
     } else {
-      setActiveTab("badge");
+      setActiveTab("give");
     }
   }, [tabParam]);
 
@@ -49,21 +45,17 @@ export default function AdminTabs({ user }: NoticeListProps) {
   }, [user, router]);
 
   useEffect(() => {
-    if (activeTab === "members") {
-      setActiveTextObj({
-        title: "길드원 관리",
-        desc: "가입된 길드원 목록 확인 및 임의 탈퇴를 진행시킬 수 있습니다.",
-      });
-    } else if (activeTab === "approval") {
-      setActiveTextObj({
-        title: "회원가입 관리",
-        desc: "길드 가입을 희망하는 유저들의 가입 여부를 관리할 수 있습니다.",
-      });
-    } else {
+    if (activeTab === "approval") {
       setActiveTextObj({
         title: "뱃지 관리",
         desc: "길드원들의 창의적인 아이디어가 담긴 뱃지 추가요청을 관리할 수 있습니다.",
       });
+    } else if (activeTab === "approval") {
+      setActiveTextObj({
+        title: "뱃지 수여",
+        desc: "길드원에게 뱃지를 수여할 수 있습니다.",
+      });
+    } else {
     }
   }, [activeTab]);
   if (!mounted) return null;
@@ -119,28 +111,21 @@ export default function AdminTabs({ user }: NoticeListProps) {
           className="mb-8"
         >
           <TabsList className="mb-6">
-            <TabsTrigger value="members" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              길드원 관리
-            </TabsTrigger>
             <TabsTrigger value="approval" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              가입 대기 관리
+              <User className="h-4 w-4" />
+              뱃지 관리
             </TabsTrigger>
-            <TabsTrigger value="badge" className="flex items-center gap-2">
-              <Badge className="h-4 w-4" />
-              뱃지 승인 관리
+            <TabsTrigger value="give" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              뱃지 수여
             </TabsTrigger>
           </TabsList>
 
-          {/*길드원 관리*/}
-          <GuildMemberTab user={user} />
-
-          {/*가입 대기 관리*/}
-          <GuildApprovalMemberTab />
-
-          {/* 뱃지 관리 */}
+          {/* 뱃지 요청 관리 */}
           <BadgeApprovalTab user={user} viewMode="grid" />
+          <>
+            <TabsContent value="give">기브앤테이크</TabsContent>
+          </>
         </Tabs>
       </div>
     </div>

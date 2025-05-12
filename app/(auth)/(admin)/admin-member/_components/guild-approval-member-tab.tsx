@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sword, User as UserIcon, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useGetUnapprovedUsers } from "@/app/(auth)/admin/hooks/use-get-unapproval-user";
 import {
   getJobClassColor,
   JobClassIcons,
@@ -12,6 +11,7 @@ import { useUpdateApprovalJoinYn } from "../hooks/use-update-approval-join";
 import { useWithdrawnUser } from "@/app/(auth)/profile/hooks/use-withdrawn-user";
 import { User } from "next-auth";
 import { AnimatedLoading } from "@/components/animated-loading";
+import { useGetUnapprovedUsers } from "@/app/(auth)/(admin)/admin-member/hooks/use-get-unapproval-user";
 
 export default function GuildApprovalMemberTab() {
   const { data: pendingMembers, isPending } = useGetUnapprovedUsers();

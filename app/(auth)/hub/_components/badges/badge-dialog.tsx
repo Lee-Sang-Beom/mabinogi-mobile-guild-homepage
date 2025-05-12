@@ -24,9 +24,9 @@ import { Edit, Lock, Trash2, Unlock } from "lucide-react";
 import { BadgeResponse } from "../../api";
 import { BadgeImage } from "@/app/(auth)/hub/_components/badges/badge-image";
 import { User } from "next-auth";
-import { useGetUserByDocId } from "@/app/(auth)/admin/hooks/use-get-user-by-doc-id";
 import { AnimatedLoading } from "@/components/animated-loading";
 import { isHomePageAdmin } from "@/shared/utils/utils";
+import { useGetUserByDocId } from "@/app/(auth)/(admin)/admin-badge/hooks/use-get-user-by-doc-id";
 
 interface BadgeDialogProps {
   user: User;
@@ -47,13 +47,13 @@ export function BadgeDialog({
 }: BadgeDialogProps) {
   // isEditing 상태 제거
   const { data: badgeUser, isPending } = useGetUserByDocId(
-    badge ? badge.registerUserDocId : ""
+    badge ? badge.registerUserDocId : "",
   );
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   if (!badge) return null;
 
-  const isMe = badge.registerUserDocId === user.docId ? true : false;
+  const isMe = badge.registerUserDocId === user.docId;
   const isHAdmin = isHomePageAdmin(user);
 
   // 수정된 handleEdit 함수

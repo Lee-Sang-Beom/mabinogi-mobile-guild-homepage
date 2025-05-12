@@ -9,10 +9,10 @@ import { User } from "next-auth";
 import { AnimatedLoading } from "@/components/animated-loading";
 import { BadgeApprovalDialog } from "./badge-approval-dialog";
 import { TabsContent } from "@/components/ui/tabs";
-import { useUpdateUnApproveBadge } from "../hooks/use-update-unapproval-badge";
 import { useGetUnApprovedBadges } from "../../hub/hooks/badges/use-get-unapproval-badges";
-import { useUpdateApproveBadge } from "../hooks/use-update-approval-badge";
 import { isHomePageAdmin } from "@/shared/utils/utils";
+import { useUpdateApproveBadge } from "@/app/(auth)/(admin)/admin-badge/hooks/use-update-approval-badge";
+import { useUpdateUnApproveBadge } from "@/app/(auth)/(admin)/admin-badge/hooks/use-update-unapproval-badge";
 
 interface BadgesTabProps {
   user: User;
@@ -26,7 +26,7 @@ export function BadgeApprovalTab({ user, viewMode }: BadgesTabProps) {
 
   const isHAdmin = isHomePageAdmin(user);
   const [selectedBadge, setSelectedBadge] = useState<BadgeResponse | null>(
-    null
+    null,
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -42,7 +42,7 @@ export function BadgeApprovalTab({ user, viewMode }: BadgesTabProps) {
         onSuccess: () => {
           setIsDialogOpen(false);
         },
-      }
+      },
     );
   };
 
@@ -59,7 +59,7 @@ export function BadgeApprovalTab({ user, viewMode }: BadgesTabProps) {
   }
 
   return (
-    <TabsContent value="badge">
+    <TabsContent value="approval">
       <AnimatePresence mode="wait">
         {badges && badges.data.length > 0 ? (
           <motion.div
