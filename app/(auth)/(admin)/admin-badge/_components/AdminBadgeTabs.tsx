@@ -2,18 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, User } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { NoticeListProps } from "@/shared/notice/internal";
 import { isRoleAdmin } from "@/shared/utils/utils";
 import { toast } from "sonner";
 import { BadgeApprovalTab } from "./badge-approval-tab";
+import BadgeGiveTab from "@/app/(auth)/(admin)/admin-badge/_components/badge-give-tab";
 
 interface TextObjType {
   title: string;
   desc: string;
 }
+
 export default function AdminBadgeTabs({ user }: NoticeListProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -123,9 +125,9 @@ export default function AdminBadgeTabs({ user }: NoticeListProps) {
 
           {/* 뱃지 요청 관리 */}
           <BadgeApprovalTab user={user} viewMode="grid" />
-          <>
-            <TabsContent value="give">기브앤테이크</TabsContent>
-          </>
+
+          {/*뱃지 수여 관리*/}
+          <BadgeGiveTab user={user} />
         </Tabs>
       </div>
     </div>

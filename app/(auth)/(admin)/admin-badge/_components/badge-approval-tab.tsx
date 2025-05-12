@@ -9,17 +9,17 @@ import { User } from "next-auth";
 import { AnimatedLoading } from "@/components/animated-loading";
 import { BadgeApprovalDialog } from "./badge-approval-dialog";
 import { TabsContent } from "@/components/ui/tabs";
-import { useGetUnApprovedBadges } from "../../hub/hooks/badges/use-get-unapproval-badges";
+import { useGetUnApprovedBadges } from "../../../hub/hooks/badges/use-get-unapproval-badges";
 import { isHomePageAdmin } from "@/shared/utils/utils";
 import { useUpdateApproveBadge } from "@/app/(auth)/(admin)/admin-badge/hooks/use-update-approval-badge";
 import { useUpdateUnApproveBadge } from "@/app/(auth)/(admin)/admin-badge/hooks/use-update-unapproval-badge";
 
-interface BadgesTabProps {
+interface BadgesApprovalTabProps {
   user: User;
   viewMode: "grid" | "cards";
 }
 
-export function BadgeApprovalTab({ user, viewMode }: BadgesTabProps) {
+export function BadgeApprovalTab({ user, viewMode }: BadgesApprovalTabProps) {
   const { data: badges, isPending } = useGetUnApprovedBadges();
   const approveBadgeMutation = useUpdateApproveBadge();
   const unApproveBadgeMutation = useUpdateUnApproveBadge();

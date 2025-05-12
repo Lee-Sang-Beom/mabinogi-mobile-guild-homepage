@@ -20,7 +20,7 @@ export const guildInfo = {
   name: guildName,
   level: 4,
   memberCount: 25,
-  maxMembers: 25,
+  maxMembers: 30,
   regDt: "2025-03-25",
   activityWeeklyTotalTime: 80,
 };

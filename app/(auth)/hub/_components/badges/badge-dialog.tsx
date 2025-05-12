@@ -27,6 +27,7 @@ import { User } from "next-auth";
 import { AnimatedLoading } from "@/components/animated-loading";
 import { isHomePageAdmin } from "@/shared/utils/utils";
 import { useGetUserByDocId } from "@/app/(auth)/(admin)/admin-badge/hooks/use-get-user-by-doc-id";
+import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
 
 interface BadgeDialogProps {
   user: User;
@@ -111,10 +112,7 @@ export function BadgeDialog({
                     <span
                       className={`
                       inline-block mt-1 text-sm px-3 py-1 rounded-full text-white
-                      ${badge.difficultyLevel === "쉬움" ? "bg-green-500" : ""}
-                      ${badge.difficultyLevel === "보통" ? "bg-blue-500" : ""}
-                      ${badge.difficultyLevel === "어려움" ? "bg-orange-500" : ""}
-                      ${badge.difficultyLevel === "매우 어려움" ? "bg-red-500" : ""}
+                      ${getBadgeDifficultyColorClassName(badge)}
                     `}
                     >
                       {badge.difficultyLevel}

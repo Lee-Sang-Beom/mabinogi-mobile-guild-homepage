@@ -15,8 +15,10 @@ export default function Home() {
 
   useEffect(() => {
     // hydration 이후 실행
-    const hasSeenIntro = localStorage.getItem("hasSeenIntro");
+    // const hasSeenIntro = localStorage.getItem("hasSeenIntro");
 
+    // 일단 항상실행되도록 변경
+    const hasSeenIntro = false;
     if (!hasSeenIntro) {
       localStorage.setItem("hasSeenIntro", "true");
       setShowIntro(true); // 인트로 보여주기

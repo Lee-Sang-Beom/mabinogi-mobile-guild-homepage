@@ -11,9 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Edit, Lock, Trash2, Unlock } from "lucide-react";
 import { BadgeImage } from "@/app/(auth)/hub/_components/badges/badge-image";
-import { BadgeResponse } from "../../hub/api";
+import { BadgeResponse } from "../../../hub/api";
 import { AnimatedLoading } from "@/components/animated-loading";
 import { useGetUserByDocId } from "@/app/(auth)/(admin)/admin-badge/hooks/use-get-user-by-doc-id";
+import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
 
 interface BadgeDialogProps {
   isHomePageAdmin: boolean;
@@ -90,10 +91,7 @@ export function BadgeApprovalDialog({
                     <span
                       className={`
                       inline-block mt-1 text-sm px-3 py-1 rounded-full text-white
-                      ${badge.difficultyLevel === "쉬움" ? "bg-green-500" : ""}
-                      ${badge.difficultyLevel === "보통" ? "bg-blue-500" : ""}
-                      ${badge.difficultyLevel === "어려움" ? "bg-orange-500" : ""}
-                      ${badge.difficultyLevel === "매우 어려움" ? "bg-red-500" : ""}
+                       ${getBadgeDifficultyColorClassName(badge)}
                     `}
                     >
                       {badge.difficultyLevel}
