@@ -49,8 +49,7 @@ export function BadgeApprovalDialog({
   };
 
   if (isPending) {
-    <AnimatedLoading />;
-    return;
+    return <AnimatedLoading />;
   }
   return (
     <>

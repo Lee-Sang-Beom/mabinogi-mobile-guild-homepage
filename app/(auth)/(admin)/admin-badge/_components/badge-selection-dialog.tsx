@@ -1,26 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
 import { User } from "next-auth";
-import { useGetUnApprovedBadges } from "@/app/(auth)/hub/hooks/badges/use-get-unapproval-badges";
 import { BadgeCard } from "@/app/(auth)/(admin)/admin-badge/_components/badge-card";
 import { BadgeResponse } from "@/app/(auth)/hub/api";
+import { useGetApprovalBadges } from "@/app/(auth)/hub/hooks/badges/use-get-approval-badges";
+import { getSearchTermData } from "@/shared/utils/utils";
+import { useGetUserBadgesByUserDocId } from "@/app/(auth)/(admin)/admin-badge/hooks/use-get-user-badges-by-user-doc-id";
+import { UserBadgeResponse } from "@/app/(auth)/(admin)/admin-badge/api";
+import { AlreadyBadgeCard } from "@/app/(auth)/(admin)/admin-badge/_components/already-have-badge-card";
 
 interface BadgeSelectionDialogProps {
   isOpen: boolean;
   onCloseAction: () => void;
   onConfirmAction: (badgeId: string) => void;
-  selectedUser: User | null;
+  selectedUser: User;
+  selectedBadgeDocId: string | null;
+  setSelectedBadgeDocIdAction: Dispatch<SetStateAction<string | null>>;
+  setSelectedUserBadgeAction: Dispatch<
+    SetStateAction<UserBadgeResponse | null>
+  >;
 }
 
 export function BadgeSelectionDialog({
@@ -28,33 +37,64 @@ export function BadgeSelectionDialog({
   onCloseAction,
   onConfirmAction,
   selectedUser,
+  selectedBadgeDocId,
+  setSelectedBadgeDocIdAction,
+  setSelectedUserBadgeAction,
 }: BadgeSelectionDialogProps) {
-  const { data: badges } = useGetUnApprovedBadges();
-
+  const { data: badges } = useGetApprovalBadges();
+  const { data: haveBadges } = useGetUserBadgesByUserDocId(selectedUser.docId);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBadge, setSelectedBadge] = useState<string | null>(null);
+
+  const filteredBadges = getSearchTermData<BadgeResponse>(
+    badges?.data || [],
+    searchTerm,
+    ["badge.name"],
+  );
 
   const handleConfirm = () => {
-    if (selectedBadge) {
-      onConfirmAction(selectedBadge);
+    if (selectedBadgeDocId) {
+      onConfirmAction(selectedBadgeDocId);
     }
   };
 
+  useEffect(() => {
+    if (!haveBadges) return;
+    setSelectedUserBadgeAction(haveBadges);
+  }, [haveBadges, setSelectedUserBadgeAction]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onCloseAction}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold flex items-center gap-2">
+          <DialogTitle className="text-xl font-bold flex flex-col md:flex-row items-center md:gap-2">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
               뱃지 수여
             </span>
             {selectedUser && (
-              <span className="text-sm font-normal text-gray-500">
-                - {selectedUser.id}님에게 수여할 뱃지를 선택해주세요
+              <span className="text-xs font-normal text-foreground/60">
+                ({selectedUser.id}님에게 수여할 뱃지를 선택해주세요)
               </span>
             )}
           </DialogTitle>
         </DialogHeader>
+
+        {/* 보유한 뱃지 리스트 */}
+        {haveBadges?.badges && haveBadges.badges.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-xs text-primary mb-2">
+              ※ {selectedUser.id}님은 아래의 뱃지를 이미 보유하고 있습니다.
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {haveBadges.badges.map((badge: BadgeResponse) => (
+                <AlreadyBadgeCard
+                  key={badge.docId}
+                  badge={badge}
+                  userDocId={selectedUser.docId}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="relative mb-4">
           <Search
@@ -76,14 +116,14 @@ export function BadgeSelectionDialog({
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 my-4">
-          {badges && badges.data.length > 0 ? (
-            badges.data.map((badge: BadgeResponse) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 my-2">
+          {filteredBadges.length > 0 ? (
+            filteredBadges.map((badge: BadgeResponse) => (
               <BadgeCard
                 key={badge.docId}
                 badge={badge}
-                isSelected={selectedBadge === badge.docId}
-                onClickAction={() => setSelectedBadge(badge.docId)}
+                isSelected={selectedBadgeDocId === badge.docId}
+                onClickAction={() => setSelectedBadgeDocIdAction(badge.docId)}
               />
             ))
           ) : (
@@ -100,7 +140,7 @@ export function BadgeSelectionDialog({
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={!selectedBadge}
+            disabled={!selectedBadgeDocId}
             className="bg-gradient-to-r from-amber-400 to-amber-600 text-white hover:from-amber-500 hover:to-amber-700"
           >
             수여하기

@@ -2,6 +2,8 @@
 
 import { BadgeResponse } from "@/app/(auth)/hub/api";
 import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
+import Image from "next/image";
+import { useState } from "react";
 
 interface BadgeCardProps {
   badge: BadgeResponse;
@@ -14,6 +16,12 @@ export function BadgeCard({
   isSelected,
   onClickAction,
 }: BadgeCardProps) {
+  const [imgSrc, setImgSrc] = useState(
+    badge.imgName && badge.imgName.trim() !== ""
+      ? `/images/badges/${badge.imgName}`
+      : "/images/favicon-mabinogi-mobile.png",
+  );
+
   return (
     <div
       onClick={onClickAction}
@@ -29,17 +37,24 @@ export function BadgeCard({
         </div>
       )}
       <div className="flex flex-col items-center">
-        <div className="w-16 h-16 mb-3 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white text-2xl">
-          {badge.imgName.charAt(0).toUpperCase()}
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-1">
+        <Image
+          src={imgSrc}
+          alt={badge.badge.name}
+          width={60}
+          height={60}
+          className="rounded-full mb-3"
+          onError={() => setImgSrc("/images/favicon-mabinogi-mobile.png")}
+        />
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 text-center">
           {badge.badge.name}
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-3 line-clamp-2">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center line-clamp-2">
           {badge.badge.description}
         </p>
         <div
-          className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${getBadgeDifficultyColorClassName(badge)}`}
+          className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${getBadgeDifficultyColorClassName(
+            badge,
+          )}`}
         >
           {badge.difficultyLevel}
         </div>

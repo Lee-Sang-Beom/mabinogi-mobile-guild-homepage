@@ -22,7 +22,7 @@ class BadgeService {
   async getAllApproved(): Promise<ApiResponse<BadgeResponse[]>> {
     try {
       const snapshot = await getDocs(
-        query(BADGE_COLLECTION, where("approvalYn", "==", "Y"))
+        query(BADGE_COLLECTION, where("approvalYn", "==", "Y")),
       );
       const badges: BadgeResponse[] = snapshot.docs.map((docSnap) => ({
         ...docSnap.data(),
@@ -47,7 +47,7 @@ class BadgeService {
   async getAllUnApproved(): Promise<ApiResponse<BadgeResponse[]>> {
     try {
       const snapshot = await getDocs(
-        query(BADGE_COLLECTION, where("approvalYn", "==", "N"))
+        query(BADGE_COLLECTION, where("approvalYn", "==", "N")),
       );
       const badges: BadgeResponse[] = snapshot.docs.map((docSnap) => ({
         ...docSnap.data(),
@@ -103,7 +103,7 @@ class BadgeService {
 
   // ➕ 뱃지 생성
   async create(
-    badge: BadgeFormSchemaType
+    badge: BadgeFormSchemaType,
   ): Promise<ApiResponse<string | null>> {
     try {
       const docRef = await addDoc(BADGE_COLLECTION, badge);
@@ -125,7 +125,7 @@ class BadgeService {
   // 📝 뱃지 수정
   async update(
     docId: string,
-    badge: BadgeFormSchemaType
+    badge: BadgeFormSchemaType,
   ): Promise<ApiResponse<string | null>> {
     try {
       const docRef = doc(BADGE_COLLECTION, docId);
@@ -168,13 +168,29 @@ class BadgeService {
   // ❌ 뱃지 삭제
   async delete(docId: string): Promise<ApiResponse<string>> {
     try {
-      const docRef = doc(BADGE_COLLECTION, docId);
-      await deleteDoc(docRef);
-      return {
-        success: true,
-        message: "뱃지가 성공적으로 삭제되었습니다.",
-        data: docId,
-      };
+      // 🔍 유저 뱃지 컬렉션에서 해당 뱃지가 사용 중인지 검사
+      const userBadgeSnapshot = await getDocs(
+        query(
+          collection(db, "collection_user_badge"),
+          where("badgeDocIds", "array-contains", docId),
+        ),
+      );
+
+      if (!userBadgeSnapshot.empty) {
+        return {
+          success: false,
+          message: "해당 뱃지는 길드원이 사용 중이므로 삭제할 수 없습니다.",
+          data: "",
+        };
+      } else {
+        const docRef = doc(BADGE_COLLECTION, docId);
+        await deleteDoc(docRef);
+        return {
+          success: true,
+          message: "뱃지가 성공적으로 삭제되었습니다.",
+          data: docId,
+        };
+      }
     } catch (error) {
       console.error("뱃지 삭제 실패:", error);
       return {

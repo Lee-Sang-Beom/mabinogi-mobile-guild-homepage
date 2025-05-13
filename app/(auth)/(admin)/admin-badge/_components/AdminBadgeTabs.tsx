@@ -127,7 +127,7 @@ export default function AdminBadgeTabs({ user }: NoticeListProps) {
           <BadgeApprovalTab user={user} viewMode="grid" />
 
           {/*뱃지 수여 관리*/}
-          <BadgeGiveTab user={user} />
+          <BadgeGiveTab />
         </Tabs>
       </div>
     </div>

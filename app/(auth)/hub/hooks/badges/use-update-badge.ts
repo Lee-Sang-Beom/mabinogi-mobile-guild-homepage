@@ -18,12 +18,15 @@ export function useUpdateBadge() {
     onSuccess: (response, variables) => {
       if (response.success) {
         toast.success(
-          "뱃지 수정 요청을 진행했습니다. 승인 후 도감에 표시됩니다."
+          "뱃지 수정 요청을 진행했습니다. 승인 후 도감에 표시됩니다.",
         );
         queryClient.invalidateQueries({ queryKey: ["useGetApprovedBadges"] });
         queryClient.invalidateQueries({ queryKey: ["useGetUnApprovedBadges"] });
         queryClient.invalidateQueries({
           queryKey: ["useGetBadgeById", variables.docId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["useGetUserBadgesByUserDocId"],
         });
         router.refresh();
       } else {
