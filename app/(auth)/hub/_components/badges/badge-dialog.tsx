@@ -24,9 +24,10 @@ import { Edit, Lock, Trash2, Unlock } from "lucide-react";
 import { BadgeResponse } from "../../api";
 import { BadgeImage } from "@/app/(auth)/hub/_components/badges/badge-image";
 import { User } from "next-auth";
-import { useGetUserByDocId } from "@/app/(auth)/admin/hooks/use-get-user-by-doc-id";
 import { AnimatedLoading } from "@/components/animated-loading";
 import { isHomePageAdmin } from "@/shared/utils/utils";
+import { useGetUserByDocId } from "@/app/(auth)/(admin)/admin-badge/hooks/use-get-user-by-doc-id";
+import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
 
 interface BadgeDialogProps {
   user: User;
@@ -47,13 +48,13 @@ export function BadgeDialog({
 }: BadgeDialogProps) {
   // isEditing 상태 제거
   const { data: badgeUser, isPending } = useGetUserByDocId(
-    badge ? badge.registerUserDocId : ""
+    badge ? badge.registerUserDocId : "",
   );
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   if (!badge) return null;
 
-  const isMe = badge.registerUserDocId === user.docId ? true : false;
+  const isMe = badge.registerUserDocId === user.docId;
   const isHAdmin = isHomePageAdmin(user);
 
   // 수정된 handleEdit 함수
@@ -111,10 +112,7 @@ export function BadgeDialog({
                     <span
                       className={`
                       inline-block mt-1 text-sm px-3 py-1 rounded-full text-white
-                      ${badge.difficultyLevel === "쉬움" ? "bg-green-500" : ""}
-                      ${badge.difficultyLevel === "보통" ? "bg-blue-500" : ""}
-                      ${badge.difficultyLevel === "어려움" ? "bg-orange-500" : ""}
-                      ${badge.difficultyLevel === "매우 어려움" ? "bg-red-500" : ""}
+                      ${getBadgeDifficultyColorClassName(badge)}
                     `}
                     >
                       {badge.difficultyLevel}

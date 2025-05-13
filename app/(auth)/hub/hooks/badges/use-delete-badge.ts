@@ -16,6 +16,9 @@ export function useDeleteBadge() {
       queryClient.invalidateQueries({ queryKey: ["useGetApprovedBadges"] });
       queryClient.invalidateQueries({ queryKey: ["useGetUnApprovedBadges"] });
       queryClient.invalidateQueries({ queryKey: ["useGetBadgeById", docId] });
+      queryClient.invalidateQueries({
+        queryKey: ["useGetUserBadgesByUserDocId"],
+      });
     },
     onError: (error) => {
       toast.error(`뱃지 삭제 중 오류가 발생했습니다: ${error.message}`);

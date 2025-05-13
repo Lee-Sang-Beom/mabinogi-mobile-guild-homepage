@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { BadgeResponse } from "@/app/(auth)/hub/api";
 import { BadgeImage } from "@/app/(auth)/hub/_components/badges/badge-image";
+import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
 
 interface BadgeCardProps {
   badge: BadgeResponse;
@@ -42,11 +43,7 @@ export function BadgeCard({ badge, onClickAction }: BadgeCardProps) {
         <div className="flex items-center">
           <span
             className={`
-            text-xs px-2 py-1 rounded-full
-            ${badge.difficultyLevel === "쉬움" ? "bg-green-500/70" : ""}
-            ${badge.difficultyLevel === "보통" ? "bg-blue-500/70" : ""}
-            ${badge.difficultyLevel === "어려움" ? "bg-orange-500/70" : ""}
-            ${badge.difficultyLevel === "매우 어려움" ? "bg-red-500/70" : ""}
+            text-xs px-2 py-1 rounded-full ${getBadgeDifficultyColorClassName(badge)}
           `}
           >
             {badge.difficultyLevel}

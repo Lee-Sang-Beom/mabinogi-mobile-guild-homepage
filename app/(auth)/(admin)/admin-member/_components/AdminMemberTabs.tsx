@@ -3,20 +3,19 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge, Clock, User } from "lucide-react";
+import { Clock, User } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import GuildApprovalMemberTab from "@/app/(auth)/admin/_components/guild-approval-member-tab";
-import GuildMemberTab from "@/app/(auth)/admin/_components/guild-member-tab";
 import { NoticeListProps } from "@/shared/notice/internal";
 import { isRoleAdmin } from "@/shared/utils/utils";
 import { toast } from "sonner";
-import { BadgeApprovalTab } from "./badge-approval-tab";
+import GuildMemberTab from "./guild-member-tab";
+import GuildApprovalMemberTab from "@/app/(auth)/(admin)/admin-member/_components/guild-approval-member-tab";
 
 interface TextObjType {
   title: string;
   desc: string;
 }
-export default function AdminTabs({ user }: NoticeListProps) {
+export default function AdminMemberTabs({ user }: NoticeListProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const router = useRouter();
@@ -34,10 +33,8 @@ export default function AdminTabs({ user }: NoticeListProps) {
     // URL 파라미터에서 탭 설정
     if (!tabParam || tabParam === "members") {
       setActiveTab("members");
-    } else if (tabParam === "approval") {
-      setActiveTab("approval");
     } else {
-      setActiveTab("badge");
+      setActiveTab("approval");
     }
   }, [tabParam]);
 
@@ -54,15 +51,10 @@ export default function AdminTabs({ user }: NoticeListProps) {
         title: "길드원 관리",
         desc: "가입된 길드원 목록 확인 및 임의 탈퇴를 진행시킬 수 있습니다.",
       });
-    } else if (activeTab === "approval") {
+    } else {
       setActiveTextObj({
         title: "회원가입 관리",
         desc: "길드 가입을 희망하는 유저들의 가입 여부를 관리할 수 있습니다.",
-      });
-    } else {
-      setActiveTextObj({
-        title: "뱃지 관리",
-        desc: "길드원들의 창의적인 아이디어가 담긴 뱃지 추가요청을 관리할 수 있습니다.",
       });
     }
   }, [activeTab]);
@@ -127,10 +119,6 @@ export default function AdminTabs({ user }: NoticeListProps) {
               <Clock className="h-4 w-4" />
               가입 대기 관리
             </TabsTrigger>
-            <TabsTrigger value="badge" className="flex items-center gap-2">
-              <Badge className="h-4 w-4" />
-              뱃지 승인 관리
-            </TabsTrigger>
           </TabsList>
 
           {/*길드원 관리*/}
@@ -138,9 +126,6 @@ export default function AdminTabs({ user }: NoticeListProps) {
 
           {/*가입 대기 관리*/}
           <GuildApprovalMemberTab />
-
-          {/* 뱃지 관리 */}
-          <BadgeApprovalTab user={user} viewMode="grid" />
         </Tabs>
       </div>
     </div>

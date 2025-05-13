@@ -1,5 +1,4 @@
 import {
-  Badge,
   Bell,
   BookmarkIcon,
   FileText,
@@ -10,6 +9,7 @@ import {
   RefreshCw,
   Search,
   Settings,
+  Tag,
   UserCog,
   UserPlus,
   Users,
@@ -69,23 +69,42 @@ export const loggedInMenuStructure: MenuItem[] = [
   },
   {
     name: "서비스 관리",
-    href: "/admin",
+    href: "/admin-member",
     icon: Settings,
     submenu: [
       {
-        name: "길드원 관리",
-        href: "/admin",
+        name: "구성원 관리",
+        href: "/admin-member",
         icon: UserCog,
-      },
-      {
-        name: "회원가입 관리",
-        href: "/admin?tab=approval",
-        icon: UserPlus,
+        submenu: [
+          {
+            name: "길드원 관리",
+            href: "/admin-member?tab=members",
+            icon: UserPlus,
+          },
+          {
+            name: "회원가입 관리",
+            href: "/admin-member?tab=approval",
+            icon: UserPlus,
+          },
+        ],
       },
       {
         name: "뱃지 관리",
-        href: "/admin?tab=badge",
-        icon: Badge,
+        href: "/admin-badge",
+        icon: Tag,
+        submenu: [
+          {
+            name: "뱃지 요청 관리",
+            href: "/admin-badge?tab=approval",
+            icon: Tag,
+          },
+          {
+            name: "뱃지 부여",
+            href: "/admin-badge?tab=give",
+            icon: Tag,
+          },
+        ],
       },
     ],
   },
