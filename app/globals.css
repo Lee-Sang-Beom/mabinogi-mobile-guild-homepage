@@ -167,6 +167,7 @@ input[type="number"]::-webkit-inner-spin-button {
 /* ========== 스크롤바 스타일 ========== */
 *::-webkit-scrollbar {
   width: 4px; /* 스크롤바 너비 */
+  height: 4px; /* 스크롤바 높이 */
 }
 *::-webkit-scrollbar-track {
   background: #2c2c2c; /* 스크롤바 트랙 배경 */

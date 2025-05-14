@@ -52,12 +52,11 @@ export default function AdminBadgeTabs({ user }: NoticeListProps) {
         title: "뱃지 관리",
         desc: "길드원들의 창의적인 아이디어가 담긴 뱃지 추가요청을 관리할 수 있습니다.",
       });
-    } else if (activeTab === "approval") {
+    } else {
       setActiveTextObj({
         title: "뱃지 수여",
         desc: "길드원에게 뱃지를 수여할 수 있습니다.",
       });
-    } else {
     }
   }, [activeTab]);
   if (!mounted) return null;

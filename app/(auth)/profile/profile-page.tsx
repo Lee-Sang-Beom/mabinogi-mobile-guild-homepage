@@ -1,24 +1,25 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { User as UserIcon, UserPlus } from 'lucide-react'
-import SubUsersForm from '@/app/(auth)/profile/sub-users-form'
-import ProfileForm from '@/app/(auth)/profile/profile-form'
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tag, User as UserIcon, UserPlus } from "lucide-react";
+import SubUsersForm from "@/app/(auth)/profile/_components/sub-users-form";
+import ProfileForm from "@/app/(auth)/profile/_components/profile-form";
 import { User } from "next-auth";
+import { MyBadgeList } from "@/app/(auth)/profile/_components/my-badge-list";
 
 interface ProfilePageProps {
   user: User;
 }
-export default function ProfilePage({user}: ProfilePageProps) {
-  const [mounted, setMounted] = useState(false)
+export default function ProfilePage({ user }: ProfilePageProps) {
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
-  if (!mounted) return null
+  if (!mounted) return null;
 
   return (
     <div className="min-h-[calc(100vh-200px)] py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
@@ -29,7 +30,11 @@ export default function ProfilePage({user}: ProfilePageProps) {
           x: [0, 50, 0],
           y: [0, 30, 0],
         }}
-        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 20, ease: "easeInOut" }}
+        transition={{
+          repeat: Number.POSITIVE_INFINITY,
+          duration: 20,
+          ease: "easeInOut",
+        }}
       />
       <motion.div
         className="absolute right-1/4 bottom-1/4 -z-10 h-[350px] w-[350px] rounded-full bg-gradient-to-br from-amber-500/10 to-red-500/10 blur-3xl"
@@ -37,7 +42,12 @@ export default function ProfilePage({user}: ProfilePageProps) {
           x: [0, -30, 0],
           y: [0, 50, 0],
         }}
-        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 25, ease: "easeInOut", delay: 2 }}
+        transition={{
+          repeat: Number.POSITIVE_INFINITY,
+          duration: 25,
+          ease: "easeInOut",
+          delay: 2,
+        }}
       />
 
       <div className="max-w-4xl mx-auto">
@@ -52,30 +62,42 @@ export default function ProfilePage({user}: ProfilePageProps) {
               내 정보 관리
             </span>
           </h1>
-          <p className="text-muted-foreground mt-2">내 계정 정보와 서브캐릭터를 관리할 수 있습니다.</p>
+          <p className="text-muted-foreground mt-2">
+            내 계정 정보와 서브캐릭터를 관리할 수 있습니다.
+          </p>
         </motion.div>
 
         <Tabs defaultValue="profile" className="mb-8">
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 min-w-full md:min-w-auto max-w-full overflow-x-auto md:overflow-x-hidden">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <UserIcon className="h-4 w-4" />
               프로필 정보
             </TabsTrigger>
-            <TabsTrigger value="subcharacters" className="flex items-center gap-2">
+            <TabsTrigger
+              value="subcharacters"
+              className="flex items-center gap-2"
+            >
               <UserPlus className="h-4 w-4" />
               서브캐릭터 관리
+            </TabsTrigger>
+            <TabsTrigger value="badges" className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />내 뱃지
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
-            <ProfileForm user={user}/>
+            <ProfileForm user={user} />
           </TabsContent>
 
           <TabsContent value="subcharacters">
-            <SubUsersForm user={user}/>
+            <SubUsersForm user={user} />
+          </TabsContent>
+
+          <TabsContent value="badges">
+            <MyBadgeList user={user} />
           </TabsContent>
         </Tabs>
       </div>
     </div>
-  )
+  );
 }
