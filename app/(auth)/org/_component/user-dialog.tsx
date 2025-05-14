@@ -134,17 +134,13 @@ export function UserDialog({
             <tr>
               <th className="py-2 text-muted-foreground">이벤트 뱃지</th>
               <td>
-                {isPending ? (
-                  <Badge>로딩중...</Badge>
-                ) : (
-                  <>
-                    {haveBadges.length > 0 ? (
-                      <Badge>보유</Badge>
-                    ) : (
-                      <Badge variant="destructive">미보유</Badge>
-                    )}
-                  </>
-                )}
+                <>
+                  {!isPending && haveBadges.length > 0 ? (
+                    <Badge>보유</Badge>
+                  ) : (
+                    <Badge variant="destructive">미보유</Badge>
+                  )}
+                </>
               </td>
             </tr>
             <tr>

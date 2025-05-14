@@ -9,5 +9,5 @@ export default async function Page() {
     redirect("/login");
   }
 
-  return <Org user={session.user} />;
+  return <Org />;
 }

@@ -21,10 +21,7 @@ import { getUserStarSize } from "@/app/(auth)/org/utils";
 import { ConstellationLines } from "./constellation-lines";
 import { useGetAllUserBadgeCounts } from "@/app/(auth)/(admin)/admin-badge/hooks/use-get-all-user-badge-count";
 
-export default function StarryOrganization({
-  user,
-  users,
-}: StarryOrganizationProps) {
+export default function StarryOrganization({ users }: StarryOrganizationProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -221,7 +218,6 @@ export default function StarryOrganization({
 
         return (
           <Star
-            user={user}
             userBadgeCount={userBadgeCount}
             key={star.docId}
             star={star}
