@@ -100,7 +100,7 @@ export const loggedInMenuStructure: MenuItem[] = [
             icon: Tag,
           },
           {
-            name: "뱃지 부여",
+            name: "뱃지 수여",
             href: "/admin-badge?tab=give",
             icon: Tag,
           },

@@ -26,10 +26,10 @@ export function Star({
   // Badge-based scaling - DRAMATICALLY ENHANCED
   const getBadgeTier = () => {
     if (userBadgeCount === 0) return "novice";
-    if (userBadgeCount <= 2) return "beginner";
-    if (userBadgeCount <= 5) return "intermediate";
-    if (userBadgeCount <= 8) return "advanced";
-    if (userBadgeCount <= 12) return "expert";
+    if (userBadgeCount <= 5) return "beginner";
+    if (userBadgeCount <= 15) return "intermediate";
+    if (userBadgeCount <= 20) return "advanced";
+    if (userBadgeCount <= 30) return "expert";
     return "legendary";
   };
 

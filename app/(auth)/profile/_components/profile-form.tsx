@@ -38,7 +38,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { profileFormSchema } from "./schema";
+import { profileFormSchema } from "../schema";
 import { User } from "next-auth";
 import {
   InputOTP,
@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/input-otp";
 import { guildRoleOptions, jobTypeOptions } from "@/shared/constants/game";
 import { useUpdateUser } from "@/app/(auth)/profile/hooks/use-update-user";
-import { useWithdrawnUser } from "./hooks/use-withdrawn-user";
+import { useWithdrawnUser } from "../hooks/use-withdrawn-user";
 import { useSession } from "next-auth/react";
 
 interface ProfileForm {
