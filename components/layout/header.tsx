@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useTheme } from 'next-themes'
-import { motion } from 'framer-motion'
-import { LogOut, Menu, MoonIcon, SunIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useTheme } from "next-themes";
+import { motion } from "framer-motion";
+import { LogOut, Menu, MoonIcon, SunIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,40 +15,43 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { usePathname, useRouter } from 'next/navigation'
-import MobileMenu from './mobile-menu'
-import { useSession } from 'next-auth/react'
-import { loggedInMenuStructure, loggedOutMenuStructure } from '@/shared/constants/menu'
-import { authService } from '@/service/auth-service'
-import { guildName } from '@/shared/constants/game'
+} from "@/components/ui/dropdown-menu";
+import { usePathname, useRouter } from "next/navigation";
+import MobileMenu from "./mobile-menu";
+import { useSession } from "next-auth/react";
+import {
+  loggedInMenuStructure,
+  loggedOutMenuStructure,
+} from "@/shared/constants/menu";
+import { authService } from "@/service/auth-service";
+import { guildName } from "@/shared/constants/game";
 
 export default function Header() {
-  const [mounted, setMounted] = useState(false)
-  const { theme, setTheme } = useTheme()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const pathname = usePathname()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const session = useSession()
-  const router = useRouter()
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const session = useSession();
+  const router = useRouter();
 
   // Simulate checking login status
   useEffect(() => {
-    if (session.status === 'authenticated' && session.data?.user) {
-      setIsLoggedIn(true)
+    if (session.status === "authenticated" && session.data?.user) {
+      setIsLoggedIn(true);
     } else {
-      setIsLoggedIn(false)
+      setIsLoggedIn(false);
     }
-  }, [session])
+  }, [session]);
 
-  useEffect(() => setMounted(true), [])
+  useEffect(() => setMounted(true), []);
 
   const handleLogout = async () => {
-    await authService.logout()
-    router.push('/login')
-  }
+    await authService.logout();
+    router.push("/login");
+  };
 
-  const navItems = isLoggedIn ? loggedInMenuStructure : loggedOutMenuStructure
+  const navItems = isLoggedIn ? loggedInMenuStructure : loggedOutMenuStructure;
 
   return (
     <motion.header
@@ -62,12 +65,15 @@ export default function Header() {
         aria-label="Global"
       >
         <div className="flex lg:flex-1">
-          <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
+          <Link
+            href={isLoggedIn ? "/dashboard" : "/"}
+            className="-m-1.5 p-1.5 flex items-center gap-2"
+          >
             <span className="sr-only">{guildName}</span>
             <motion.div
               className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center"
               whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <span className="font-cinzel text-white text-xl font-bold">
                 M
@@ -91,14 +97,13 @@ export default function Header() {
                       <button
                         className={`text-sm font-semibold leading-6 transition-colors relative group flex items-center ${
                           pathname.startsWith(item.href)
-                            ? 'text-primary'
-                            : 'text-foreground hover:text-primary'
+                            ? "text-primary"
+                            : "text-foreground hover:text-primary"
                         }`}
                       >
                         {item.icon && <item.icon className="h-4 w-4 mr-2" />}
                         {item.name}
-                        <span
-                          className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
+                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-56">
@@ -106,7 +111,9 @@ export default function Header() {
                         subItem.submenu ? (
                           <DropdownMenuSub key={subItem.name}>
                             <DropdownMenuSubTrigger className="flex items-center gap-2">
-                              {subItem.icon && <subItem.icon className="h-4 w-4 mr-2" />}
+                              {subItem.icon && (
+                                <subItem.icon className="h-4 w-4 mr-2" />
+                              )}
                               {subItem.name}
                             </DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
@@ -120,7 +127,9 @@ export default function Header() {
                                       href={subSubItem.href}
                                       className="flex items-center w-full"
                                     >
-                                      {subItem.icon && <subItem.icon className="h-4 w-4 mr-2" />}
+                                      {subItem.icon && (
+                                        <subItem.icon className="h-4 w-4 mr-2" />
+                                      )}
 
                                       {subSubItem.name}
                                     </Link>
@@ -135,7 +144,9 @@ export default function Header() {
                               href={subItem.href}
                               className="flex items-center w-full"
                             >
-                              {subItem.icon && <subItem.icon className="h-4 w-4 mr-2" />}
+                              {subItem.icon && (
+                                <subItem.icon className="h-4 w-4 mr-2" />
+                              )}
 
                               {subItem.name}
                             </Link>
@@ -150,14 +161,13 @@ export default function Header() {
                     href={item.href}
                     className={`text-sm font-semibold leading-6 transition-colors relative group flex items-center ${
                       pathname === item.href
-                        ? 'text-primary'
-                        : 'text-foreground hover:text-primary'
+                        ? "text-primary"
+                        : "text-foreground hover:text-primary"
                     }`}
                   >
                     {item.icon && <item.icon className="h-4 w-4 mr-2" />}
                     {item.name}
-                    <span
-                      className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
                   </Link>
                 ),
               )}
@@ -171,13 +181,12 @@ export default function Header() {
                   href={item.href}
                   className={`text-sm font-semibold leading-6 transition-colors relative group ${
                     pathname === item.href
-                      ? 'text-primary'
-                      : 'text-foreground hover:text-primary'
+                      ? "text-primary"
+                      : "text-foreground hover:text-primary"
                   }`}
                 >
                   {item.name}
-                  <span
-                    className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
                 </Link>
               ))}
             </>
@@ -189,7 +198,7 @@ export default function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  {theme === 'dark' ? (
+                  {theme === "dark" ? (
                     <SunIcon className="h-5 w-5" />
                   ) : (
                     <MoonIcon className="h-5 w-5" />
@@ -199,16 +208,16 @@ export default function Header() {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() => {
-                    setTheme('dark')
-                    location.reload()
+                    setTheme("dark");
+                    location.reload();
                   }}
                 >
                   다크 모드
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setTheme('light')
-                    location.reload()
+                    setTheme("light");
+                    location.reload();
                   }}
                 >
                   라이트 모드
@@ -219,8 +228,10 @@ export default function Header() {
 
           {isLoggedIn ? (
             <div className="hidden lg:flex gap-2">
-              <Button variant="outline" className={'p-0'}>
-                <Link href="/profile" className={'p-3'}>프로필</Link>
+              <Button variant="outline" className={"p-0"}>
+                <Link href="/profile" className={"p-3"}>
+                  프로필
+                </Link>
               </Button>
               <Button
                 variant="destructive"
@@ -233,7 +244,9 @@ export default function Header() {
             </div>
           ) : (
             <Button variant="default" className="hidden lg:flex p-0">
-              <Link href="/login" className={'p-3'}>로그인</Link>
+              <Link href="/login" className={"p-3"}>
+                로그인
+              </Link>
             </Button>
           )}
 
@@ -256,5 +269,5 @@ export default function Header() {
         onLogoutAction={handleLogout}
       />
     </motion.header>
-  )
+  );
 }

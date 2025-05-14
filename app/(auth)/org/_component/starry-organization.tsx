@@ -19,6 +19,7 @@ import { UserDialog } from "@/app/(auth)/org/_component/user-dialog";
 import { Star } from "@/app/(auth)/org/_component/star";
 import { getUserStarSize } from "@/app/(auth)/org/utils";
 import { ConstellationLines } from "./constellation-lines";
+import { useGetAllUserBadgeCounts } from "@/app/(auth)/(admin)/admin-badge/hooks/use-get-all-user-badge-count";
 
 export default function StarryOrganization({
   user,
@@ -32,6 +33,7 @@ export default function StarryOrganization({
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [renderedPlanets, setRenderedPlanets] = useState<RenderedPlanet[]>([]);
   const [backgroundStars, setBackgroundStars] = useState<BackgroundStar[]>([]);
+  const { data: userBadgeCountList } = useGetAllUserBadgeCounts();
 
   // 창 크기에 따라 별 위치 재계산
   useEffect(() => {
@@ -204,15 +206,30 @@ export default function StarryOrganization({
       <ConstellationLines stars={stars} />
 
       {/* 멤버 별 */}
-      {stars.map((star) => (
-        <Star
-          user={user}
-          key={star.docId}
-          star={star}
-          mousePosition={mousePosition}
-          onClickAction={() => setSelectedUser(star)}
-        />
-      ))}
+      {stars.map((star) => {
+        const userBadgeCountData =
+          userBadgeCountList &&
+          userBadgeCountList.length &&
+          userBadgeCountList.find(
+            (userBadge) => userBadge.userDocId === star.docId,
+          );
+
+        const userBadgeCount =
+          userBadgeCountData && userBadgeCountData.badgeCount
+            ? userBadgeCountData.badgeCount
+            : 0;
+
+        return (
+          <Star
+            user={user}
+            userBadgeCount={userBadgeCount}
+            key={star.docId}
+            star={star}
+            mousePosition={mousePosition}
+            onClickAction={() => setSelectedUser(star)}
+          />
+        );
+      })}
 
       {/* 정보 버튼 */}
       <Button
@@ -237,8 +254,8 @@ export default function StarryOrganization({
               「 별자리 조직도 안내 」
             </h3>
             <p className="mb-2 text-xs">
-              ※ 각 별은 길드의 구성원을 나타냅니다. 별의 크기는 차후 길드 내
-              영향력(이벤트 뱃지의 보유 개수)에 따라 달라지게 됩니다.
+              ※ 각 별은 길드의 구성원을 나타냅니다. 별의 크기와 반짝임은 길드 내
+              영향력(이벤트 뱃지의 보유 개수)에 따라 달라집니다.
             </p>
             <p className="mb-2 text-xs">
               ※ 행성은 각 직업 계열을 나타내며, 주변에 해당 계열 구성원들이
@@ -255,11 +272,13 @@ export default function StarryOrganization({
       </AnimatePresence>
 
       {/* 멤버 정보 다이얼로그 */}
-      <UserDialog
-        user={selectedUser}
-        open={!!selectedUser}
-        onOpenChangeAction={() => setSelectedUser(null)}
-      />
+      {selectedUser && (
+        <UserDialog
+          user={selectedUser}
+          open={!!selectedUser}
+          onOpenChangeAction={() => setSelectedUser(null)}
+        />
+      )}
 
       {/* 별 깜빡임 애니메이션 */}
       <style jsx global>{`

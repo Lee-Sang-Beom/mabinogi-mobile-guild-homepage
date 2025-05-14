@@ -15,6 +15,7 @@ import { BadgeResponse } from "@/app/(auth)/hub/api";
 import {
   CreateUserBadgeCollectionType,
   UserBadgeCollectionType,
+  UserBadgeCountResponse,
   UserBadgeResponse,
 } from "@/app/(auth)/(admin)/admin-badge/api";
 
@@ -88,6 +89,49 @@ class UserBadgeService {
         success: false,
         message: "유저 뱃지 조회 중 오류가 발생했습니다.",
         data: null,
+      };
+    }
+  }
+
+  /**
+   * 🔢 모든 유저의 뱃지 개수 조회
+   *
+   * @returns 유저 ID와 뱃지 개수 리스트
+   */
+  async getAllUserBadgeCounts(): Promise<
+    ApiResponse<UserBadgeCountResponse[]>
+  > {
+    try {
+      const snapshot = await getDocs(USER_BADGE_COLLECTION);
+
+      if (snapshot.empty) {
+        return {
+          success: false,
+          message: "유저 뱃지 정보가 없습니다.",
+          data: [],
+        };
+      }
+
+      // 유저 별 뱃지 개수 계산
+      const badgeCounts = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data() as UserBadgeCollectionType;
+        return {
+          userDocId: data.userDocId,
+          badgeCount: data.badgeDocIds.length,
+        };
+      });
+
+      return {
+        success: true,
+        message: "유저 뱃지 개수를 성공적으로 불러왔습니다.",
+        data: badgeCounts,
+      };
+    } catch (error) {
+      console.error("유저 뱃지 개수 조회 실패:", error);
+      return {
+        success: false,
+        message: "유저 뱃지 개수 조회 중 오류가 발생했습니다.",
+        data: [],
       };
     }
   }

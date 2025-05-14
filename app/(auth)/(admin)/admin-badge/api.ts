@@ -19,3 +19,8 @@ export interface UserBadgeResponse {
   user: User; // colletion_user의 docId
   badges: BadgeResponse[]; // collection_badge의 docId 배열
 }
+
+export interface UserBadgeCountResponse {
+  userDocId: string;
+  badgeCount: number;
+}

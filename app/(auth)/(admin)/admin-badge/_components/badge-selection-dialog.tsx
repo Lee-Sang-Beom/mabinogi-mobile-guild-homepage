@@ -79,8 +79,8 @@ export function BadgeSelectionDialog({
         </DialogHeader>
 
         {/* 보유한 뱃지 리스트 */}
-        {haveBadges?.badges && haveBadges.badges.length > 0 && (
-          <div className="mb-6">
+        {haveBadges?.badges && haveBadges.badges.length > 0 ? (
+          <div className="mb-2">
             <h3 className="text-xs text-primary mb-2">
               ※ {selectedUser.id}님은 아래의 뱃지를 이미 보유하고 있습니다.
             </h3>
@@ -94,9 +94,13 @@ export function BadgeSelectionDialog({
               ))}
             </div>
           </div>
+        ) : (
+          <h3 className="text-xs text-primary">
+            ※ {selectedUser.id}님은 아직 뱃지를 보유하고 있지 않습니다.
+          </h3>
         )}
 
-        <div className="relative mb-4">
+        <div className="relative">
           <Search
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
             size={18}
