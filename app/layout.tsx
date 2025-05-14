@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     title: guildName,
     description: `마비노기 모바일 ${guildName} 길드 커뮤니티`,
     type: "website",
-    url: "https://your-domain.com", // 실제 배포 도메인으로 변경
+    url: "https://mabinogi-mobile-guild-homepage.vercel.app", // 실제 배포 도메인으로 변경
     siteName: guildName,
     images: [
       {
