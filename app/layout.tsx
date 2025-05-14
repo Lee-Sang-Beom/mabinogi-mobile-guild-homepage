@@ -20,7 +20,35 @@ export const metadata: Metadata = {
   title: guildName,
   description: `마비노기 모바일 ${guildName} 길드 커뮤니티`,
   icons: {
-    icon: "/images/favicon-mabinogi-mobile-luckybiki-logo.png", // public 폴더 기준 경로
+    icon: "/images/favicon-mabinogi-mobile-luckybiki-logo.png",
+    apple: "/images/favicon-mabinogi-mobile-luckybiki-logo.png",
+    other: [
+      {
+        rel: "android-chrome",
+        url: "/images/favicon-mabinogi-mobile-luckybiki-logo.png",
+      },
+    ],
+  },
+  openGraph: {
+    title: guildName,
+    description: `마비노기 모바일 ${guildName} 길드 커뮤니티`,
+    type: "website",
+    url: "https://your-domain.com", // 실제 배포 도메인으로 변경
+    siteName: guildName,
+    images: [
+      {
+        url: "/images/favicon-mabinogi-mobile-luckybiki-logo.png",
+        width: 1200,
+        height: 630,
+        alt: "마비노기 모바일 길드 커뮤니티",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: guildName,
+    description: `마비노기 모바일 ${guildName} 길드 커뮤니티`,
+    images: ["/images/favicon-mabinogi-mobile-luckybiki-logo.png"],
   },
 };
 
