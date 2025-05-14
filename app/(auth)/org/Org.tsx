@@ -1,12 +1,11 @@
 "use client";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
-import { NoticeListProps } from "@/shared/notice/internal";
 import StarryOrganization from "@/app/(auth)/org/_component/starry-organization";
 import { useGetUserList } from "@/app/(auth)/dashboard/hooks/use-get-user-list";
 import AnimatedStarLoading from "@/app/(auth)/org/_component/animated-star-loading";
 
-export default function Org({ user }: NoticeListProps) {
+export default function Org() {
   const { data, isLoading, isError } = useGetUserList();
   const [text, setText] = useState<string>("별자리 정보를 불러오고 있습니다.");
   const [isDataLoaded, setIsDataLoaded] = useState<boolean>(false);
@@ -57,7 +56,7 @@ export default function Org({ user }: NoticeListProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}
         >
-          <StarryOrganization user={user} users={data!} />
+          <StarryOrganization users={data!} />
         </motion.div>
       )}
     </main>

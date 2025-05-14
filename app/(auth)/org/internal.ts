@@ -1,8 +1,7 @@
-import { NoticeListProps } from "@/shared/notice/internal";
 import { User } from "next-auth";
 import type React from "react";
 
-export interface StarryOrganizationProps extends NoticeListProps {
+export interface StarryOrganizationProps {
   users: User[];
 }
 
