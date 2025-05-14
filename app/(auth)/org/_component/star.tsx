@@ -3,11 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { hexToRgba } from "@/shared/utils/utils";
-import type { User } from "next-auth";
 import type { UserStar } from "@/app/(auth)/org/internal";
 
 interface StarProps {
-  user: User;
   star: UserStar;
   userBadgeCount: number;
   mousePosition: { x: number; y: number };
@@ -15,37 +13,43 @@ interface StarProps {
 }
 
 export function Star({
-  user,
   star,
   userBadgeCount,
   mousePosition,
   onClickAction,
 }: StarProps) {
-  const isUserStar = star.docId === user.docId;
   const [position, setPosition] = useState({ x: star.x || 0, y: star.y || 0 });
   const [_angle, setAngle] = useState(star.orbitOffset || 0);
   const animationRef = useRef<number>(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // ⭐️ 뱃지 개수에 따른 별 크기와 반짝임 설정
-  const MIN_SIZE = 6;
-  const MAX_SIZE = 24;
-  const MIN_GLOW = 8;
-  const MAX_GLOW = 50;
+  // Badge-based scaling - DRAMATICALLY ENHANCED
+  const getBadgeTier = () => {
+    if (userBadgeCount === 0) return "novice";
+    if (userBadgeCount <= 2) return "beginner";
+    if (userBadgeCount <= 5) return "intermediate";
+    if (userBadgeCount <= 8) return "advanced";
+    if (userBadgeCount <= 12) return "expert";
+    return "legendary";
+  };
 
-  // 뱃지 개수에 따른 비선형 스케일링 (더 극적인 효과를 위해)
-  const badgeScale = Math.sqrt(userBadgeCount + 1); // 비선형 스케일링
+  const tier = getBadgeTier();
 
-  // 별 크기 계산 (뱃지 개수에 따라 증가)
-  const starSize = Math.min(MAX_SIZE, MIN_SIZE + badgeScale * 3.5);
+  // Size configuration based on tiers
+  const sizeConfig = {
+    novice: { size: 10, glow: 5, intensity: 0.2 },
+    beginner: { size: 15, glow: 15, intensity: 0.4 },
+    intermediate: { size: 20, glow: 25, intensity: 0.6 },
+    advanced: { size: 25, glow: 40, intensity: 0.8 },
+    expert: { size: 30, glow: 60, intensity: 0.9 },
+    legendary: { size: 40, glow: 80, intensity: 1.0 },
+  };
 
-  // 반짝임 크기 계산 (뱃지 개수에 따라 증가)
-  const glowSize = Math.min(MAX_GLOW, MIN_GLOW + badgeScale * 5);
+  const starSize = sizeConfig[tier].size;
+  const glowSize = sizeConfig[tier].glow;
+  const glowIntensity = sizeConfig[tier].intensity;
 
-  // 반짝임 강도 계산 (뱃지 개수에 따라 증가)
-  const glowIntensity = Math.min(1, 0.3 + badgeScale * 0.1);
-
-  // 별 움직임 애니메이션
+  // Orbital movement
   useEffect(() => {
     if (!star.centerX || !star.centerY || !star.orbitRadius || !star.orbitSpeed)
       return;
@@ -53,16 +57,12 @@ export function Star({
     const animate = () => {
       setAngle((prevAngle) => {
         const newAngle = prevAngle + star.orbitSpeed!;
-
-        // 타원 궤도 계산
         const eccentricity = star.orbitEccentricity || 0.2;
         const orbitAngle = star.orbitAngle || 0;
         const a = star.orbitRadius!;
         const b = star.orbitRadius! * (1 - eccentricity);
-
         const x0 = a * Math.cos(newAngle);
         const y0 = b * Math.sin(newAngle);
-
         const x = x0 * Math.cos(orbitAngle) - y0 * Math.sin(orbitAngle);
         const y = x0 * Math.sin(orbitAngle) + y0 * Math.cos(orbitAngle);
 
@@ -93,90 +93,164 @@ export function Star({
     star.orbitAngle,
   ]);
 
-  // 마우스 위치에 따른 시차 효과 계산
+  // Parallax effect
   const parallaxX = (mousePosition.x - window.innerWidth / 2) * 0.01;
   const parallaxY = (mousePosition.y - window.innerHeight / 2) * 0.01;
 
-  // 별 색상 계산 - 뱃지 개수에 따라 색상 밝기 조절
-  const baseColor = star.color || "#ffffff";
-  const starColor = star.color
-    ? hexToRgba(
-        star.color,
-        isUserStar ? 1 : Math.min(0.8, 0.5 + badgeScale * 0.05),
-      )
-    : isUserStar
-      ? "rgba(255, 255, 255, 0.9)"
-      : `rgba(255, 255, 255, ${Math.min(0.8, 0.5 + badgeScale * 0.05)})}`;
-
-  // 반짝임 색상 - 뱃지 개수에 따라 강도 조절
-  const glowColor = star.color
-    ? hexToRgba(star.color, glowIntensity)
-    : `rgba(255, 255, 255, ${glowIntensity})`;
-
-  // 뱃지 개수에 따른 추가 애니메이션 효과
-  const pulseAnimation =
-    userBadgeCount > 5
-      ? {
-          boxShadow: [
-            `0 0 ${glowSize}px ${glowSize / 2}px ${glowColor}`,
-            `0 0 ${glowSize * 1.2}px ${glowSize / 1.5}px ${glowColor}`,
-            `0 0 ${glowSize}px ${glowSize / 2}px ${glowColor}`,
-          ],
-          scale: [1, 1.05, 1],
-        }
-      : undefined;
-
-  // 수정된 코드: 애니메이션 적용 방식 변경
-  const hasPulseAnimation = userBadgeCount > 3;
-
-  // 뱃지 개수에 따른 그라데이션 효과
-  const getGradient = () => {
-    if (userBadgeCount <= 1) {
-      return "none";
-    } else if (userBadgeCount <= 3) {
-      return `linear-gradient(135deg, ${baseColor}, ${hexToRgba(baseColor, 0.7)})`;
-    } else if (userBadgeCount <= 5) {
-      return `linear-gradient(135deg, #ffffff, ${baseColor}, ${hexToRgba(baseColor, 0.7)})`;
-    } else {
-      return `linear-gradient(135deg, #ffffff, ${baseColor}, #ffffff, ${baseColor})`;
+  // Enhanced star color and glow based on badge tier
+  const getStarBaseColor = () => {
+    switch (tier) {
+      case "novice":
+        return star.color || "#cccccc"; // Dim gray
+      case "beginner":
+        return star.color || "#ffffff"; // White
+      case "intermediate":
+        return star.color || "#00ffff"; // Cyan
+      case "advanced":
+        return star.color || "#ffcc00"; // Gold
+      case "expert":
+        return star.color || "#ff00ff"; // Magenta
+      case "legendary":
+        return star.color || "#ff0000"; // Red
     }
   };
 
-  // 별 모양의 점들을 생성하는 함수
-  const generateStarPoints = (points: number) => {
+  const baseColor = getStarBaseColor();
+  const starColor = hexToRgba(baseColor, Math.min(0.8, 0.5 + glowIntensity));
+  const glowColor = hexToRgba(baseColor, glowIntensity);
+
+  // Enhanced gradient effect based on badge tiers
+  const getGradient = () => {
+    switch (tier) {
+      case "novice":
+        return `${baseColor}`; // Simple solid color
+
+      case "beginner":
+        return `linear-gradient(135deg, #ffffff, ${baseColor}, ${hexToRgba(baseColor, 0.8)})`; // Simple gradient
+
+      case "intermediate":
+        return `linear-gradient(135deg, #ffffff, ${baseColor}, #ffffff, ${hexToRgba(baseColor, 0.9)}, ${baseColor})`; // More complex
+
+      case "advanced":
+        return `linear-gradient(135deg, #ffffff, ${baseColor}, #ffffff, ${hexToRgba(baseColor, 1)}, ${baseColor}, #ffffff)`; // Vibrant
+
+      case "expert":
+        // Radial gradient for an energetic glow effect
+        return `radial-gradient(circle at center, #ffffff 0%, ${baseColor} 30%, ${hexToRgba(baseColor, 0.8)} 70%, ${hexToRgba(baseColor, 0.5)} 100%)`;
+
+      case "legendary":
+        // Complex animated-looking gradient
+        return `conic-gradient(from 0deg, #ffffff, ${baseColor}, #ffffff, ${hexToRgba(baseColor, 1)}, ${baseColor}, #ffffff, ${baseColor}, #ffffff)`;
+    }
+  };
+
+  // Enhanced star shape complexity based on tier
+  const generateStarPoints = (
+    points: number,
+    innerRadiusRatio: number = 0.4,
+  ) => {
     let result = "";
-    const outerRadius = 50; // 외부 반지름 (%)
-    const innerRadius = 20; // 내부 반지름 (%)
+    const outerRadius = 50;
+    const innerRadius = outerRadius * innerRadiusRatio;
 
     for (let i = 0; i < points * 2; i++) {
-      // 각도 계산 (360도를 points*2로 나눔)
       const angle = (i * Math.PI) / points;
-      // 반지름은 짝수 인덱스일 때 외부, 홀수 인덱스일 때 내부
       const radius = i % 2 === 0 ? outerRadius : innerRadius;
-      // x, y 좌표 계산 (중심이 50%, 50%인 원 위의 점)
       const x = 50 + radius * Math.sin(angle);
       const y = 50 - radius * Math.cos(angle);
-
       result += `${x}% ${y}%${i < points * 2 - 1 ? ", " : ""}`;
     }
 
     return result;
   };
 
-  // 뱃지 개수에 따라 별 모양의 복잡도 증가
-  const points = Math.min(10, 5 + Math.floor(userBadgeCount / 3));
-  const clipPathValue = `polygon(${generateStarPoints(points)})`;
+  // Points configuration based on tiers
+  const getStarProperties = () => {
+    switch (tier) {
+      case "novice":
+        return { points: 4, innerRadius: 0.5 }; // Simple square-like shape
+      case "beginner":
+        return { points: 5, innerRadius: 0.4 }; // Classic 5-point star
+      case "intermediate":
+        return { points: 6, innerRadius: 0.3 }; // 6-point star
+      case "advanced":
+        return { points: 8, innerRadius: 0.25 }; // 8-point star
+      case "expert":
+        return { points: 10, innerRadius: 0.2 }; // 10-point star
+      case "legendary":
+        return { points: 12, innerRadius: 0.15 }; // 12-point star with sharp points
+    }
+  };
+
+  const starProps = getStarProperties();
+  const clipPathValue = `polygon(${generateStarPoints(starProps.points, starProps.innerRadius)})`;
   const size = starSize * (isHovered ? 1.5 : 1);
 
-  // 뱃지 개수에 따른 회전 속도 조정 (뱃지가 많을수록 빠르게 회전)
-  const rotationSpeed = 10 + Math.min(20, userBadgeCount * 2);
+  // Enhanced rotation & animation based on tier
+  const getRotationConfig = () => {
+    const baseSeed = (star.docId?.charCodeAt(0) || 0) % 2 === 0 ? 1 : -1;
 
-  // 회전 방향 (별마다 다르게 설정)
-  const rotationDirection = (star.docId?.charCodeAt(0) || 0) % 2 === 0 ? 1 : -1;
+    switch (tier) {
+      case "novice":
+        return { speed: 5, direction: baseSeed }; // Slow rotation
+      case "beginner":
+        return { speed: 10, direction: baseSeed }; // Standard rotation
+      case "intermediate":
+        return { speed: 20, direction: baseSeed }; // Faster rotation
+      case "advanced":
+        return { speed: 30, direction: baseSeed }; // Very fast rotation
+      case "expert":
+        return { speed: 40, direction: baseSeed }; // Super fast rotation
+      case "legendary":
+        return { speed: 50, direction: baseSeed }; // Extreme rotation
+    }
+  };
+
+  const rotationConfig = getRotationConfig();
+
+  // Add additional particle effects for higher tiers
+  const renderParticles = () => {
+    if (tier === "novice" || tier === "beginner") return null;
+
+    const particleCount =
+      {
+        intermediate: 2,
+        advanced: 4,
+        expert: 6,
+        legendary: 8,
+      }[tier] || 0;
+
+    return Array.from({ length: particleCount }).map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute rounded-full"
+        style={{
+          width: `${size / 4}px`,
+          height: `${size / 4}px`,
+          backgroundColor: baseColor,
+          boxShadow: `0 0 ${glowSize / 3}px ${glowSize / 6}px ${glowColor}`,
+          top: "50%",
+          left: "50%",
+        }}
+        animate={{
+          x: [0, Math.cos(i * (360 / particleCount)) * size],
+          y: [0, Math.sin(i * (360 / particleCount)) * size],
+          opacity: [1, 0.2, 1],
+          scale: [1, 0.8, 1],
+        }}
+        transition={{
+          duration: 2 + (i % 3),
+          repeat: Infinity,
+          repeatType: "reverse",
+          ease: "easeInOut",
+        }}
+      />
+    ));
+  };
 
   return (
     <motion.div
-      className="absolute cursor-pointer sparkle-animation"
+      className="absolute cursor-pointer"
       data-star-id={star.docId}
       style={{
         left: position.x,
@@ -192,67 +266,91 @@ export function Star({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* 별 모양 - 회전 애니메이션 추가 */}
       <motion.div
         style={{
-          position: "relative" as const,
+          position: "relative",
           width: `${size}px`,
           height: `${size}px`,
           clipPath: clipPathValue,
-          backgroundImage: userBadgeCount > 0 ? getGradient() : "none",
-          backgroundColor: userBadgeCount > 0 ? "transparent" : starColor,
+          backgroundImage: tier !== "novice" ? getGradient() : "none",
+          backgroundColor: tier === "novice" ? starColor : "transparent",
           boxShadow: `0 0 ${glowSize}px ${glowSize / 2}px ${glowColor}`,
           transition: "all 0.3s ease",
         }}
         animate={{
-          ...pulseAnimation,
-          rotate: rotationDirection * 360, // 360도 회전 (시계 또는 반시계 방향)
+          rotate: rotationConfig.direction * 360,
         }}
         transition={{
-          duration: hasPulseAnimation ? 3 : undefined,
-          ease: "easeInOut",
-          repeat: Number.POSITIVE_INFINITY,
-          repeatType: "reverse" as const,
-          rotate: {
-            duration: 60 / rotationSpeed, // 회전 속도 조절 (초 단위)
-            ease: "linear",
-            repeat: Infinity,
-            repeatType: "loop" as const,
-          },
+          duration: 60 / rotationConfig.speed,
+          ease: "linear",
+          repeat: Infinity,
+          repeatType: "loop",
         }}
       />
 
-      {/* 뱃지 개수가 많을 때 추가 반짝임 효과 */}
-      {userBadgeCount > 8 && (
+      {/* Outer glow effect for higher tier badges */}
+      {tier !== "novice" && tier !== "beginner" && (
         <motion.div
           className="absolute inset-0"
           style={{
             background: "transparent",
             clipPath: clipPathValue,
+            width: `${size}px`,
+            height: `${size}px`,
           }}
           animate={{
             boxShadow: [
               `0 0 ${glowSize * 1.5}px ${glowSize}px rgba(255, 255, 255, 0)`,
-              `0 0 ${glowSize * 1.5}px ${glowSize}px rgba(255, 255, 255, 0.2)`,
+              `0 0 ${glowSize * 1.5}px ${glowSize}px ${hexToRgba(baseColor, 0.3)}`,
               `0 0 ${glowSize * 1.5}px ${glowSize}px rgba(255, 255, 255, 0)`,
             ],
-            rotate: rotationDirection * 360, // 반짝임 효과도 함께 회전
+            scale: [1, 1.1, 1],
+            rotate: rotationConfig.direction * -180, // Counter-rotation for interesting effect
           }}
           transition={{
-            duration: 2,
-            repeat: Number.POSITIVE_INFINITY,
+            duration: tier === "legendary" ? 1 : 2,
+            repeat: Infinity,
             repeatType: "loop",
-            rotate: {
-              duration: 60 / rotationSpeed,
-              ease: "linear",
-              repeat: Infinity,
-              repeatType: "loop" as const,
-            },
           }}
         />
       )}
 
-      {/* 호버 시 직업 표시 */}
+      {/* Particle effects for higher tier badges */}
+      {renderParticles()}
+
+      {/* Special legendary pulse effect */}
+      {tier === "legendary" && (
+        <motion.div
+          className="absolute"
+          style={{
+            position: "absolute",
+            width: `${size * 2}px`,
+            height: `${size * 2}px`,
+            borderRadius: "50%",
+            background: "transparent",
+            left: "-60%",
+            top: "-60%",
+            transform: "translate(-50%, -50%)",
+            transformOrigin: "center",
+            marginLeft: "50%",
+            marginTop: "50%",
+          }}
+          animate={{
+            boxShadow: [
+              `0 0 0 0px ${hexToRgba(baseColor, 0)}`,
+              `0 0 0 ${size / 2}px ${hexToRgba(baseColor, 0.2)}`,
+              `0 0 0 ${size}px ${hexToRgba(baseColor, 0)}`,
+            ],
+            scale: [0.8, 1.2, 0.8],
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            repeatType: "loop",
+          }}
+        />
+      )}
+
       {isHovered && (
         <div className="absolute left-1/2 top-full -translate-x-1/2 mt-1 text-xs text-white whitespace-nowrap bg-black/50 px-2 py-0.5 rounded">
           {star.id} ({star.job})

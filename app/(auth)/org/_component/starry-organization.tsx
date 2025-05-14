@@ -206,7 +206,7 @@ export default function StarryOrganization({
       <ConstellationLines stars={stars} />
 
       {/* 멤버 별 */}
-      {stars.map((star) => {
+      {stars.map((star, idx) => {
         const userBadgeCountData =
           userBadgeCountList &&
           userBadgeCountList.length &&
@@ -221,7 +221,6 @@ export default function StarryOrganization({
 
         return (
           <Star
-            user={user}
             userBadgeCount={userBadgeCount}
             key={star.docId}
             star={star}
