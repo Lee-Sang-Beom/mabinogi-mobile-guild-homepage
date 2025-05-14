@@ -9,7 +9,7 @@ import {
   getJobClassColor,
   JobClassIcons,
 } from "@/app/(auth)/dashboard/job-class-utils";
-import { Award, CheckCircle, Sword, XCircle } from "lucide-react";
+import { Award, Sword } from "lucide-react";
 import { User } from "next-auth";
 import { Dispatch, SetStateAction } from "react";
 import { guildRoleOptions } from "@/shared/constants/game";
@@ -95,16 +95,6 @@ export default function DashboardGuildUserBubbleDialog({
               <div className="flex justify-between">
                 <span className="text-muted-foreground">최종 수정일</span>
                 <span className="font-medium">{selectedUser.mngDt}</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  이벤트 뱃지 보유 여부
-                </span>
-                <span className="font-medium">
-                  {isBadge ? <CheckCircle /> : <XCircle />}
-                </span>
               </div>
             </div>
           </div>

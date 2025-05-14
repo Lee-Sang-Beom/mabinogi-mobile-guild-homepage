@@ -24,6 +24,9 @@ export function useUpdateUserBadge() {
         queryClient.invalidateQueries({
           queryKey: ["useGetUserBadgesByUserDocId", variables.data.userDocId],
         });
+        queryClient.invalidateQueries({
+          queryKey: ["useGetAllUserBadgeCounts"],
+        });
       } else {
         toast.error(response.message);
       }

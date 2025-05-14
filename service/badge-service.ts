@@ -128,13 +128,29 @@ class BadgeService {
     badge: BadgeFormSchemaType,
   ): Promise<ApiResponse<string | null>> {
     try {
-      const docRef = doc(BADGE_COLLECTION, docId);
-      await updateDoc(docRef, badge);
-      return {
-        success: true,
-        message: "뱃지가 성공적으로 수정되었습니다.",
-        data: docId,
-      };
+      // 🔍 유저 뱃지 컬렉션에서 해당 뱃지가 사용 중인지 검사
+      const userBadgeSnapshot = await getDocs(
+        query(
+          collection(db, "collection_user_badge"),
+          where("badgeDocIds", "array-contains", docId),
+        ),
+      );
+
+      if (!userBadgeSnapshot.empty) {
+        return {
+          success: false,
+          message: "해당 뱃지는 길드원이 사용 중이므로 수정할 수 없습니다.",
+          data: "",
+        };
+      } else {
+        const docRef = doc(BADGE_COLLECTION, docId);
+        await updateDoc(docRef, badge);
+        return {
+          success: true,
+          message: "뱃지가 성공적으로 수정되었습니다.",
+          data: docId,
+        };
+      }
     } catch (error) {
       console.error("뱃지 수정 실패:", error);
       return {
