@@ -38,8 +38,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/images/favicon-mabinogi-mobile-luckybiki-logo.png",
-        width: 1200,
-        height: 630,
+        width: 800,
+        height: 400,
         alt: "마비노기 모바일 길드 커뮤니티",
       },
     ],
