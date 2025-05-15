@@ -6,6 +6,8 @@ export interface InquiryResponse extends NoticeResponse {
   step: InquiryStep;
   isSecret: boolean; // 비밀글 여부
   inquiryResponseMessage: string; // 답변 메시지
+  inquiryResponseUserDocId: string; // 답변자 docId
+  inquiryResponseUserId: string; // 답변자 캐릭터 아이디
   inquiryResponseDt: string | null; // 답변 날짜
 }
 

@@ -12,5 +12,16 @@ export const inquiryFormSchema = z.object({
   writeUserDocId: z.string(),
   writeUserId: z.string(),
   mngDt: z.string().nullable(),
+
+  // 추가
+  step: z.enum(["INQUIRY_STEP_IN_PROGRESS", "INQUIRY_STEP_RESOLVED"], {
+    required_error: "진행도가 세팅되지 않았습니다.",
+  }),
+  isSecret: z.boolean(),
+  inquiryResponseMessage: z.string(),
+  inquiryResponseUserDocId: z.string().nullable(),
+  inquiryResponseUserId: z.string().nullable(),
+  inquiryResponseDt: z.string().nullable(),
 });
+
 export type InquiryFormSchema = z.infer<typeof inquiryFormSchema>;

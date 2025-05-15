@@ -81,6 +81,8 @@ export default function BadgeGiveTab() {
     }
     setIsDialogOpen(false);
     setSelectedBadgeDocId(null);
+    setSearchTerm("");
+    setSelectedUser(null);
   };
 
   return (
