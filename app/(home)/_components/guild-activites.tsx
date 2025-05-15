@@ -11,10 +11,7 @@ const activities = [
     title: "도전! 어비스 타임어택 올클리어",
     description:
       "잘 모르더라도, 스펙이 조금 낮더라도 OK! 모두가 함께 어비스 컨텐츠에서 최고의 보상을 받을 수 있도록 지원합니다.",
-    images: [
-      "/images/(home)/img-challenge-the-abyss-1.png",
-      "/images/(home)/img-challenge-the-abyss-2.jpg",
-    ],
+    images: ["/images/(home)/img-challenge-the-abyss.jpg"],
   },
   {
     title: "도전! 레이드",
@@ -26,10 +23,7 @@ const activities = [
     title: "신규 길드원 지원",
     description:
       "새로운 길드원을 정착을 위해 모두가 빠르게 적응할 수 있도록 노력합니다.",
-    images: [
-      "/images/(home)/img-support-new-guild-member-1.png",
-      "/images/(home)/img-support-new-guild-member-2.png",
-    ],
+    images: ["/images/(home)/img-support-guild-member.png"],
   },
 ];
 

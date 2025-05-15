@@ -10,7 +10,7 @@ export const homePageAdminId = "영면";
  * @name guildName
  * @description 길드명
  */
-export const guildName = "럭키비키";
+export const guildName = "어린이집";
 
 /**
  * @name guildInfo

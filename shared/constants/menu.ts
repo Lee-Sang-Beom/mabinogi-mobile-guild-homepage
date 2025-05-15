@@ -6,6 +6,7 @@ import {
   Info,
   LayoutDashboard,
   Link as LinkIcon,
+  MessageSquare,
   RefreshCw,
   Search,
   Settings,
@@ -65,6 +66,11 @@ export const loggedInMenuStructure: MenuItem[] = [
         href: "/updates",
         icon: RefreshCw,
       },
+      // {
+      //   name: "문의하기",
+      //   href: "/inquiry",
+      //   icon: MessageSquare,
+      // },
     ],
   },
   {
