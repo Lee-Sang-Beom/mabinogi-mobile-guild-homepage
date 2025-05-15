@@ -2,7 +2,6 @@
 
 import Hero from "@/app/(home)/_components/hero";
 import { useEffect, useState } from "react";
-import CollaborativeGuild from "@/app/(home)/_components/collaborative-guild";
 import { User } from "next-auth";
 import IntroAnimation from "@/app/(home)/_components/info-animation";
 import GuildStats from "./guild-stats";
@@ -47,7 +46,7 @@ export default function Home({ user }: HomeProps) {
         <GuildStats />
         <GuildFeatures />
         <GuildActivities />
-        <CollaborativeGuild />
+        {/*<CollaborativeGuild />*/}
         <JoinGuild />
       </div>
     </>

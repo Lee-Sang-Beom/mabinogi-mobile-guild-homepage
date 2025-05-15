@@ -20,12 +20,12 @@ export const metadata: Metadata = {
   title: guildName,
   description: `마비노기 모바일 ${guildName} 길드 커뮤니티`,
   icons: {
-    icon: "/images/favicon-mabinogi-mobile-luckybiki-logo.png",
-    apple: "/images/favicon-mabinogi-mobile-luckybiki-logo.png",
+    icon: "/images/favicon-mabinogi-mobile.png",
+    apple: "/images/favicon-mabinogi-mobile.png",
     other: [
       {
         rel: "android-chrome",
-        url: "/images/favicon-mabinogi-mobile-luckybiki-logo.png",
+        url: "/images/favicon-mabinogi-mobile.png",
       },
     ],
   },
@@ -33,11 +33,11 @@ export const metadata: Metadata = {
     title: guildName,
     description: `마비노기 모바일 ${guildName} 길드 커뮤니티`,
     type: "website",
-    url: "https://mabinogi-mobile-guild-homepage.vercel.app", // 실제 배포 도메인으로 변경
+    url: "https://mabinogi-mobile-guild.vercel.app", // 실제 배포 도메인으로 변경
     siteName: guildName,
     images: [
       {
-        url: "/images/favicon-mabinogi-mobile-luckybiki-logo.png",
+        url: "/images/favicon-mabinogi-mobile.png",
         width: 800,
         height: 400,
         alt: "마비노기 모바일 길드 커뮤니티",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: guildName,
     description: `마비노기 모바일 ${guildName} 길드 커뮤니티`,
-    images: ["/images/favicon-mabinogi-mobile-luckybiki-logo.png"],
+    images: ["/images/favicon-mabinogi-mobile.png"],
   },
 };
 

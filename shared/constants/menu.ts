@@ -66,11 +66,11 @@ export const loggedInMenuStructure: MenuItem[] = [
         href: "/updates",
         icon: RefreshCw,
       },
-      {
-        name: "문의하기",
-        href: "/inquiry",
-        icon: MessageSquare,
-      },
+      // {
+      //   name: "문의하기",
+      //   href: "/inquiry",
+      //   icon: MessageSquare,
+      // },
     ],
   },
   {
