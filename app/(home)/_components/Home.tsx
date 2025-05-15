@@ -19,10 +19,10 @@ export default function Home({ user }: HomeProps) {
 
   useEffect(() => {
     // hydration 이후 실행
-    const hasSeenIntro = !!user;
+    const hasSeenIntro =
+      !!user || localStorage.getItem("hasSeenIntro") === "true";
 
     if (!hasSeenIntro) {
-      localStorage.setItem("hasSeenIntro", "true");
       setShowIntro(true); // 인트로 보여주기
       document.body.style.overflow = "hidden"; // 스크롤 방지
     }
@@ -33,6 +33,7 @@ export default function Home({ user }: HomeProps) {
   const handleIntroComplete = () => {
     setShowIntro(false);
     document.body.style.overflow = ""; // 인트로 끝나면 스크롤 복구
+    localStorage.setItem("hasSeenIntro", "true"); // 여기서 기록
   };
 
   // hydration이 끝나지 않았으면 아무것도 안 보여줌 (Next.js hydration warning 방지용)
