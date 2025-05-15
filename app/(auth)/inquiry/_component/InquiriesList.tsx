@@ -25,26 +25,29 @@ export default function InquiriesList({ user }: InquiryListProps) {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { data: inquiry, isPending } = useGetInquiries();
-  const isAdmin = isRoleAdmin(user);
 
   // 데이터 메모이제이션
   const inquiryData = useMemo(() => {
     return inquiry?.data || [];
   }, [inquiry]);
 
+  console.log("inquiryData is ", inquiryData);
   // 상세 페이지 이동 : 비밀글 처리되어있을 때는 관리자이거나 본인만 이동 가능
   const handleInquiryClick = useCallback(
     (inquiry: InquiryResponse) => {
       if (!inquiry?.docId) return;
+      const isAdmin = isRoleAdmin(user);
       const isWriteMe = user.docId === inquiry.writeUserDocId;
       const availableMove = !inquiry.isSecret || isAdmin || isWriteMe;
 
       if (availableMove) {
+        router.push(`/inquiry/${inquiry.docId}`);
+      } else {
         toast.error("비밀글은 작성자 및 관리자만 확인할 수 있습니다.");
+        return;
       }
-      router.push(`/inquiry/${inquiry.docId}`);
     },
-    [router, user, isAdmin],
+    [router, user],
   );
 
   // 컴포넌트 마운트 시 한 번만 실행
