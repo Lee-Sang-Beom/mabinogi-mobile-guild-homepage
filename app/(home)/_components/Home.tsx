@@ -8,6 +8,7 @@ import GuildStats from "./guild-stats";
 import GuildFeatures from "./guild-features";
 import GuildActivities from "./guild-activites";
 import JoinGuild from "@/app/(home)/_components/join-guild";
+import TerminalJoinAnimation from "@/app/(home)/_components/terminal-join-animation";
 
 interface HomeProps {
   user: User | null;
@@ -46,8 +47,8 @@ export default function Home({ user }: HomeProps) {
         <GuildStats />
         <GuildFeatures />
         <GuildActivities />
-        {/*<CollaborativeGuild />*/}
         <JoinGuild />
+        <TerminalJoinAnimation />
       </div>
     </>
   );
