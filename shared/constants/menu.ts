@@ -10,10 +10,10 @@ import {
   RefreshCw,
   Search,
   Settings,
+  Stars,
   Tag,
   UserCog,
   UserPlus,
-  Users,
 } from "lucide-react";
 import { MenuItem } from "../types/menu";
 
@@ -30,9 +30,9 @@ export const loggedInMenuStructure: MenuItem[] = [
     icon: Search,
   },
   {
-    name: "길드원 정보",
+    name: "별들의 모임",
     href: "/org",
-    icon: Users,
+    icon: Stars,
   },
   {
     name: "게시판",
@@ -66,11 +66,11 @@ export const loggedInMenuStructure: MenuItem[] = [
         href: "/updates",
         icon: RefreshCw,
       },
-      // {
-      //   name: "문의하기",
-      //   href: "/inquiry",
-      //   icon: MessageSquare,
-      // },
+      {
+        name: "문의하기",
+        href: "/inquiry",
+        icon: MessageSquare,
+      },
     ],
   },
   {
@@ -111,6 +111,11 @@ export const loggedInMenuStructure: MenuItem[] = [
             icon: Tag,
           },
         ],
+      },
+      {
+        name: "문의 관리",
+        href: "/admin-inquiry",
+        icon: MessageSquare,
       },
     ],
   },
