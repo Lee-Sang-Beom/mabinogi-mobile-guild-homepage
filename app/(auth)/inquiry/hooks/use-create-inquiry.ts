@@ -14,6 +14,9 @@ export function useCreateInquiry() {
       if (response.success) {
         toast.success("문의가 성공적으로 등록되었습니다.");
         queryClient.invalidateQueries({ queryKey: ["useGetInquiries"] });
+        queryClient.invalidateQueries({
+          queryKey: ["useGetInProgressInquiries"],
+        });
       } else {
         toast.error(response.message);
       }

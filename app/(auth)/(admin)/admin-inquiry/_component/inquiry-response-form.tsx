@@ -10,42 +10,48 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ArrowLeft, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  Bell,
+  Calendar,
+  Save,
+  User as UserIcon,
+} from "lucide-react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import EditorComponent from "@/components/editor/ck-editor";
-import { compressContentImages } from "@/shared/utils/utils";
-import moment from "moment";
-import { useMemo, useState } from "react";
-import { useCreateInquiry } from "@/app/(auth)/inquiry/hooks/use-create-inquiry";
+import { compressContentImages, isRoleAdmin } from "@/shared/utils/utils";
+import { useEffect, useMemo, useState } from "react";
 import { useUpdateInquiry } from "@/app/(auth)/inquiry/hooks/use-update-inquiry";
 import {
   type InquiryFormSchema,
   inquiryFormSchema,
 } from "@/app/(auth)/inquiry/schema";
-import type { InquiryFormProps } from "@/app/(auth)/inquiry/internal";
-import { Switch } from "@/components/ui/switch";
+import type {
+  InquiryFormProps,
+  InquiryStep,
+} from "@/app/(auth)/inquiry/internal";
+import moment from "moment";
+import DisplayEditorContent from "@/components/editor/display-editor-content";
+import { toast } from "sonner";
 
-export default function InquiryRequestForm({
+export default function InquiryResponseForm({
   user,
-  type,
   inquiryData,
 }: InquiryFormProps) {
   const router = useRouter();
 
   const [docId, setDocId] = useState<string | null>(null);
   const defaultValues = useMemo<InquiryFormSchema>(() => {
-    if (type === "UPDATE" && inquiryData) {
+    if (inquiryData) {
       const { docId, ...rest } = inquiryData;
       setDocId(docId);
       return rest;
@@ -65,10 +71,8 @@ export default function InquiryRequestForm({
       inquiryResponseUserId: null,
       inquiryResponseDt: null,
     };
-  }, [type, inquiryData, user]);
+  }, [inquiryData, user]);
 
-  const { mutateAsync: createInquiry, isPending: isCreateSubmitting } =
-    useCreateInquiry();
   const { mutateAsync: updateInquiry, isPending: isUpdateSubmitting } =
     useUpdateInquiry();
   const form = useForm<InquiryFormSchema>({
@@ -79,30 +83,39 @@ export default function InquiryRequestForm({
   // 폼 제출 처리
   const onSubmit: SubmitHandler<InquiryFormSchema> = async (data) => {
     try {
+      if (data.inquiryResponseMessage.length < 1) {
+        toast.error("문의 답변 내용을 입력해주세요.");
+        return;
+      }
       const contentWithCompressedImages = await compressContentImages(
-        data.content,
+        data.inquiryResponseMessage,
       );
       const postData = {
         ...data,
-        content: contentWithCompressedImages,
-        mngDt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        step: "INQUIRY_STEP_RESOLVED" as InquiryStep,
+        inquiryResponseMessage: contentWithCompressedImages,
+        inquiryResponseUserDocId: user.docId,
+        inquiryResponseUserId: user.id,
+        inquiryResponseDt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
       };
 
-      if (type === "CREATE") {
-        await createInquiry(postData);
-        router.push("/inquiry");
-      } else {
-        await updateInquiry({
-          docId: docId!,
-          data: postData,
-        });
+      await updateInquiry({
+        docId: docId!,
+        data: postData,
+      });
 
-        router.push(`/inquiry/${docId}`);
-      }
+      router.push(`/admin-inquiry`);
     } catch (error) {
-      console.error("문의내용 등록 오류:", error);
+      console.error("문의내용 답변 오류:", error);
     }
   };
+
+  useEffect(() => {
+    if (!isRoleAdmin(user)) {
+      toast.error("관리자만 접근 가능한 페이지입니다.");
+      router.push("/dashboard");
+    }
+  }, [user, router]);
 
   return (
     <div className="min-h-[calc(100vh-200px)] py-8 sm:py-12 px-3 sm:px-6 lg:px-8 relative w-full max-w-full overflow-x-hidden">
@@ -150,6 +163,39 @@ export default function InquiryRequestForm({
           </p>
         </motion.div>
 
+        {inquiryData && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className={"mb-2"}
+          >
+            <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl overflow-hidden">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-xl">
+                      {inquiryData.title}
+                    </CardTitle>
+                  </div>
+                </div>
+                <div className="flex items-center text-sm text-muted-foreground mt-4">
+                  <UserIcon className="h-3 w-3 mr-1" />
+                  문의자: {inquiryData.writeUserId}
+                  <p className={"mx-2"}>{"/"}</p>
+                  <Calendar className="h-3 w-3 mr-1" />
+                  {inquiryData.mngDt}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="border-t border-primary/10"></div>
+                <DisplayEditorContent content={inquiryData.content || ""} />
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -159,35 +205,16 @@ export default function InquiryRequestForm({
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardHeader>
-                  <CardTitle className="sr-only">새 문의내용</CardTitle>
+                  <CardTitle className="sr-only">답변 내용</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <FormField
                     control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel className="text-base font-medium">
-                          제목 <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="문의내용 제목을 입력하세요"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="content"
+                    name="inquiryResponseMessage"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-base font-medium">
-                          내용 <span className="text-red-500">*</span>
+                          답변 내용 <span className="text-red-500">*</span>
                         </FormLabel>
                         <FormControl>
                           <EditorComponent
@@ -196,28 +223,6 @@ export default function InquiryRequestForm({
                           />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="isSecret"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base font-medium">
-                            비밀글
-                          </FormLabel>
-                          <FormDescription>
-                            이 문의를 비밀글로 설정합니다
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
                       </FormItem>
                     )}
                   />
@@ -231,11 +236,8 @@ export default function InquiryRequestForm({
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     돌아가기
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isCreateSubmitting || isUpdateSubmitting}
-                  >
-                    {isCreateSubmitting || isUpdateSubmitting ? (
+                  <Button type="submit" disabled={isUpdateSubmitting}>
+                    {isUpdateSubmitting ? (
                       <span className="flex items-center">
                         <svg
                           className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"

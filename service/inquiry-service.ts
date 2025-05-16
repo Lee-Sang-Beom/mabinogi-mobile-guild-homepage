@@ -5,7 +5,9 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "@/shared/firestore";
 import { ApiResponse } from "@/shared/types/api";
@@ -44,6 +46,46 @@ class InquiryService {
       return {
         success: false,
         message: "문의 목록 조회 중 오류가 발생했습니다.",
+        data: [],
+      };
+    }
+  }
+
+  // 진행 중인 문의 조회
+  async getInProgress(): Promise<ApiResponse<InquiryResponse[]>> {
+    try {
+      const querySnapshot = await getDocs(
+        query(
+          this.inquiryCollection,
+          where("step", "==", "INQUIRY_STEP_IN_PROGRESS"),
+        ),
+      );
+
+      const inquiries: InquiryResponse[] = querySnapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          ...data,
+          docId: docSnap.id,
+        } as InquiryResponse;
+      });
+
+      // 날짜 문자열을 기준으로 내림차순 정렬 (최신순)
+      inquiries.sort((a, b) => {
+        const dateA = new Date(a.mngDt || 0);
+        const dateB = new Date(b.mngDt || 0);
+        return dateB.getTime() - dateA.getTime(); // 최신순
+      });
+
+      return {
+        success: true,
+        message: "진행 중인 문의 목록을 불러왔습니다.",
+        data: inquiries,
+      };
+    } catch (error) {
+      console.error("진행 중인 문의 목록 조회 실패:", error);
+      return {
+        success: false,
+        message: "진행 중인 문의 목록 조회 중 오류가 발생했습니다.",
         data: [],
       };
     }
@@ -92,14 +134,14 @@ class InquiryService {
       const docRef = await addDoc(this.inquiryCollection, data);
       return {
         success: true,
-        message: "문의가 성공적으로 생성되었습니다.",
+        message: "문의 정보가 성공적으로 생성되었습니다.",
         data: docRef.id,
       };
     } catch (error) {
       console.error("문의 생성 실패:", error);
       return {
         success: false,
-        message: "문의 생성 중 오류가 발생했습니다.",
+        message: "문의 정보 생성 중 오류가 발생했습니다.",
         data: null,
       };
     }
@@ -115,7 +157,10 @@ class InquiryService {
       await updateDoc(docRef, data);
       return {
         success: true,
-        message: "문의가 성공적으로 수정되었습니다.",
+        message:
+          data.step === "INQUIRY_STEP_IN_PROGRESS"
+            ? "문의 정보가 성공적으로 수정되었습니다."
+            : "문의 답변이 완료되었습니다.",
         data: docId,
       };
     } catch (error) {

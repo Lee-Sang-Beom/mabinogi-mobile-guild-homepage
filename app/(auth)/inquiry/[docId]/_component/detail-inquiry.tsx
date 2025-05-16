@@ -15,6 +15,8 @@ import DisplayEditorContent from "@/components/editor/display-editor-content";
 import { cn } from "@/lib/utils";
 import { InquiryDetailProps } from "@/app/(auth)/inquiry/internal";
 import { useDeleteInquiry } from "@/app/(auth)/inquiry/hooks/use-delete-inquiry";
+import { useState } from "react";
+import ResponseMessageDialog from "@/app/(auth)/inquiry/[docId]/_component/response-message-dialog";
 
 export default function InquiryDetailPage({
   user,
@@ -22,10 +24,16 @@ export default function InquiryDetailPage({
 }: InquiryDetailProps) {
   const router = useRouter();
   const { mutate: deleteInquiry } = useDeleteInquiry();
+  const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
 
-  // 아직 답변 이전이고, 작성자가 나일 경우 수정 및 삭제 가능
+  // 내가 썼고 아직 문의 답변 이전인가?
   const isAvailableChange =
     inquiryData.step === "INQUIRY_STEP_IN_PROGRESS" &&
+    inquiryData.writeUserDocId === user.docId;
+
+  // 내가 썼고 아직 문의 답변 이전인가?
+  const isConfirmResponseMessage =
+    inquiryData.step === "INQUIRY_STEP_RESOLVED" &&
     inquiryData.writeUserDocId === user.docId;
 
   const handleDeleteInquiry = () => {
@@ -36,86 +44,84 @@ export default function InquiryDetailPage({
     <div className="min-h-[calc(100vh-200px)] py-12 px-4 sm:px-6 lg:px-8 relative w-full max-w-full overflow-x-hidden">
       {/* Animated background elements */}
       <motion.div
-        className="absolute left-1/4 top-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-purple-500/10 to-blue-500/10 blur-3xl"
-        animate={{
-          x: [0, 50, 0],
-          y: [0, 30, 0],
-        }}
-        transition={{
-          repeat: Number.POSITIVE_INFINITY,
-          duration: 20,
-          ease: "easeInOut",
-        }}
+        className="absolute left-1/4 top-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-indigo-500/30 to-blue-500/20 blur-3xl"
+        animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
+        transition={{ repeat: Infinity, duration: 20, ease: "easeInOut" }}
       />
       <motion.div
-        className="absolute right-1/4 bottom-1/4 -z-10 h-[350px] w-[350px] rounded-full bg-gradient-to-br from-amber-500/10 to-red-500/10 blur-3xl"
-        animate={{
-          x: [0, -30, 0],
-          y: [0, 50, 0],
-        }}
+        className="absolute right-1/4 bottom-1/4 -z-10 h-[350px] w-[350px] rounded-full bg-gradient-to-br from-pink-500/30 to-orange-500/20 blur-3xl"
+        animate={{ x: [0, -30, 0], y: [0, 50, 0] }}
         transition={{
-          repeat: Number.POSITIVE_INFINITY,
+          repeat: Infinity,
           duration: 25,
           ease: "easeInOut",
           delay: 2,
         }}
       />
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl overflow-hidden">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Bell className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-xl">{inquiryData.title}</CardTitle>
-                </div>
+          {/* 문의 내용 */}
+          <Card className="bg-background/60 backdrop-blur-lg border-primary/20 shadow-2xl overflow-hidden">
+            <CardHeader className="pb-2 border-b border-primary/20">
+              <div className="flex items-center gap-3">
+                <Bell className="h-6 w-6 text-primary" />
+                <CardTitle className="text-2xl font-semibold">
+                  {inquiryData.title}
+                </CardTitle>
               </div>
-              <div className="flex items-center text-sm text-muted-foreground mt-4">
-                <UserIcon className="h-3 w-3 mr-1" />
+              <div className="flex items-center text-sm text-muted-foreground mt-2">
+                <UserIcon className="h-4 w-4 mr-1" />
                 {inquiryData.writeUserId}
-                <p className={"mx-2"}>{"/"}</p>
-                <Calendar className="h-3 w-3 mr-1" />
+                <span className="mx-2">/</span>
+                <Calendar className="h-4 w-4 mr-1" />
                 {inquiryData.mngDt}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="border-t border-primary/10"></div>
               <DisplayEditorContent content={inquiryData.content || ""} />
             </CardContent>
             <CardFooter
               className={cn(
-                "flex justify-between",
-                !isAvailableChange && "flex-row-reverse",
+                "flex justify-between py-4",
+                !isAvailableChange &&
+                  !isConfirmResponseMessage &&
+                  "flex-row-reverse",
               )}
             >
               <Button variant="outline" onClick={() => router.push("/inquiry")}>
                 목록으로
               </Button>
+
+              {/* 내가 썼고 아직 문의 답변 이전 */}
               {isAvailableChange && (
-                <div className="flex gap-2">
-                  <Button
-                    variant="destructive"
-                    onClick={() => {
-                      handleDeleteInquiry();
-                    }}
-                  >
+                <div className="flex gap-3">
+                  <Button variant="destructive" onClick={handleDeleteInquiry}>
                     삭제하기
                   </Button>
                   <Button
                     variant="outline"
-                    className={"text-black bg-primary"}
-                    onClick={() => {
-                      router.push(`/inquiry/${inquiryData.docId}/edit`);
-                    }}
+                    className="text-white bg-primary hover:bg-primary/90"
+                    onClick={() =>
+                      router.push(`/inquiry/${inquiryData.docId}/edit`)
+                    }
                   >
                     수정하기
                   </Button>
                 </div>
+              )}
+
+              {/* 내가 썼고 문의 답변 완료되었을 때 */}
+              {isConfirmResponseMessage && (
+                <ResponseMessageDialog
+                  isResponseDialogOpen={isResponseDialogOpen}
+                  setIsResponseDialogOpen={setIsResponseDialogOpen}
+                  inquiryData={inquiryData}
+                />
               )}
             </CardFooter>
           </Card>

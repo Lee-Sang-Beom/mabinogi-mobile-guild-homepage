@@ -1,6 +1,7 @@
 "use client";
 
 import { BadgeResponse } from "@/app/(auth)/hub/api";
+import { BlurFade } from "@/components/magicui/blur-fade";
 import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
 import Image from "next/image";
 import { useState } from "react";
@@ -37,14 +38,16 @@ export function BadgeCard({
         </div>
       )}
       <div className="flex flex-col items-center">
-        <Image
-          src={imgSrc}
-          alt={badge.badge.name}
-          width={60}
-          height={60}
-          className="rounded-full mb-3"
-          onError={() => setImgSrc("/images/favicon-mabinogi-mobile.png")}
-        />
+        <BlurFade delay={0.25} inView className={"w-auto h-[100%]"}>
+          <Image
+            src={imgSrc}
+            alt={badge.badge.name}
+            width={60}
+            height={60}
+            className="rounded-full mb-3"
+            onError={() => setImgSrc("/images/favicon-mabinogi-mobile.png")}
+          />
+        </BlurFade>
         <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 text-center">
           {badge.badge.name}
         </h3>

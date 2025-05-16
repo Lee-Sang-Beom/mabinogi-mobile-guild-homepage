@@ -12,6 +12,10 @@ export function useDeleteInquiry() {
     onSuccess: (response) => {
       toast.success(response.message);
       queryClient.invalidateQueries({ queryKey: ["useGetInquiries"] });
+      queryClient.invalidateQueries({
+        queryKey: ["useGetInProgressInquiries"],
+      });
+
       router.push("/inquiry");
     },
     onError: (error) => {

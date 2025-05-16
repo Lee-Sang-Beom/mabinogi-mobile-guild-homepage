@@ -1,9 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Loader2, CircleOff } from "lucide-react";
+import { CircleOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { Ripple } from "@/components/magicui/ripple";
 
 interface LoadingProps {
   /**
@@ -55,7 +56,6 @@ export function AnimatedLoading({
 
   if (!mounted) return null;
 
-  // 배경 스타일 계산
   const bgStyle =
     variant === "fullscreen"
       ? `fixed inset-0 z-50 bg-background/40`
@@ -67,7 +67,7 @@ export function AnimatedLoading({
         bgStyle,
         "flex flex-col items-center justify-center",
         variant === "container" && "rounded-md",
-        className
+        className,
       )}
       aria-live="polite"
       aria-busy={!error}
@@ -76,20 +76,15 @@ export function AnimatedLoading({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="text-center max-w-md px-4"
+        className="text-center min-w-screen px-4"
       >
         {!error ? (
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="relative mx-auto mb-4"
-          >
-            {/* CSS 애니메이션을 사용하여 회전 구현 */}
-            <div className="animate-spin flex items-center justify-center w-full h-12">
-              <Loader2 className="w-12 h-12 text-primary" />
-            </div>
-          </motion.div>
+          <div className="relative flex w-full h-full flex-col items-center justify-center overflow-hidden rounded-lg mb-4">
+            <Ripple />
+            <p className="z-10 whitespace-pre-wrap text-center text-xl font-medium tracking-tighter text-white">
+              {text}
+            </p>
+          </div>
         ) : (
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
@@ -98,17 +93,9 @@ export function AnimatedLoading({
             className="relative mx-auto mb-4"
           >
             <CircleOff className="w-12 h-12 text-destructive" />
+            {errorText}
           </motion.div>
         )}
-
-        <motion.h2
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-xl font-semibold mb-2"
-        >
-          {error ? errorText : text}
-        </motion.h2>
 
         {description && (
           <motion.p

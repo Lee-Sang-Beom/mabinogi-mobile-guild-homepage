@@ -2,8 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { guildName } from "@/shared/constants/game";
 import { DataTable } from "@/components/table/data-table";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -11,43 +9,40 @@ import {
   AnimatedLoading,
   SkeletonLoading,
 } from "@/components/animated-loading";
-import { isRoleAdmin } from "@/shared/utils/utils";
-import { useGetInquiries } from "@/app/(auth)/inquiry/hooks/use-get-inquiries";
-import { InquiryResponse } from "../api";
-import { InquiryListProps } from "@/app/(auth)/inquiry/internal";
 import {
   inquiryColumnLabels,
   inquiryColumns,
 } from "@/app/(auth)/inquiry/columns";
+import { InquiryResponse } from "@/app/(auth)/inquiry/api";
+import { useGetInProgressInquiries } from "@/app/(auth)/(admin)/admin-inquiry/hooks/use-get-in-progress-inquiries";
+import { isRoleAdmin } from "@/shared/utils/utils";
 import { toast } from "sonner";
+import { InquiryListProps } from "@/app/(auth)/inquiry/internal";
 
-export default function InquiriesList({ user }: InquiryListProps) {
+export default function AdminInquiriesList({ user }: InquiryListProps) {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState<boolean>(false);
-  const { data: inquiry, isPending } = useGetInquiries();
+  const { data: inquiry, isPending } = useGetInProgressInquiries();
+
+  useEffect(() => {
+    if (!isRoleAdmin(user)) {
+      toast.error("관리자만 접근 가능한 페이지입니다.");
+      router.push("/dashboard");
+    }
+  }, [user, router]);
 
   // 데이터 메모이제이션
   const inquiryData = useMemo(() => {
     return inquiry?.data || [];
   }, [inquiry]);
 
-  console.log("inquiryData is ", inquiryData);
   // 상세 페이지 이동 : 비밀글 처리되어있을 때는 관리자이거나 본인만 이동 가능
   const handleInquiryClick = useCallback(
     (inquiry: InquiryResponse) => {
       if (!inquiry?.docId) return;
-      const isAdmin = isRoleAdmin(user);
-      const isWriteMe = user.docId === inquiry.writeUserDocId;
-      const availableMove = !inquiry.isSecret || isAdmin || isWriteMe;
-
-      if (availableMove) {
-        router.push(`/inquiry/${inquiry.docId}`);
-      } else {
-        toast.error("비밀글은 작성자 및 관리자만 확인할 수 있습니다.");
-        return;
-      }
+      router.push(`/admin-inquiry/${inquiry.docId}`);
     },
-    [router, user],
+    [router],
   );
 
   // 컴포넌트 마운트 시 한 번만 실행
@@ -103,11 +98,11 @@ export default function InquiriesList({ user }: InquiryListProps) {
         >
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
-              문의하기
+              문의 관리
             </span>
           </h1>
           <p className="text-muted-foreground mt-2">
-            뱃지 요청이나 {guildName} 홈페이지 건의내용을 작성할 수 있습니다.
+            길드원의 문의 내용에 대해 답변할 수 있습니다.
           </p>
         </motion.div>
 
@@ -118,16 +113,6 @@ export default function InquiriesList({ user }: InquiryListProps) {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <>
-            <div className="flex items-center justify-end mb-4 w-full">
-              <Button
-                variant="outline"
-                className={"bg-primary text-black"}
-                onClick={() => router.push("/inquiry/create")}
-              >
-                작성하기
-              </Button>
-            </div>
-
             <Card>
               <CardContent className="p-3 sm:p-6">
                 {isMounted && !isPending ? (

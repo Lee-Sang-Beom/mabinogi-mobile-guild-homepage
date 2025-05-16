@@ -112,6 +112,11 @@ export const loggedInMenuStructure: MenuItem[] = [
           },
         ],
       },
+      {
+        name: "문의 관리",
+        href: "/admin-inquiry",
+        icon: MessageSquare,
+      },
     ],
   },
   {

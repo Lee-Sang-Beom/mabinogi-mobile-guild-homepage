@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/accordion";
 import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
 import Image from "next/image";
+import { BlurFade } from "@/components/magicui/blur-fade";
 
 interface BadgeImageProps {
   badge: BadgeResponse;
@@ -48,14 +49,16 @@ const DialogBadgeImage = ({ badge, isHovered = false }: BadgeImageProps) => {
 
   return (
     <div className="relative h-full w-full">
-      <Image
-        src={imgSrc || "/placeholder.svg"}
-        alt={badge.badge.name}
-        fill
-        className="object-cover transition-transform duration-500"
-        style={{ transform: isHovered ? "scale(1.1)" : "scale(1)" }}
-        onError={() => setImgSrc("/images/favicon-mabinogi-mobile.png")}
-      />
+      <BlurFade delay={0.25} inView className={"w-auto h-[100%]"}>
+        <Image
+          src={imgSrc || "/placeholder.svg"}
+          alt={badge.badge.name}
+          fill
+          className="object-cover transition-transform duration-500"
+          style={{ transform: isHovered ? "scale(1.1)" : "scale(1)" }}
+          onError={() => setImgSrc("/images/favicon-mabinogi-mobile.png")}
+        />
+      </BlurFade>
     </div>
   );
 };

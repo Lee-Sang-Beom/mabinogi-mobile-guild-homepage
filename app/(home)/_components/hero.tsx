@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import Image from "next/image";
+import { SparklesText } from "@/components/magicui/sparkles-text";
 
 export default function Hero() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -56,7 +57,6 @@ export default function Hero() {
               마비노기 모바일
             </span>
           </motion.div>
-
           <motion.h1
             className="font-cinzel text-4xl font-bold tracking-tight text-foreground sm:text-6xl"
             initial={{ opacity: 0, y: 20 }}
@@ -67,7 +67,9 @@ export default function Hero() {
               판타지 세계의 모험
             </span>
             <br />
-            <span className="mt-2 inline-block">함께하는 길드</span>
+            <SparklesText className="mt-2 inline-block">
+              함께하는 길드
+            </SparklesText>
           </motion.h1>
 
           <motion.p
@@ -91,13 +93,15 @@ export default function Hero() {
               size="lg"
               className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-cinzel p-0"
             >
-              <Link href="/join" className={"px-6 py-3"}>길드 가입하기</Link>
+              <Link href="/join" className={"px-6 py-3"}>
+                길드 가입하기
+              </Link>
             </Button>
             <Link
-              href="#about"
+              href="/login"
               className="text-sm font-semibold leading-6 text-foreground group flex items-center"
             >
-              더 알아보기
+              로그인
               <motion.span
                 className="ml-1"
                 initial={{ x: 0 }}

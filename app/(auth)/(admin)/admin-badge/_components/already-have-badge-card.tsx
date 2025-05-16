@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { BlurFade } from "@/components/magicui/blur-fade";
 
 interface AlreadyBadgeCardProps {
   badge: BadgeResponse;
@@ -62,14 +63,16 @@ export function AlreadyBadgeCard({ badge, userDocId }: AlreadyBadgeCardProps) {
       </AlertDialog>
 
       <div className="flex flex-col items-center">
-        <Image
-          src={imgSrc}
-          alt={badge.badge.name}
-          width={30}
-          height={30}
-          className="rounded-full mb-3"
-          onError={() => setImgSrc("/images/favicon-mabinogi-mobile.png")}
-        />
+        <BlurFade delay={0.25} inView className={"w-auto h-[100%]"}>
+          <Image
+            src={imgSrc}
+            alt={badge.badge.name}
+            width={30}
+            height={30}
+            className="rounded-full mb-3"
+            onError={() => setImgSrc("/images/favicon-mabinogi-mobile.png")}
+          />
+        </BlurFade>
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1 text-center">
           {badge.badge.name}
         </h3>

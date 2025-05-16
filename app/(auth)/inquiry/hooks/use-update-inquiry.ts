@@ -11,14 +11,17 @@ export function useUpdateInquiry() {
     mutationFn: ({ docId, data }) => inquiryService.update(docId, data),
     onSuccess: (response) => {
       if (response.success) {
-        toast.success("문의가 성공적으로 수정되었습니다.");
+        toast.success(response.message || "문의 정보 수정이 완료되었습니다.");
         queryClient.invalidateQueries({ queryKey: ["useGetInquiries"] });
+        queryClient.invalidateQueries({
+          queryKey: ["useGetInProgressInquiries"],
+        });
       } else {
         toast.error(response.message);
       }
     },
     onError: (error) => {
-      toast.error(`문의 수정 중 오류가 발생했습니다: ${error.message}`);
+      toast.error(`문의 정보 수정 중 오류가 발생했습니다: ${error.message}`);
     },
   });
 }
