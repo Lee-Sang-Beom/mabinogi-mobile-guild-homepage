@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 마비노기 모바일 길드 홈페이지
 
-## Getting Started
+마비노기 모바일 길드를 위한 공식 웹사이트입니다. 길드원 관리, 커뮤니티 기능, 그리고 다양한 게임 관련 기능을 제공합니다.
 
-First, run the development server:
 
+## 목차
+
+- [기술 스택](#기술-스택)
+- [주요 기능](#주요-기능)
+- [업데이트 연혁](#업데이트-연혁)
+- [설치 및 실행 방법](#설치-및-실행-방법)
+- [개발자 정보](#개발자-정보)
+
+## 기술 스택
+
+본 프로젝트는 다음과 같은 기술을 사용하여 개발되었습니다:
+
+### 프레임워크 및 핵심 라이브러리
+- **Next.js 15.3.0**: React 기반의 웹 프레임워크
+- **React 19.0.0**: 사용자 인터페이스 라이브러리
+- **TypeScript**: 정적 타입 지원
+
+### UI 컴포넌트 및 스타일링
+- **Tailwind CSS 4**: 유틸리티 기반 CSS 프레임워크
+- **Radix UI**: 접근성 있는 UI 컴포넌트 라이브러리
+- **Framer Motion**: 애니메이션 라이브러리
+- **Lucide React**: 아이콘 라이브러리
+- **Three.js**: 3D 그래픽 라이브러리
+- **Embla Carousel**: 캐러셀 컴포넌트
+- **Sonner**: 토스트 알림 컴포넌트
+
+### 상태 관리 및 폼 처리
+- **Zustand**: 상태 관리 라이브러리
+- **React Hook Form**: 폼 관리 라이브러리
+- **Zod**: 스키마 검증 라이브러리
+- **TanStack React Query**: 데이터 페칭 및 캐싱 라이브러리
+
+### 백엔드 및 인증
+- **Firebase**: 데이터베이스 및 호스팅
+- **Next Auth**: 인증 시스템
+- **BCrypt.js**: 비밀번호 해싱
+
+### 기타 유틸리티
+- **Date-fns**: 날짜 처리 라이브러리
+- **Moment.js**: 날짜 및 시간 처리 라이브러리
+- **CKEditor 5**: 리치 텍스트 에디터
+- **Lodash**: 유틸리티 라이브러리
+
+## 주요 기능
+
+### 1. 메인 페이지
+- 메인 랜딩페이지 및 소개 애니메이션
+- 직관적인 UI 디자인과 반응형 레이아웃
+
+### 2. 회원 관리
+- 회원가입, 로그인, 패스워드 찾기
+- 내 프로필 관리
+- 서브캐릭터 관리
+
+### 3. 대시보드
+- 길드 활동 요약
+- 개인화된 대시보드 인터페이스
+- 주요 정보 한눈에 보기
+
+### 4. 파티찾기
+- 실시간 파티 정보 찾기 시스템
+- 파티 상세 정보 확인
+
+### 5. 길드 별자리
+- 길드원의 성장을 시각화하는 별자리 시스템
+- 뱃지 수에 따른 별의 스타일 변경
+- 인터랙티브한 UI
+
+### 6. 게시판 시스템
+- 커뮤니티-아트워크: 유저들의 창작물 공유
+- 커뮤니티-정보(팁): 게임 팁과 가이드
+- 공지사항: 길드 공지 및 중요 정보
+- 업데이트: 게임 및 사이트 업데이트 정보
+- 문의사항: 사용자 문의 접수
+
+### 7. 서비스 관리 메뉴
+- 구성원 관리
+    - 길드원 관리
+    - 회원가입 관리
+- 뱃지 관리
+    - 뱃지 요청 관리
+    - 뱃지 수여
+- 문의 관리
+
+### 8. 허브 메뉴
+- 뱃지 도감
+- 뱃지 컬렉션 및 상세 정보
+- 뱃지 획득 방법 안내
+
+## 업데이트 연혁
+
+### v1.0
+1. 홈페이지 오픈
+2. 메인 랜딩페이지 및 소개 애니메이션
+3. 회원가입, 로그인, 패스워드 찾기 구현
+4. 대시보드 추가
+
+### v1.1
+1. 파티찾기 기능 추가
+2. 프로필 관리 기능 추가 (내 정보 관리, 서브캐릭터 관리)
+3. 게시판 메뉴 추가 (아트워크, 정보(팁))
+
+### v1.2
+1. 서비스 관리 메뉴 추가 (구성원 관리-길드원 관리, 구성원 관리-회원가입 관리)
+2. 별들의 모임 메뉴 추가
+3. 게시판 메뉴 추가 (커뮤니티, 공지사항, 업데이트)
+
+### v1.3
+1. 허브 메뉴 내 뱃지 도감 추가/수정/삭제 기능 추가
+2. 별들의 모임 기능 대폭수정 (별의 기본 스타일 변경, 뱃지 수에 따른 별의 스타일 변경)
+3. 허브 메뉴 내 뱃지 도감 메뉴구조 변경 및 뱃지 추가/수정/삭제를 중간 관리하는 관리자 메뉴 "뱃지 관리" 추가
+4. 게시판 메뉴 추가 (문의하기), 서비스 관리 메뉴 추가(문의 관리)
+
+## 설치 및 실행 방법
+
+1. 저장소 클론
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/your-username/mabinogi-mobile-guild-homepage.git
+cd mabinogi-mobile-guild-homepage
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. 종속성 설치
+```bash
+npm install --legacy-peer-deps
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. 개발 서버 실행
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. 빌드 및 배포
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+## 개발자 정보
 
-To learn more about Next.js, take a look at the following resources:
+본 프로젝트는 마비노기 모바일 길드 커뮤니티를 위해 개발되었습니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+© 2025 마비노기 모바일 길드 홈페이지 
