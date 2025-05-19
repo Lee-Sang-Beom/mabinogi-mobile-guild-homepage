@@ -91,7 +91,6 @@ export default function EditScheduleDialog({
       userDocId: user.docId,
       mngDt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
     };
-    console.log("postData is ", postData);
 
     updateSchedule(
       { docId: selectSchedule.docId, data: postData },

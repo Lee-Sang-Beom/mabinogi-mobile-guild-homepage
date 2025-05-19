@@ -31,12 +31,12 @@ class UserBadgeService {
    * @returns 해당 유저의 뱃지 목록 (유저 정보와 뱃지 정보 포함)
    */
   async getUserBadgesByUserDocId(
-    userDocId: string,
+    userDocId: string
   ): Promise<ApiResponse<UserBadgeResponse | null>> {
     try {
       const q = query(
         USER_BADGE_COLLECTION,
-        where("userDocId", "==", userDocId),
+        where("userDocId", "==", userDocId)
       );
       const snapshot = await getDocs(q);
 
@@ -143,7 +143,7 @@ class UserBadgeService {
    * @returns 추가된 유저 뱃지의 문서 ID
    */
   async createUserBadge(
-    data: CreateUserBadgeCollectionType,
+    data: CreateUserBadgeCollectionType
   ): Promise<ApiResponse<string | null>> {
     try {
       // 새 뱃지 추가
@@ -156,7 +156,7 @@ class UserBadgeService {
     } catch (error) {
       console.error(
         "해당 길드원에게 뱃지를 수여하던 중 문제가 발생했습니다. ",
-        error,
+        error
       );
       return {
         success: false,
@@ -177,7 +177,7 @@ class UserBadgeService {
   async updateUserBadge(
     docId: string,
     data: Partial<UserBadgeCollectionType>,
-    appendBadgeDocId: string,
+    appendBadgeDocId: string
   ): Promise<ApiResponse<string | null>> {
     try {
       // 수정하려는 유저 뱃지 데이터 조회
@@ -205,7 +205,7 @@ class UserBadgeService {
 
       // 중복 검사
       const isDuplicate = existingBadge.data.badges.some(
-        (badge) => badge.docId === appendBadgeDocId,
+        (badge) => badge.docId === appendBadgeDocId
       );
 
       if (isDuplicate) {
@@ -227,7 +227,7 @@ class UserBadgeService {
     } catch (error) {
       console.error(
         "해당 길드원에게 뱃지를 수여하던 중 문제가 발생했습니다.",
-        error,
+        error
       );
       return {
         success: false,
@@ -246,7 +246,7 @@ class UserBadgeService {
    */
   async deleteUserBadge(
     userDocId: string,
-    deleteBadgeDocId: string,
+    deleteBadgeDocId: string
   ): Promise<ApiResponse<string | null>> {
     try {
       // deleteBadgeDocId가 undefined일 경우 처리
@@ -261,7 +261,7 @@ class UserBadgeService {
       // 유저의 뱃지 문서 조회
       const q = query(
         USER_BADGE_COLLECTION,
-        where("userDocId", "==", userDocId),
+        where("userDocId", "==", userDocId)
       );
       const snapshot = await getDocs(q);
 
@@ -272,18 +272,14 @@ class UserBadgeService {
           data: null,
         };
       }
-      console.log("22");
 
       // 유저의 뱃지 문서 가져오기
       const docSnap = snapshot.docs[0];
       const data = docSnap.data() as UserBadgeCollectionType;
 
-      console.log("받은 문서데이터 ", deleteBadgeDocId);
-      console.log("업데이트 리스트 ", data);
-
       // 기존 뱃지 목록에서 삭제할 뱃지 제거
       const updatedBadgeDocIds = data.badgeDocIds.filter(
-        (badgeDocId) => badgeDocId !== deleteBadgeDocId,
+        (badgeDocId) => badgeDocId !== deleteBadgeDocId
       );
 
       // 뱃지 목록이 변경되지 않은 경우

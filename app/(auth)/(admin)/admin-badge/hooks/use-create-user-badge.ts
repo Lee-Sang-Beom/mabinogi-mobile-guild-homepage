@@ -3,12 +3,14 @@ import { toast } from "sonner";
 import { userBadgeService } from "@/service/user-badge-service";
 import { ApiResponse } from "@/shared/types/api";
 import { CreateUserBadgeCollectionType } from "../api";
+import { useRouter } from "next/navigation";
 
 /**
  * ➕ 유저 뱃지 생성 훅
  */
 export function useCreateUserBadge() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation<
     ApiResponse<string | null>,
@@ -26,11 +28,16 @@ export function useCreateUserBadge() {
         queryClient.invalidateQueries({
           queryKey: ["useGetAllUserBadgeCounts"],
         });
+
+        router.push("/admin-badge?tab=give");
+        router.refresh();
       } else {
+        console.log("response is ", response);
         toast.error(response.message);
       }
     },
     onError: (error) => {
+      console.log("error is ", error);
       toast.error(`유저 뱃지 생성 중 오류가 발생했습니다: ${error.message}`);
     },
   });

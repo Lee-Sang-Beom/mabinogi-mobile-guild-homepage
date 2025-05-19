@@ -62,9 +62,8 @@ export default function AnnouncementsList({ user }: NoticeListProps) {
 
   // 선택 변경 핸들러 - useCallback으로 메모이제이션
   const handleSelectionChange = useCallback(
-    (selectedRows: NoticeResponse[]) => {
+    (_selectedRows: NoticeResponse[]) => {
       // 필요한 경우 여기서 선택된 행 처리
-      console.log("선택된 행:", selectedRows.length);
     },
     []
   );

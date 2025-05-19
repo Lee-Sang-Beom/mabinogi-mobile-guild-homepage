@@ -51,8 +51,6 @@ export default function IntroAnimation({
       // 초기화 플래그 설정
       isInitializedRef.current = true;
 
-      console.log("Initializing globe...");
-
       // 씬, 카메라, 렌더러 설정
       const scene = new THREE.Scene();
       sceneRef.current = scene;
@@ -61,7 +59,7 @@ export default function IntroAnimation({
         75,
         globeRef.current.clientWidth / globeRef.current.clientHeight,
         0.1,
-        1000,
+        1000
       );
       camera.position.z = 2;
       cameraRef.current = camera;
@@ -72,7 +70,7 @@ export default function IntroAnimation({
       });
       renderer.setSize(
         globeRef.current.clientWidth,
-        globeRef.current.clientHeight,
+        globeRef.current.clientHeight
       );
       renderer.setClearColor(0x000000, 0); // 투명 배경
       globeRef.current.appendChild(renderer.domElement);
@@ -250,7 +248,7 @@ export default function IntroAnimation({
             if (k > 0 && k < segments) {
               const midPoint = t < 0.5 ? t * 2 : (1 - t) * 2;
               pt.normalize().multiplyScalar(
-                1 + 0.1 * Math.sin(Math.PI * midPoint),
+                1 + 0.1 * Math.sin(Math.PI * midPoint)
               );
             }
 
@@ -317,7 +315,7 @@ export default function IntroAnimation({
         cameraRef.current.updateProjectionMatrix();
         rendererRef.current.setSize(
           globeRef.current.clientWidth,
-          globeRef.current.clientHeight,
+          globeRef.current.clientHeight
         );
       };
 
@@ -325,7 +323,6 @@ export default function IntroAnimation({
 
       // 정리 함수
       return () => {
-        console.log("Cleaning up globe...");
         isMountedRef.current = false;
         window.removeEventListener("resize", handleResize);
         if (frameIdRef.current !== null) {
@@ -362,7 +359,7 @@ export default function IntroAnimation({
           if (isMountedRef.current) {
             setStep(i);
           }
-        }, i * 3500),
+        }, i * 3500)
       );
     }
 
@@ -373,7 +370,7 @@ export default function IntroAnimation({
           onCompleteAction();
         }
       },
-      messages.length * 3500 + 1500,
+      messages.length * 3500 + 1500
     );
 
     // 컴포넌트 언마운트 시 타이머 정리

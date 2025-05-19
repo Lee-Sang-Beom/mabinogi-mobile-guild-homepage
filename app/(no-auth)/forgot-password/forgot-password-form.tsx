@@ -1,59 +1,61 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from "framer-motion"
-import Step1VerifyIdentity from '@/app/(no-auth)/forgot-password/step1-verify-identity'
-import Step2NewPassword from '@/app/(no-auth)/forgot-password/step2-new-password'
-import Step3Result from "./step3-result"
-import { User } from 'next-auth'
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Step1VerifyIdentity from "@/app/(no-auth)/forgot-password/step1-verify-identity";
+import Step2NewPassword from "@/app/(no-auth)/forgot-password/step2-new-password";
+import Step3Result from "./step3-result";
+import { User } from "next-auth";
 
 export default function ForgotPasswordPage() {
-  const [currentStep, setCurrentStep] = useState(1)
-  const [verificationSuccess, setVerificationSuccess] = useState(false)
-  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1);
+  const [_verificationSuccess, setVerificationSuccess] = useState(false);
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
   // 본인확인 성공 시 호출되는 함수
   const handleVerificationSuccess = (user: User) => {
-    setVerificationSuccess(true)
-    setCurrentStep(2)
-    setUser(user)
-  }
+    setVerificationSuccess(true);
+    setCurrentStep(2);
+    setUser(user);
+  };
 
   // 본인확인 실패 시 호출되는 함수
   const handleVerificationFailure = () => {
-    setVerificationSuccess(false)
-    setCurrentStep(3) // 실패 화면으로 이동
-  }
+    setVerificationSuccess(false);
+    setCurrentStep(3); // 실패 화면으로 이동
+  };
 
   // 비밀번호 변경 성공 시 호출되는 함수
   const handlePasswordChangeSuccess = () => {
-    setPasswordChangeSuccess(true)
-    setCurrentStep(3)
-  }
+    setPasswordChangeSuccess(true);
+    setCurrentStep(3);
+  };
 
   // 비밀번호 변경 실패 시 호출되는 함수
   const handlePasswordChangeFailure = () => {
-    setPasswordChangeSuccess(false)
-    setCurrentStep(3)
-  }
+    setPasswordChangeSuccess(false);
+    setCurrentStep(3);
+  };
 
   // 처음으로 돌아가는 함수
   const handleReset = () => {
-    setCurrentStep(1)
-    setVerificationSuccess(false)
-    setPasswordChangeSuccess(false)
-  }
-
-  useEffect(() => {
-    console.log('verificationSuccess is ', verificationSuccess)
-  }, [verificationSuccess])
+    setCurrentStep(1);
+    setVerificationSuccess(false);
+    setPasswordChangeSuccess(false);
+  };
 
   return (
     <div className="overflow-x-hidden min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background/50 to-background  py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">비밀번호 찾기</h2>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
+            비밀번호 찾기
+          </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
             {currentStep === 1
               ? "본인확인을 위해 회원가입 시 입력한 정보를 입력해주세요."
@@ -89,12 +91,9 @@ export default function ForgotPasswordPage() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="mt-8"
         >
-          <div
-            className="relative">
-            <div
-              className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-purple-600 rounded-3xl blur opacity-20"></div>
-            <div
-              className="relative bg-gradient-to-b from-background via-background/50 to-background p-6 rounded-lg shadow-xl">
+          <div className="relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-purple-600 rounded-3xl blur opacity-20"></div>
+            <div className="relative bg-gradient-to-b from-background via-background/50 to-background p-6 rounded-lg shadow-xl">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
                   <Step1VerifyIdentity
@@ -111,12 +110,18 @@ export default function ForgotPasswordPage() {
                     user={user!}
                   />
                 )}
-                {currentStep === 3 && <Step3Result success={passwordChangeSuccess} onResetAction={handleReset} key="step3" />}
+                {currentStep === 3 && (
+                  <Step3Result
+                    success={passwordChangeSuccess}
+                    onResetAction={handleReset}
+                    key="step3"
+                  />
+                )}
               </AnimatePresence>
             </div>
           </div>
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
