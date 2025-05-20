@@ -21,6 +21,15 @@ export default function DashboardRankBadgeCount() {
     setTop3BadgeUsers(newTop3BadgeUsers);
   }, [userBadgeCountList]);
 
+  const getBadgeTierKo = (userBadgeCount: number) => {
+    if (userBadgeCount === 0) return "우주먼지(novice)";
+    if (userBadgeCount <= 5) return "소성(beginner)";
+    if (userBadgeCount <= 15) return "항성(intermediate)";
+    if (userBadgeCount <= 20) return "거성(advanced)";
+    if (userBadgeCount <= 30) return "초신성(expert)";
+    return "은하(legendary)";
+  };
+
   return (
     <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full overflow-hidden group">
       <motion.div
@@ -63,13 +72,19 @@ export default function DashboardRankBadgeCount() {
                     {medals[index]}
                     <HyperText className={"text-sm"}>{user.user.id}</HyperText>
                   </span>
-                  <span className={"flex items-center gap-2 text-sm"}>
-                    <span>뱃지 개수 : </span>
-                    <NumberTicker
-                      value={user.badgeCount}
-                      className="text-muted-foreground font-bold"
-                    />
-                  </span>
+                  <p>
+                    <span className={"flex items-center gap-2 text-sm"}>
+                      <span>뱃지 개수 : </span>
+                      <NumberTicker
+                        value={user.badgeCount}
+                        className="text-muted-foreground font-bold"
+                      />
+                    </span>
+                    <span className={"flex items-center gap-2 text-sm"}>
+                      <span>별들의 모임/별의 성장수준: </span>
+                      {getBadgeTierKo(user.badgeCount)}
+                    </span>
+                  </p>
                 </li>
               );
             })}
