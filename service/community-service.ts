@@ -12,6 +12,7 @@ import { ApiResponse } from "@/shared/types/api";
 import { NoticeResponse } from "@/shared/notice/api";
 import { NoticeFormSchema } from "@/shared/notice/schema";
 import { CommunityNoticeType } from "@/shared/notice/internal";
+import { commentService } from "@/service/comment-service";
 
 class CommunityService {
   private getCollectionByType(type: CommunityNoticeType) {
@@ -46,11 +47,11 @@ class CommunityService {
           ({
             ...docSnap.data(),
             docId: docSnap.id,
-          }) as NoticeResponse
+          }) as NoticeResponse,
       );
 
       notices.sort(
-        (a, b) => new Date(b.mngDt).getTime() - new Date(a.mngDt).getTime()
+        (a, b) => new Date(b.mngDt).getTime() - new Date(a.mngDt).getTime(),
       );
 
       return {
@@ -71,7 +72,7 @@ class CommunityService {
   // 특정 커뮤니티 조회 (docId 기준)
   async getByDocId(
     type: CommunityNoticeType,
-    docId: string
+    docId: string,
   ): Promise<ApiResponse<NoticeResponse | null>> {
     try {
       const targetCollection = this.getCollectionByType(type);
@@ -150,7 +151,7 @@ class CommunityService {
   // 생성
   async create(
     type: CommunityNoticeType,
-    data: NoticeFormSchema
+    data: NoticeFormSchema,
   ): Promise<ApiResponse<string | null>> {
     try {
       const targetCollection = this.getCollectionByType(type);
@@ -174,7 +175,7 @@ class CommunityService {
   async update(
     type: CommunityNoticeType,
     docId: string,
-    data: NoticeFormSchema
+    data: NoticeFormSchema,
   ): Promise<ApiResponse<string | null>> {
     try {
       const targetCollection = this.getCollectionByType(type);
@@ -198,17 +199,25 @@ class CommunityService {
   // 삭제
   async delete(
     type: CommunityNoticeType,
-    docIds: string | string[]
+    docIds: string | string[],
   ): Promise<ApiResponse<string[]>> {
     const ids = Array.isArray(docIds) ? docIds : [docIds];
 
     try {
       const targetCollection = this.getCollectionByType(type);
       await Promise.all(
-        ids.map((id) => {
+        ids.map(async (id) => {
+          // 먼저 연결된 댓글 전체 삭제
+          await commentService.deleteAllComments(
+            type === "artwork"
+              ? "collection_artwork_comment"
+              : "collection_tip_comment",
+            id,
+          );
+
           const docRef = doc(targetCollection, id);
           return deleteDoc(docRef);
-        })
+        }),
       );
 
       return {

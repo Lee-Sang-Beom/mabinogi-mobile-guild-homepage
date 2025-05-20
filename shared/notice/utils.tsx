@@ -1,4 +1,6 @@
 import { Badge } from "@/components/ui/badge";
+import { CommentResponse } from "./api";
+import moment from "moment";
 
 /**
  * @name getPriorityBadge
@@ -30,4 +32,41 @@ export const getNoticeThumbnailImageSrc = (htmlContent: string) => {
   const doc = parser.parseFromString(htmlContent, "text/html");
   const img = doc.querySelector("img"); // 첫 번째 <img> 태그를 선택
   return img ? img.src : null; // 이미지가 없으면 null 반환
+};
+
+/**
+ * @name findComment
+ * @param comments 댓글 데이터
+ * @param targetId 댓글 id
+ */
+export const findComment = (
+  comments: CommentResponse[],
+  targetId: string,
+): CommentResponse | null => {
+  for (const comment of comments) {
+    if (comment.docId === targetId) {
+      return comment;
+    }
+
+    if (comment.childrenComment?.length) {
+      const found = findComment(comment.childrenComment, targetId);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
+// 아바타에 사용할 이니셜 생성 함수
+export const getInitials = (name: string) => {
+  return name.substring(0, 1).toUpperCase();
+};
+
+// 포맷된 날짜 반환
+export const formatDate = (dateString: string) => {
+  try {
+    if (!dateString) return "";
+    return moment(new Date(dateString)).format("YYYY-MM-DD HH:mm");
+  } catch (error) {
+    return dateString;
+  }
 };

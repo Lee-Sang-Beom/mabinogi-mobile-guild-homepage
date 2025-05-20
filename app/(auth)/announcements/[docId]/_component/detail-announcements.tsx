@@ -17,6 +17,7 @@ import { isRoleAdmin } from "@/shared/utils/utils";
 import { cn } from "@/lib/utils";
 import { NoticeDetailProps } from "@/shared/notice/internal";
 import { getPriorityBadge } from "@/shared/notice/utils";
+import Comment from "@/components/notice/comment";
 
 export default function AnnouncementDetailPage({
   user,
@@ -90,7 +91,7 @@ export default function AnnouncementDetailPage({
             <CardFooter
               className={cn(
                 "flex justify-between",
-                !isAdmin && "flex-row-reverse"
+                !isAdmin && "flex-row-reverse",
               )}
             >
               <Button
@@ -122,6 +123,11 @@ export default function AnnouncementDetailPage({
               )}
             </CardFooter>
           </Card>
+          <Comment
+            noticeCollectionName={"collection_announcement_comment"}
+            noticeDocId={noticeData.docId}
+            currentUser={user}
+          />
         </motion.div>
       </div>
     </div>

@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { CommunityNoticeDetailProps } from "@/shared/notice/internal";
 import { getPriorityBadge } from "@/shared/notice/utils";
 import { useDeleteCommunity } from "../../hooks/use-delete-community";
+import Comment from "@/components/notice/comment";
 
 export default function CommunityDetailPage({
   user,
@@ -90,7 +91,7 @@ export default function CommunityDetailPage({
             <CardFooter
               className={cn(
                 "flex justify-between",
-                !isMe && "flex-row-reverse"
+                !isMe && "flex-row-reverse",
               )}
             >
               <Button
@@ -116,7 +117,7 @@ export default function CommunityDetailPage({
                     className={"text-black bg-primary"}
                     onClick={() => {
                       router.push(
-                        `/community/${noticeData.docId}/edit?tab=${tabType}`
+                        `/community/${noticeData.docId}/edit?tab=${tabType}`,
                       );
                     }}
                   >
@@ -126,6 +127,15 @@ export default function CommunityDetailPage({
               )}
             </CardFooter>
           </Card>
+          <Comment
+            noticeCollectionName={
+              tabType == "artwork"
+                ? "collection_artwork_comment"
+                : "collection_tip_comment"
+            }
+            noticeDocId={noticeData.docId}
+            currentUser={user}
+          />
         </motion.div>
       </div>
     </div>

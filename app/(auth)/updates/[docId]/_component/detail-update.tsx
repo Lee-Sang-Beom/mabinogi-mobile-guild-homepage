@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { NoticeDetailProps } from "@/shared/notice/internal";
 import { getPriorityBadge } from "@/shared/notice/utils";
 import { useDeleteUpdate } from "../../hooks/use-delete-update";
+import Comment from "@/components/notice/comment";
 
 export default function UpdateDetailPage({
   user,
@@ -90,7 +91,7 @@ export default function UpdateDetailPage({
             <CardFooter
               className={cn(
                 "flex justify-between",
-                !isAdmin && "flex-row-reverse"
+                !isAdmin && "flex-row-reverse",
               )}
             >
               <Button variant="outline" onClick={() => router.push("/updates")}>
@@ -119,6 +120,11 @@ export default function UpdateDetailPage({
               )}
             </CardFooter>
           </Card>
+          <Comment
+            noticeCollectionName={"collection_update_comment"}
+            noticeDocId={noticeData.docId}
+            currentUser={user}
+          />
         </motion.div>
       </div>
     </div>

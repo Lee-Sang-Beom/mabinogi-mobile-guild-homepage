@@ -11,6 +11,7 @@ import { db } from "@/shared/firestore";
 import { ApiResponse } from "@/shared/types/api";
 import { NoticeResponse } from "@/shared/notice/api";
 import { NoticeFormSchema } from "@/shared/notice/schema";
+import { commentService } from "@/service/comment-service";
 
 class UpdateService {
   private updateCollection = collection(db, "collection_update");
@@ -148,7 +149,7 @@ class UpdateService {
   // 업데이트
   async update(
     docId: string,
-    data: NoticeFormSchema
+    data: NoticeFormSchema,
   ): Promise<ApiResponse<string | null>> {
     try {
       const docRef = doc(db, "collection_update", docId);
@@ -174,10 +175,16 @@ class UpdateService {
 
     try {
       await Promise.all(
-        ids.map((id) => {
+        ids.map(async (id) => {
+          // 먼저 연결된 댓글 전체 삭제
+          await commentService.deleteAllComments(
+            "collection_update_comment",
+            id,
+          );
+
           const docRef = doc(db, "collection_update", id);
           return deleteDoc(docRef);
-        })
+        }),
       );
 
       return {
