@@ -19,7 +19,7 @@ export const guildName = "어린이집";
 export const guildInfo = {
   name: guildName,
   level: 4,
-  memberCount: 26,
+  memberCount: 30,
   maxMembers: 30,
   regDt: "2025-03-25",
   activityWeeklyTotalTime: 80,
