@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Step1VerifyIdentity from "@/app/(no-auth)/forgot-password/step1-verify-identity";
 import Step2NewPassword from "@/app/(no-auth)/forgot-password/step2-new-password";
 import Step3Result from "./step3-result";
