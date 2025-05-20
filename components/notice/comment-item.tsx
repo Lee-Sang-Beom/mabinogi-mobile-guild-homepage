@@ -19,11 +19,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { CommentResponse } from "@/shared/notice/api";
-import { formatDate, getInitials } from "@/shared/notice/utils";
 import { ReplyForm } from "./reply-form";
 import { CommentEditForm } from "@/components/notice/comment-edit-form";
 import { CommentNoticeCollectionName } from "@/shared/notice/internal";
 import { useDeleteComment } from "@/shared/notice/hooks/use-delete-comment";
+import moment from "moment/moment";
+import { getInitials } from "@/shared/utils/utils";
 
 interface CommentItemProps {
   comment: CommentResponse;
@@ -123,7 +124,9 @@ export function CommentItem({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                     <div className="font-medium">{comment.writeUserId}</div>
                     <div className="text-xs text-muted-foreground flex items-center gap-2">
-                      {formatDate(comment.regDt)}
+                      {moment(new Date(comment.regDt)).format(
+                        "YYYY-MM-DD HH:mm",
+                      )}
                       {comment.modifyDt !== comment.regDt && (
                         <span className="text-xs italic">(수정됨)</span>
                       )}
@@ -133,7 +136,7 @@ export function CommentItem({
                     {comment.content}
                   </div>
 
-                  <div className="mt-3 flex items-center gap-2">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
                     <Button
                       size="sm"
                       variant="ghost"

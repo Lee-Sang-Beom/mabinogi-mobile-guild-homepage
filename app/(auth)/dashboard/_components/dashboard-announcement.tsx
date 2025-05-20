@@ -3,9 +3,9 @@ import { motion } from "framer-motion";
 import { ArrowRight, Bell, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { getPriorityBadge } from "@/shared/notice/utils";
 import { ApiResponse } from "@/shared/types/api";
 import { NoticeResponse } from "@/shared/notice/api";
+import DashboardAnnouncementThumbnailCard from "@/app/(auth)/dashboard/_components/dashboard-announcement-thumbnail-card";
 
 interface IProps {
   data: ApiResponse<NoticeResponse | null> | undefined;
@@ -35,18 +35,7 @@ export default function DashboardAnnouncement({ data }: IProps) {
       <CardContent className="relative z-10">
         <div className="space-y-4">
           {data?.data ? (
-            <Link
-              href={`/announcements/${data.data.docId}`}
-              className="flex items-center gap-3"
-            >
-              {getPriorityBadge(data.data.priority)}
-              <div>
-                <p className="font-medium">{data.data.title}</p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {data.data.mngDt} by {data.data.writeUserId}
-                </p>
-              </div>
-            </Link>
+            <DashboardAnnouncementThumbnailCard noticeData={data.data} />
           ) : (
             <div className="w-full flex flex-col justify-center items-center gap-5">
               <Info className="w-15 h-15 text-blue-500" />

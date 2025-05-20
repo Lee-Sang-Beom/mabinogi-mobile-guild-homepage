@@ -3,9 +3,9 @@ import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { getPriorityBadge } from "@/shared/notice/utils";
 import { ApiResponse } from "@/shared/types/api";
 import { NoticeResponse } from "@/shared/notice/api";
+import DashboardUpdateThumbnailCard from "@/app/(auth)/dashboard/_components/dashboard-update-thumbnail-card";
 
 interface IProps {
   data: ApiResponse<NoticeResponse | null> | undefined;
@@ -34,18 +34,7 @@ export default function DashboardUpdate({ data }: IProps) {
       <CardContent className="relative z-10">
         <div className="space-y-4">
           {data && data.data ? (
-            <Link
-              className="flex items-center gap-3"
-              href={`/updates/${data.data.docId}`}
-            >
-              {getPriorityBadge(data.data.priority)}
-              <div>
-                <p className="font-medium">{data.data.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {data.data.mngDt}
-                </p>
-              </div>
-            </Link>
+            <DashboardUpdateThumbnailCard noticeData={data.data} />
           ) : (
             <div className="w-full flex flex-col justify-center items-center gap-5">
               <Info className="w-15 h-15 text-blue-500" />

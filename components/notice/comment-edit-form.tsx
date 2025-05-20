@@ -20,8 +20,8 @@ import { AnimatedLoading } from "@/components/animated-loading";
 import { CommentRequest, CommentResponse } from "@/shared/notice/api";
 import { commentFormSchema, CommentFormSchema } from "@/shared/notice/schema";
 import { CommentNoticeCollectionName } from "@/shared/notice/internal";
-import { getInitials } from "@/shared/notice/utils";
 import { useCreateOrUpdateComment } from "@/shared/notice/hooks/use-create-or-update-comment";
+import { getInitials } from "@/shared/utils/utils";
 
 interface CommentEditFormProps {
   comment: CommentResponse;

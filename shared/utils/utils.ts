@@ -265,3 +265,12 @@ export const getSearchTermData = <T>(
   // 필터링
   return data.filter((item) => filterBySearchTerm(item, searchTerm, props));
 };
+
+/**
+ * @name getInitials
+ * @param name 이름
+ * @description 아바타에 사용할 이니셜 반환
+ */
+export const getInitials = (name: string) => {
+  return name.substring(0, 1).toUpperCase();
+};

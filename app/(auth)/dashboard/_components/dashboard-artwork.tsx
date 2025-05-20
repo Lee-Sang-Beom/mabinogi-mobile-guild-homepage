@@ -4,9 +4,9 @@ import { ArrowRight, ImageIcon, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { getNoticeThumbnailImageSrc } from "@/shared/notice/utils";
 import { ApiResponse } from "@/shared/types/api";
 import { NoticeResponse } from "@/shared/notice/api";
+import DashboardArtworkThumbnailCard from "@/app/(auth)/dashboard/_components/dashboard-artwork-thumbnail-card";
 
 interface IProps {
   data: ApiResponse<NoticeResponse | null> | undefined;
@@ -23,28 +23,7 @@ export default function DashboardArtwork({ data }: IProps) {
       <CardContent className="relative z-10 flex flex-col justify-between overflow-hidden ">
         <div className="space-y-4 flex-grow">
           {data && data.data ? (
-            <Link
-              href={`/community/${data.data.docId}?tab=artwork`}
-              className="space-y-4 flex-grow"
-            >
-              <div className="relative overflow-hidden rounded-lg aspect-video bg-black">
-                <Image
-                  src={
-                    getNoticeThumbnailImageSrc(data.data.content) ||
-                    "/images/bg-mabinogi-mobile-sky-user.jpg"
-                  }
-                  alt={data.data.title}
-                  fill
-                  className="object-contain transition-transform duration-500"
-                />
-              </div>
-              <div>
-                <h3 className="font-medium">{data.data.title}</h3>
-                <p className="text-xs text-muted-foreground mt-2">
-                  by {data.data.writeUserId} • {data.data.mngDt}
-                </p>
-              </div>
-            </Link>
+            <DashboardArtworkThumbnailCard artworkData={data.data} />
           ) : (
             <>
               <div className="relative overflow-hidden rounded-lg aspect-video bg-black">

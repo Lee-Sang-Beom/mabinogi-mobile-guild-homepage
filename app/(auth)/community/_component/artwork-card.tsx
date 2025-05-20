@@ -9,19 +9,26 @@ import {
 } from "@/components/ui/card";
 import { NoticeResponse } from "@/shared/notice/api";
 import {
+  countTotalComments,
   getNoticeThumbnailImageSrc,
   getPriorityBadge,
 } from "@/shared/notice/utils";
 import { motion } from "framer-motion";
-import { Calendar, User } from "lucide-react";
+import { Calendar, MessageSquare, User } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useGetCommentAll } from "@/shared/notice/hooks/use-get-comment-all";
 
 export interface ArtworkCardProps {
   noticeData: NoticeResponse;
 }
 export default function ArtworkCard({ noticeData }: ArtworkCardProps) {
   const router = useRouter();
+  const { data: commentsData, isPending } = useGetCommentAll(
+    "collection_artwork_comment",
+    noticeData.docId,
+  );
+
   return (
     <motion.div transition={{ type: "spring", stiffness: 400, damping: 10 }}>
       <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl overflow-hidden h-full">
@@ -45,6 +52,7 @@ export default function ArtworkCard({ noticeData }: ArtworkCardProps) {
           <div className="flex items-center text-sm text-muted-foreground">
             <User className="h-3 w-3 mr-1" />
             {noticeData.writeUserId}
+
             <span className="mx-2">•</span>
             <Calendar className="h-3 w-3 mr-1" />
             {noticeData.mngDt}
@@ -54,6 +62,12 @@ export default function ArtworkCard({ noticeData }: ArtworkCardProps) {
           <div className="flex items-center gap-4">
             <div className="flex items-center text-sm">
               {getPriorityBadge(noticeData.priority)}
+            </div>
+            <div className={"flex items-center text-sm"}>
+              <MessageSquare className="h-3 w-3 mr-1" />
+              {noticeData && commentsData?.data && !isPending
+                ? countTotalComments(commentsData.data)
+                : 0}
             </div>
           </div>
           <Button

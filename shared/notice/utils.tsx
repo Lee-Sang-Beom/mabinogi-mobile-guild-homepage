@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { CommentResponse } from "./api";
-import moment from "moment";
 
 /**
  * @name getPriorityBadge
@@ -56,17 +55,22 @@ export const findComment = (
   return null;
 };
 
-// 아바타에 사용할 이니셜 생성 함수
-export const getInitials = (name: string) => {
-  return name.substring(0, 1).toUpperCase();
-};
+/**
+ * @name countTotalComments
+ * @param comments
+ * @description 댓글 수 반환
+ */
+export function countTotalComments(comments: CommentResponse[]): number {
+  if (!comments) return 0;
 
-// 포맷된 날짜 반환
-export const formatDate = (dateString: string) => {
-  try {
-    if (!dateString) return "";
-    return moment(new Date(dateString)).format("YYYY-MM-DD HH:mm");
-  } catch (error) {
-    return dateString;
+  let count = 0;
+
+  for (const comment of comments) {
+    count += 1; // 현재 댓글
+    if (comment.childrenComment && comment.childrenComment.length > 0) {
+      count += countTotalComments(comment.childrenComment); // 대댓글 재귀적으로 합산
+    }
   }
-};
+
+  return count;
+}

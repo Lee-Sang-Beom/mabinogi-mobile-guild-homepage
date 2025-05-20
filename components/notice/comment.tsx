@@ -9,6 +9,7 @@ import { useGetCommentAll } from "@/shared/notice/hooks/use-get-comment-all";
 import { AnimatedLoading } from "@/components/animated-loading";
 import { CommentItem } from "./comment-item";
 import { CommentForm } from "./comment-form";
+import { countTotalComments } from "@/shared/notice/utils";
 
 export default function Comment({
   noticeCollectionName,
@@ -61,7 +62,9 @@ export default function Comment({
           <h2 className="text-xl font-semibold">댓글</h2>
           {!isPending && commentsData?.data && (
             <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">
-              {commentsData.data.length}
+              {commentsData && commentsData.data
+                ? countTotalComments(commentsData.data)
+                : 0}
             </span>
           )}
         </div>
