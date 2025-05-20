@@ -1,5 +1,6 @@
 import * as z from "zod";
 
+// 게시판 정보
 export const noticeFormSchema = z.object({
   title: z
     .string()
@@ -14,3 +15,14 @@ export const noticeFormSchema = z.object({
   mngDt: z.string().nullable(),
 });
 export type NoticeFormSchema = z.infer<typeof noticeFormSchema>;
+
+// 댓글정보
+export const commentFormSchema = z.object({
+  content: z.string().min(1, { message: "댓글 내용을 입력해주세요." }),
+  noticeDocId: z.string(),
+  writeUserDocId: z.string(),
+  writeUserId: z.string(),
+  parentCommentDocId: z.string().optional().nullable(), // 답글 작성 시 필요
+});
+
+export type CommentFormSchema = z.infer<typeof commentFormSchema>;

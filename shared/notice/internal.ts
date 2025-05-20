@@ -3,6 +3,16 @@ import { User } from "next-auth";
 import { NoticeResponse } from "./api";
 
 /**
+ * @name CommentNoticeCollectionName
+ * @description 댓글 기능을 포함할 게시판형태 콜렉션명
+ */
+export type CommentNoticeCollectionName =
+  | "collection_announcement_comment"
+  | "collection_update_comment"
+  | "collection_artwork_comment"
+  | "collection_tip_comment";
+
+/**
  * @name CommunityNoticeType
  * @description 커뮤니티 게시판의 Tab 종류 (타입)
  */
@@ -37,4 +47,14 @@ export interface NoticeDetailProps extends NoticeListProps {
 }
 export interface CommunityNoticeDetailProps extends NoticeDetailProps {
   tabType: CommunityNoticeType;
+}
+
+/**
+ * @name NoticeCommentProps
+ * @description 게시판 댓글 컴포넌트가 받는 데이터 props
+ */
+export interface NoticeCommentProps {
+  noticeCollectionName: CommentNoticeCollectionName;
+  noticeDocId: string; // 게시판의 docId
+  currentUser: User; // 현재 로그인 중인 유저정보
 }
