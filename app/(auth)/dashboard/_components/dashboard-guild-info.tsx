@@ -55,7 +55,7 @@ export default function DashboardGuildInfo() {
                 href="/org"
                 className="flex items-center justify-center w-full"
               >
-                길드 정보 상세보기
+                길드원 정보 상세보기
                 <motion.span
                   animate={{ x: [0, 5, 0] }}
                   transition={{

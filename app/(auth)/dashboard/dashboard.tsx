@@ -17,6 +17,7 @@ import { useGetLatestAnnouncement } from "@/app/(auth)/dashboard/hooks/use-get-l
 import { useGetLatestUpdate } from "@/app/(auth)/dashboard/hooks/use-get-latest-update";
 import { useGetLatestArtworkCommunity } from "@/app/(auth)/dashboard/hooks/use-get-latest-artwork-community";
 import { AnimatedLoading } from "@/components/animated-loading";
+import DashboardRankBadgeCount from "@/app/(auth)/dashboard/_components/dashboard-rank-badge-count";
 
 interface DashboardProps {
   user: User;
@@ -128,6 +129,16 @@ export default function Dashboard({ user }: DashboardProps) {
             </p>
           </motion.div>
 
+          <div className={"w-full mb-8"}>
+            <motion.div
+              initial="hidden"
+              animate={controls}
+              variants={fadeInUpVariants}
+            >
+              <DashboardGuildInfo />
+            </motion.div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
             {/* 길드 정보 */}
             <motion.div
@@ -136,7 +147,7 @@ export default function Dashboard({ user }: DashboardProps) {
               animate={controls}
               variants={fadeInUpVariants}
             >
-              <DashboardGuildInfo />
+              <DashboardRankBadgeCount />
             </motion.div>
 
             {/* 파티찾기 */}

@@ -22,5 +22,6 @@ export interface UserBadgeResponse {
 
 export interface UserBadgeCountResponse {
   userDocId: string;
+  user: User;
   badgeCount: number;
 }

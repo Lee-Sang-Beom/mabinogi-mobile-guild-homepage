@@ -134,7 +134,8 @@
     box-sizing: border-box !important;
   }
   html {
-    font-family: "Noto Sans KR", sans-serif;
+    font-family: "Noto Sans KR", sans-serif !important;
+
   }
   body {
     @apply bg-background text-foreground;
@@ -149,7 +150,7 @@
 
 .font-sans {
   /*font-family: var(--font-noto-sans-kr), sans-serif;*/
-  font-family: "Noto Sans KR", sans-serif;
+  font-family: "Noto Sans KR", sans-serif !important;
 }
 
 /* ========== toast창 왼쪽 마진 제거 ========== */
