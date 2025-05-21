@@ -6,6 +6,7 @@ import { UserBadgeCountResponse } from "@/app/(auth)/(admin)/admin-badge/api";
 import { useEffect, useState } from "react";
 import { NumberTicker } from "@/components/magicui/number-ticker";
 import { HyperText } from "@/components/magicui/hyper-text";
+import { getBadgeTierKo } from "@/app/(auth)/org/utils";
 
 export default function DashboardRankBadgeCount() {
   const { data: userBadgeCountList } = useGetAllUserBadgeCounts();
@@ -20,15 +21,6 @@ export default function DashboardRankBadgeCount() {
       .slice(0, 3);
     setTop3BadgeUsers(newTop3BadgeUsers);
   }, [userBadgeCountList]);
-
-  const getBadgeTierKo = (userBadgeCount: number) => {
-    if (userBadgeCount === 0) return "우주먼지(novice)";
-    if (userBadgeCount <= 5) return "소성(beginner)";
-    if (userBadgeCount <= 15) return "항성(intermediate)";
-    if (userBadgeCount <= 20) return "거성(advanced)";
-    if (userBadgeCount <= 30) return "초신성(expert)";
-    return "은하(legendary)";
-  };
 
   return (
     <Card className="bg-background/40 backdrop-blur-sm border-primary/10 shadow-xl h-full overflow-hidden group">

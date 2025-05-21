@@ -1,6 +1,18 @@
 import { User } from "next-auth";
 import type React from "react";
 
+export type StarTier =
+  | "novice"
+  | "beginner"
+  | "apprentice"
+  | "intermediate"
+  | "skilled"
+  | "advanced"
+  | "expert"
+  | "master"
+  | "grandmaster"
+  | "legendary";
+
 export interface StarryOrganizationProps {
   users: User[];
 }

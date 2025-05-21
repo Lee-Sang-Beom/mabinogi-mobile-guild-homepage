@@ -34,6 +34,7 @@ import {
 import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
 import Image from "next/image";
 import { BlurFade } from "@/components/magicui/blur-fade";
+import { getBadgeTierKo } from "@/app/(auth)/org/utils";
 
 interface BadgeImageProps {
   badge: BadgeResponse;
@@ -147,13 +148,13 @@ export function UserDialog({
               </td>
             </tr>
             <tr>
-              <th className="py-2 text-muted-foreground">가입 승인</th>
+              <th className="py-2 text-muted-foreground">별의 등급</th>
               <td>
-                {user.approvalJoinYn === "Y" ? (
-                  <Badge className="bg-sky-300 text-white">승인됨</Badge>
-                ) : (
-                  <Badge variant="destructive">미승인</Badge>
-                )}
+                <Badge className={"bg-sky-400 text-white"}>
+                  {getBadgeTierKo(
+                    !isPending && haveBadges.length > 0 ? haveBadges.length : 0,
+                  )}
+                </Badge>
               </td>
             </tr>
           </tbody>

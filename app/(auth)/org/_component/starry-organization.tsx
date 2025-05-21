@@ -17,7 +17,6 @@ import { jobCategoryMap } from "@/shared/constants/game";
 import { Planet } from "./planet";
 import { UserDialog } from "@/app/(auth)/org/_component/user-dialog";
 import { Star } from "@/app/(auth)/org/_component/star";
-import { getUserStarSize } from "@/app/(auth)/org/utils";
 import { ConstellationLines } from "./constellation-lines";
 import { useGetAllUserBadgeCounts } from "@/app/(auth)/(admin)/admin-badge/hooks/use-get-all-user-badge-count";
 
@@ -133,7 +132,7 @@ export default function StarryOrganization({ users }: StarryOrganizationProps) {
         const orbitOffset = (userIndex / categoryUsers.length) * Math.PI * 2; // 시작 위치 (균등 분포)
 
         // 별의 크기는 "길드 영향력(이벤트 뱃지)"에 따라 다르게!!!!!!!!!!
-        const size = getUserStarSize(user);
+        const size = 7 + Math.random() * 2;
 
         // 별의 색상은 직업에 따라 다르게
         const jobInfo = jobCategoryMap[user.job];
@@ -246,9 +245,7 @@ export default function StarryOrganization({ users }: StarryOrganizationProps) {
             exit={{ opacity: 0, y: -20 }}
             className="absolute top-16 right-4 w-72 bg-black/70 backdrop-blur-md p-4 rounded-lg text-white/90 text-sm border border-white/20 z-10"
           >
-            <h3 className="font-medium mb-2 text-md">
-              「 별자리 조직도 안내 」
-            </h3>
+            <h3 className="font-medium mb-2 text-md">「 별들의 모임 안내 」</h3>
             <p className="mb-2 text-xs">
               ※ 각 별은 길드의 구성원을 나타냅니다. 별의 크기와 반짝임은 길드 내
               영향력(이벤트 뱃지의 보유 개수)에 따라 달라집니다.
@@ -262,6 +259,22 @@ export default function StarryOrganization({ users }: StarryOrganizationProps) {
             </p>
             <p className="mb-2 text-xs">
               ※ 별을 클릭하면 해당 구성원의 상세 정보를 볼 수 있습니다.
+            </p>
+            <p className="mb-2 text-xs">
+              ※ 별은 길드 구성원의 성장 단계를 나타내며, 활동과 기여도에 따라
+              아래와 같은 10단계로 구분됩니다:
+              <br />└ ● <strong>우주먼지</strong> - 막 활동을 시작한 단계
+              <br />└ ● <strong>소성</strong> - 초기 성장 단계
+              <br />└ ● <strong>혜성</strong> - 점차 두각을 드러내는 단계
+              <br />└ ● <strong>항성</strong> - 꾸준한 활동을 이어가는 단계
+              <br />└ ● <strong>중성자별</strong> - 안정적인 기여를 보이는 단계
+              <br />└ ● <strong>거성</strong> - 영향력이 확대된 성장 단계
+              <br />└ ● <strong>초신성</strong> - 급격한 성장을 이룬 단계
+              <br />└ ● <strong>펄서</strong> - 높은 수준의 지속적인 기여를
+              보이는 단계
+              <br />└ ● <strong>쿼사</strong> - 최고 수준의 활동을 이어가는 단계
+              <br />└ ● <strong>은하</strong> - 길드 내에서 가장 높은 성장을
+              이룬 단계
             </p>
           </motion.div>
         )}
