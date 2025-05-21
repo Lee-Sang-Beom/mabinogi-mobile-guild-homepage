@@ -1,4 +1,3 @@
-import { User } from "next-auth";
 import { StarTier, UserStar } from "@/app/(auth)/org/internal";
 
 // Badge-based scaling - 10단계로 확장
