@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { BadgeResponse } from "@/app/(auth)/hub/api";
@@ -12,6 +12,8 @@ import { BadgeForm } from "./badge-form";
 import { BadgeFormSchemaType } from "@/app/(auth)/hub/schema";
 import { User } from "next-auth";
 import { formDefaultValues } from "../../data";
+import { getSearchTermData } from "@/shared/utils/utils";
+import { Input } from "@/components/ui/input";
 
 interface BadgesTabProps {
   user: User;
@@ -31,8 +33,10 @@ export function BadgesTab({
   viewMode,
 }: BadgesTabProps) {
   const [selectedBadge, setSelectedBadge] = useState<BadgeResponse | null>(
-    null
+    null,
   );
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBadge, setEditingBadge] = useState<BadgeResponse | null>(null);
@@ -60,7 +64,7 @@ export function BadgesTab({
 
   const handleSaveBadge = (
     docId: string | null,
-    badge: BadgeFormSchemaType
+    badge: BadgeFormSchemaType,
   ) => {
     if (editingBadge) {
       // 기존 뱃지 수정
@@ -72,6 +76,13 @@ export function BadgesTab({
     setIsFormOpen(false);
   };
 
+  console.log("badges is ", badges);
+  const filterBadges = getSearchTermData<BadgeResponse>(
+    badges || [],
+    searchTerm,
+    ["badge.name", "badge.description"],
+  );
+
   return (
     <>
       <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -80,8 +91,29 @@ export function BadgesTab({
         </Button>
       </div>
 
+      {/*뱃지 검색*/}
+      <div className="relative flex-1 mb-2">
+        <Search
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          size={18}
+        />
+        <Input
+          placeholder="뱃지 검색..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 pr-10 bg-muted"
+        />
+        {searchTerm && (
+          <X
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-600"
+            size={18}
+            onClick={() => setSearchTerm("")}
+          />
+        )}
+      </div>
+
       <AnimatePresence mode="wait">
-        {badges.length > 0 ? (
+        {filterBadges && filterBadges.length > 0 ? (
           <motion.div
             key="badges-grid"
             initial={{ opacity: 0 }}
@@ -94,7 +126,7 @@ export function BadgesTab({
                 : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
             }`}
           >
-            {badges.map((badge) => (
+            {filterBadges.map((badge) => (
               <BadgeCard
                 key={`${badge.docId}_${badge.imgName}`}
                 badge={badge}
