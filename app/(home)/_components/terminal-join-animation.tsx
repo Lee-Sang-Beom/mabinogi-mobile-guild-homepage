@@ -7,6 +7,7 @@ import {
   Terminal,
   TypingAnimation,
 } from "@/components/magicui/terminal";
+import { guildName } from "@/shared/constants/game";
 
 export default function TerminalJoinAnimation() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -94,8 +95,8 @@ export default function TerminalJoinAnimation() {
                     className="text-white text-left block overflow-hidden text-ellipsis whitespace-normal break-words"
                   >
                     <span>
-                      2. 시스템 접속 후 『어린이집』 길드 관리자와 1:1대화를
-                      진행하거나 오픈채팅방에 접속하세요.
+                      {`2. 시스템 접속 후 『${guildName}』 길드 관리자와 1:1대화를
+                      진행하거나 오픈채팅방에 접속하세요.`}
                     </span>
                   </AnimatedSpan>
 
@@ -139,8 +140,8 @@ export default function TerminalJoinAnimation() {
                     className="text-white text-left block overflow-hidden text-ellipsis whitespace-normal break-words"
                   >
                     <span>
-                      4. 길드 관리자에게 『어린이집』 길드 그룹채팅방, 디스코드
-                      링크를 받아 입장하세요.
+                      {`4. 길드 관리자에게 『${guildName}』 길드 그룹채팅방,
+                      디스코드 링크를 받아 입장하세요.`}
                     </span>
                   </AnimatedSpan>
 
@@ -235,7 +236,7 @@ export default function TerminalJoinAnimation() {
                     delay={22000}
                     className="text-amber-500 font-semibold text-left block overflow-hidden text-ellipsis whitespace-normal break-words"
                   >
-                    『어린이집』 길드 가입 절차가 모두 완료되었습니다!
+                    {`『${guildName}』 길드 가입 절차가 모두 완료되었습니다!`}
                   </TypingAnimation>
 
                   <TypingAnimation
