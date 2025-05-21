@@ -76,11 +76,10 @@ export function BadgesTab({
     setIsFormOpen(false);
   };
 
-  console.log("badges is ", badges);
   const filterBadges = getSearchTermData<BadgeResponse>(
     badges || [],
     searchTerm,
-    ["badge.name", "badge.description"],
+    ["badge.name"],
   );
 
   return (

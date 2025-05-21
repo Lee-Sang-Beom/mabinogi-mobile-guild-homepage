@@ -74,6 +74,18 @@ export const loggedInMenuStructure: MenuItem[] = [
     ],
   },
   {
+    name: "허브",
+    href: "/hub",
+    icon: LinkIcon,
+    submenu: [
+      {
+        name: "도감",
+        href: "/hub?tab=badge",
+        icon: BookmarkIcon,
+      },
+    ],
+  },
+  {
     name: "서비스 관리",
     href: "/admin-member",
     icon: Settings,
@@ -116,18 +128,6 @@ export const loggedInMenuStructure: MenuItem[] = [
         name: "문의 관리",
         href: "/admin-inquiry",
         icon: MessageSquare,
-      },
-    ],
-  },
-  {
-    name: "허브",
-    href: "/hub",
-    icon: LinkIcon,
-    submenu: [
-      {
-        name: "도감",
-        href: "/hub?tab=badge",
-        icon: BookmarkIcon,
       },
     ],
   },
