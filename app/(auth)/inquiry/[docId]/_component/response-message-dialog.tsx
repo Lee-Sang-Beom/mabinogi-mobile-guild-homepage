@@ -31,7 +31,7 @@ export default function ResponseMessageDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="w-full h-auto max-w-full max-h-full md:max-w-[80vw] md:max-h-[80vh] overflow-y-auto overflow-x-hidden p-6">
+      <DialogContent className="w-full h-auto max-w-full max-h-full md:max-w-[70vw] md:max-h-[80vh] overflow-y-auto overflow-x-hidden p-6">
         <DialogHeader>
           <DialogTitle className={"flex items-center gap-2"}>
             답변 확인
@@ -50,9 +50,14 @@ export default function ResponseMessageDialog({
           />
         </div>
         <DialogClose asChild>
-          <Button variant="default" className="mt-4">
-            닫기
-          </Button>
+          <div className={"w-full flex flex-row-reverse"}>
+            <Button
+              variant="default"
+              className="w-full md:w-15 flex justify-center"
+            >
+              닫기
+            </Button>
+          </div>
         </DialogClose>
       </DialogContent>
     </Dialog>
