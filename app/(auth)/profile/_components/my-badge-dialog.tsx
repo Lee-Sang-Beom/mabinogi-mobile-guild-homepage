@@ -61,7 +61,7 @@ export function MyBadgeDialog({
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
-                  <BadgeImage badge={badge} isHovered={false} />
+                  <BadgeImage badge={badge} isHovered={false} isHave={true} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </motion.div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Dialog,
@@ -32,6 +32,7 @@ import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
 interface BadgeDialogProps {
   user: User;
   badge: BadgeResponse | null;
+  haveBadges: BadgeResponse[];
   isOpen: boolean;
   onCloseAction: () => void;
   onEditAction: (badge: BadgeResponse) => void;
@@ -41,11 +42,14 @@ interface BadgeDialogProps {
 export function BadgeDialog({
   user,
   badge,
+  haveBadges,
   isOpen,
   onCloseAction,
   onEditAction,
   onDeleteAction,
 }: BadgeDialogProps) {
+  const [isHave, setIsHave] = useState(false);
+
   // isEditing 상태 제거
   const { data: badgeUser, isPending } = useGetUserByDocId(
     badge ? badge.registerUserDocId : "",
@@ -72,6 +76,16 @@ export function BadgeDialog({
     <AnimatedLoading />;
     return;
   }
+
+  useEffect(() => {
+    if (!badge) return;
+    const isHaveBadge = haveBadges.some((haveBadgeItem) => {
+      return haveBadgeItem.docId === badge.docId;
+    });
+
+    setIsHave(isHaveBadge);
+  }, [badge, haveBadges]);
+
   return (
     <>
       <Dialog
@@ -100,7 +114,7 @@ export function BadgeDialog({
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
-                  <BadgeImage badge={badge} isHovered={false} />
+                  <BadgeImage badge={badge} isHovered={false} isHave={isHave} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </motion.div>
 

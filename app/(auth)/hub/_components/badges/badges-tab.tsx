@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { User } from "next-auth";
 import { formDefaultValues } from "../../data";
 import { getSearchTermData } from "@/shared/utils/utils";
 import { Input } from "@/components/ui/input";
+import { useGetUserBadgesByUserDocId } from "@/app/(auth)/(admin)/admin-badge/hooks/use-get-user-badges-by-user-doc-id";
 
 interface BadgesTabProps {
   user: User;
@@ -32,15 +33,16 @@ export function BadgesTab({
   onBadgeDeleteAction,
   viewMode,
 }: BadgesTabProps) {
+  const { data, isPending } = useGetUserBadgesByUserDocId(user.docId);
+
   const [selectedBadge, setSelectedBadge] = useState<BadgeResponse | null>(
     null,
   );
   const [searchTerm, setSearchTerm] = useState("");
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBadge, setEditingBadge] = useState<BadgeResponse | null>(null);
-
+  const [haveBadges, setHaveBadges] = useState<BadgeResponse[]>([]);
   const handleBadgeClick = (badge: BadgeResponse) => {
     setSelectedBadge(badge);
     setIsDialogOpen(true);
@@ -82,6 +84,13 @@ export function BadgesTab({
     ["badge.name"],
   );
 
+  useEffect(() => {
+    if (!isPending && data && data.badges) {
+      setHaveBadges(data.badges);
+    } else {
+      setHaveBadges([]);
+    }
+  }, [data, isPending]);
   return (
     <>
       <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -129,6 +138,7 @@ export function BadgesTab({
               <BadgeCard
                 key={`${badge.docId}_${badge.imgName}`}
                 badge={badge}
+                haveBadges={haveBadges}
                 onClickAction={() => handleBadgeClick(badge)}
               />
             ))}
@@ -156,6 +166,7 @@ export function BadgesTab({
         <BadgeDialog
           user={user}
           badge={selectedBadge}
+          haveBadges={haveBadges}
           isOpen={isDialogOpen}
           onCloseAction={() => setIsDialogOpen(false)}
           onEditAction={handleEditBadge}

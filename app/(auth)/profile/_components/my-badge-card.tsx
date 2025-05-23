@@ -28,7 +28,7 @@ export function MyBadgeCard({ badge, onClickAction }: MyBadgeCardProps) {
       onHoverEnd={() => setIsHovered(false)}
     >
       <div className="relative aspect-square overflow-hidden">
-        <BadgeImage badge={badge} isHovered={isHovered} />
+        <BadgeImage badge={badge} isHovered={isHovered} isHave={true} />
         <div
           className={`absolute inset-0 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300 ${isHovered ? "opacity-80" : "opacity-60"}`}
         />

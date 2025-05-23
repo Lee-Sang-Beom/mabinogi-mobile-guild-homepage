@@ -78,6 +78,7 @@ export function BadgeApprovalTab({ user, viewMode }: BadgesApprovalTabProps) {
               <BadgeCard
                 key={`${badge.docId}_${badge.imgName}`}
                 badge={badge}
+                haveBadges={[badge]}
                 onClickAction={() => handleBadgeClick(badge)}
               />
             ))}

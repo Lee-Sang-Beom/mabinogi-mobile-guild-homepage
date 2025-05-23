@@ -135,7 +135,6 @@
   }
   html {
     font-family: "Noto Sans KR", sans-serif !important;
-
   }
   body {
     @apply bg-background text-foreground;

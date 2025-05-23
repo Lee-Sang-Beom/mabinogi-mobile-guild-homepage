@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { BadgeResponse } from "@/app/(auth)/hub/api";
 import { BadgeImage } from "@/app/(auth)/hub/_components/badges/badge-image";
@@ -8,11 +8,27 @@ import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
 
 interface BadgeCardProps {
   badge: BadgeResponse;
+  haveBadges: BadgeResponse[];
   onClickAction: (badge: BadgeResponse) => void;
 }
 
-export function BadgeCard({ badge, onClickAction }: BadgeCardProps) {
+export function BadgeCard({
+  badge,
+  haveBadges,
+  onClickAction,
+}: BadgeCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isHave, setIsHave] = useState(false);
+
+  useEffect(() => {
+    if (!badge) return;
+    const isHaveBadge = haveBadges.some((haveBadgeItem) => {
+      return haveBadgeItem.docId === badge.docId;
+    });
+
+    setIsHave(isHaveBadge);
+  }, [badge, haveBadges]);
+
   return (
     <motion.div
       className="relative cursor-pointer bg-background/80 backdrop-blur-sm border border-primary/10 rounded-lg overflow-hidden shadow-md transition-all duration-300"
@@ -27,7 +43,7 @@ export function BadgeCard({ badge, onClickAction }: BadgeCardProps) {
       onHoverEnd={() => setIsHovered(false)}
     >
       <div className="relative aspect-square overflow-hidden">
-        <BadgeImage badge={badge} isHovered={isHovered} />
+        <BadgeImage badge={badge} isHovered={isHovered} isHave={isHave} />
         <div
           className={`absolute inset-0 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300 ${isHovered ? "opacity-80" : "opacity-60"}`}
         />
