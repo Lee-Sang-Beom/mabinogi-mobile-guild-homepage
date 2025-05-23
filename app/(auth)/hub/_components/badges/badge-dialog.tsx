@@ -31,7 +31,7 @@ import { getBadgeDifficultyColorClassName } from "@/shared/utils/badge-utils";
 
 interface BadgeDialogProps {
   user: User;
-  badge: BadgeResponse | null;
+  badge: BadgeResponse;
   haveBadges: BadgeResponse[];
   isOpen: boolean;
   onCloseAction: () => void;
@@ -52,11 +52,10 @@ export function BadgeDialog({
 
   // isEditing 상태 제거
   const { data: badgeUser, isPending } = useGetUserByDocId(
-    badge ? badge.registerUserDocId : "",
+    badge ? badge.registerUserDocId : ""
   );
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  if (!badge) return null;
 
   const isMe = badge.registerUserDocId === user.docId;
   const isHAdmin = isHomePageAdmin(user);
@@ -72,19 +71,19 @@ export function BadgeDialog({
     onCloseAction();
   };
 
-  if (isPending) {
-    <AnimatedLoading />;
-    return;
-  }
-
   useEffect(() => {
     if (!badge) return;
+
     const isHaveBadge = haveBadges.some((haveBadgeItem) => {
       return haveBadgeItem.docId === badge.docId;
     });
 
     setIsHave(isHaveBadge);
   }, [badge, haveBadges]);
+
+  if (isPending) {
+    return <AnimatedLoading />;
+  }
 
   return (
     <>

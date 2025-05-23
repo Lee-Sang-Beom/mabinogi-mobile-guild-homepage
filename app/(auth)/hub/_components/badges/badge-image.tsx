@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { BadgeResponse } from "@/app/(auth)/hub/api";
 import { BlurFade } from "@/components/magicui/blur-fade";
@@ -14,7 +14,7 @@ export const BadgeImage = ({ badge, isHovered, isHave }: BadgeImageProps) => {
   const [imgSrc, setImgSrc] = useState(
     badge.imgName && badge.imgName.trim() !== ""
       ? `/images/badges/${badge.imgName}`
-      : "/images/favicon-mabinogi-mobile.png",
+      : "/images/favicon-mabinogi-mobile.png"
   );
 
   return (

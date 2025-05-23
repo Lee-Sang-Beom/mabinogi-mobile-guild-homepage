@@ -36,7 +36,7 @@ export function BadgesTab({
   const { data, isPending } = useGetUserBadgesByUserDocId(user.docId);
 
   const [selectedBadge, setSelectedBadge] = useState<BadgeResponse | null>(
-    null,
+    null
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -66,7 +66,7 @@ export function BadgesTab({
 
   const handleSaveBadge = (
     docId: string | null,
-    badge: BadgeFormSchemaType,
+    badge: BadgeFormSchemaType
   ) => {
     if (editingBadge) {
       // 기존 뱃지 수정
@@ -81,7 +81,7 @@ export function BadgesTab({
   const filterBadges = getSearchTermData<BadgeResponse>(
     badges || [],
     searchTerm,
-    ["badge.name"],
+    ["badge.name"]
   );
 
   useEffect(() => {
@@ -162,7 +162,7 @@ export function BadgesTab({
         )}
       </AnimatePresence>
 
-      {selectedBadge && (
+      {selectedBadge && selectedBadge && (
         <BadgeDialog
           user={user}
           badge={selectedBadge}
