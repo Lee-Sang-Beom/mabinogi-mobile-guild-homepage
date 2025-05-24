@@ -19,6 +19,7 @@ import {
   inquiryColumns,
 } from "@/app/(auth)/inquiry/columns";
 import { toast } from "sonner";
+import { isHomePageAdmin } from "@/shared/utils/utils";
 
 export default function InquiriesList({ user }: InquiryListProps) {
   const router = useRouter();
@@ -35,7 +36,8 @@ export default function InquiriesList({ user }: InquiryListProps) {
     (inquiry: InquiryResponse) => {
       if (!inquiry?.docId) return;
       const isWriteMe = user.docId === inquiry.writeUserDocId;
-      const availableMove = !inquiry.isSecret || isWriteMe;
+      const availableMove =
+        !inquiry.isSecret || isWriteMe || isHomePageAdmin(user);
 
       if (availableMove) {
         router.push(`/inquiry/${inquiry.docId}`);
@@ -44,7 +46,7 @@ export default function InquiriesList({ user }: InquiryListProps) {
         return;
       }
     },
-    [router, user],
+    [router, user]
   );
 
   // 컴포넌트 마운트 시 한 번만 실행

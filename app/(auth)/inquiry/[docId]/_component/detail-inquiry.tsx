@@ -17,6 +17,7 @@ import { InquiryDetailProps } from "@/app/(auth)/inquiry/internal";
 import { useDeleteInquiry } from "@/app/(auth)/inquiry/hooks/use-delete-inquiry";
 import { useState } from "react";
 import ResponseMessageDialog from "@/app/(auth)/inquiry/[docId]/_component/response-message-dialog";
+import { isHomePageAdmin } from "@/shared/utils/utils";
 
 export default function InquiryDetailPage({
   user,
@@ -31,10 +32,10 @@ export default function InquiryDetailPage({
     inquiryData.step === "INQUIRY_STEP_IN_PROGRESS" &&
     inquiryData.writeUserDocId === user.docId;
 
-  // 내가 썼고 아직 문의 답변 이전인가?
+  // 내가 썼고 문의 답변 이후인가? (추가적으로 홈페이지 관리자는 답변 내용 확인 가능)
   const isConfirmResponseMessage =
     inquiryData.step === "INQUIRY_STEP_RESOLVED" &&
-    inquiryData.writeUserDocId === user.docId;
+    (inquiryData.writeUserDocId === user.docId || isHomePageAdmin(user));
 
   const handleDeleteInquiry = () => {
     deleteInquiry(inquiryData.docId);
@@ -90,7 +91,7 @@ export default function InquiryDetailPage({
                 "flex justify-between py-4",
                 !isAvailableChange &&
                   !isConfirmResponseMessage &&
-                  "flex-row-reverse",
+                  "flex-row-reverse"
               )}
             >
               <Button variant="outline" onClick={() => router.push("/inquiry")}>
