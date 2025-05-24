@@ -19,14 +19,14 @@ export default function Comment({
   const [replyToId, setReplyToId] = useState<string | null>(null);
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const commentEndRef = useRef<HTMLDivElement>(null);
 
   // 댓글 가져오기
   const { data: commentsData, isPending } = useGetCommentAll(
     noticeCollectionName,
-    noticeDocId,
+    noticeDocId
   );
 
   // 답글 토글
@@ -69,6 +69,9 @@ export default function Comment({
           )}
         </div>
 
+        {/* 댓글 끝 표시 (새 댓글 작성 시 스크롤 위치) */}
+        <div ref={commentEndRef} />
+
         {/* 새 댓글 작성 폼 */}
         <CommentForm
           noticeCollectionName={noticeCollectionName}
@@ -108,9 +111,6 @@ export default function Comment({
           </div>
         )}
       </motion.div>
-
-      {/* 댓글 끝 표시 (새 댓글 작성 시 스크롤 위치) */}
-      <div ref={commentEndRef} />
     </div>
   );
 }

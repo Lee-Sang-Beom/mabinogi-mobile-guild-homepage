@@ -6,6 +6,7 @@ import {
   getDocs,
   setDoc,
   query,
+  orderBy,
 } from "firebase/firestore";
 import moment from "moment";
 
@@ -39,7 +40,7 @@ class CommentService {
         noticeCollectionName,
         noticeDocId,
         "comments",
-        commentId,
+        commentId
       );
 
       const nowFormatted = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -77,7 +78,7 @@ class CommentService {
   async delete(
     noticeCollectionName: CommentNoticeCollectionName,
     noticeDocId: string,
-    commentDocId: string,
+    commentDocId: string
   ): Promise<ApiResponse<null>> {
     try {
       // 1. 자식 댓글들 찾기
@@ -85,7 +86,7 @@ class CommentService {
         db,
         noticeCollectionName,
         noticeDocId,
-        "comments",
+        "comments"
       );
 
       const snapshot = await getDocs(query(commentsRef));
@@ -109,7 +110,7 @@ class CommentService {
         noticeCollectionName,
         noticeDocId,
         "comments",
-        commentDocId,
+        commentDocId
       );
       await deleteDoc(commentRef);
 
@@ -133,13 +134,13 @@ class CommentService {
    */
   async deleteAllComments(
     noticeCollectionName: CommentNoticeCollectionName,
-    noticeDocId: string,
+    noticeDocId: string
   ) {
     const commentsRef = collection(
       db,
       noticeCollectionName,
       noticeDocId,
-      "comments",
+      "comments"
     );
 
     const snapshot = await getDocs(query(commentsRef));
@@ -149,7 +150,7 @@ class CommentService {
     snapshot.forEach((docSnap) => {
       const commentId = docSnap.id;
       deletePromises.push(
-        commentService.delete(noticeCollectionName, noticeDocId, commentId),
+        commentService.delete(noticeCollectionName, noticeDocId, commentId)
       );
     });
 
@@ -162,7 +163,7 @@ class CommentService {
   async getById(
     noticeCollectionName: CommentNoticeCollectionName,
     noticeDocId: string,
-    commentDocId: string,
+    commentDocId: string
   ): Promise<ApiResponse<CommentResponse | null>> {
     try {
       const commentRef = doc(
@@ -170,7 +171,7 @@ class CommentService {
         noticeCollectionName,
         noticeDocId,
         "comments",
-        commentDocId,
+        commentDocId
       );
       const snapshot = await getDoc(commentRef);
 
@@ -215,17 +216,19 @@ class CommentService {
    */
   async getAll(
     noticeCollectionName: CommentNoticeCollectionName,
-    noticeDocId: string,
+    noticeDocId: string
   ): Promise<ApiResponse<CommentResponse[]>> {
     try {
       const commentsRef = collection(
         db,
         noticeCollectionName,
         noticeDocId,
-        "comments",
+        "comments"
       );
 
-      const snapshot = await getDocs(query(commentsRef));
+      const snapshot = await getDocs(
+        query(commentsRef, orderBy("modifyDt", "desc"))
+      );
       const allComments: CommentResponse[] = [];
 
       snapshot.forEach((docSnap) => {
@@ -247,7 +250,7 @@ class CommentService {
       // 트리 구조로 변환
       const map = new Map<string, CommentResponse>();
       allComments.forEach((c) =>
-        map.set(c.docId, { ...c, childrenComment: [] }),
+        map.set(c.docId, { ...c, childrenComment: [] })
       );
 
       const nestedComments: CommentResponse[] = [];
