@@ -75,8 +75,7 @@ const isOppositeDirection = (dir1: Direction, dir2: Direction): boolean => {
 };
 
 // 메인 컴포넌트
-const SnakeGame: React.FC = () => {
-  // 🔊 변경됨: 오디오 ref 추가
+export default function SnakeGame() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // 게임 상태
@@ -242,7 +241,6 @@ const SnakeGame: React.FC = () => {
   // 스크롤 방지
   useEffect(() => {
     if (gameState === GAME_STATES.RUNNING) {
-      // 🔊 변경됨: 오디오 재생
       if (audioRef.current) {
         audioRef.current!.currentTime = 0;
         audioRef.current.play().catch((err) => {
@@ -361,7 +359,6 @@ const SnakeGame: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white p-4 flex items-center justify-center">
-      {/* 🔊 변경됨: 오디오 엘리먼트 */}
       <audio ref={audioRef} src="/audios/fergus-song.mp3" preload="auto" loop />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
       {/* 카운트다운 화면 */}
@@ -579,6 +576,4 @@ const SnakeGame: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default SnakeGame;
+}
