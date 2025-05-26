@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence, type Variants } from "framer-motion"
-import Link from "next/link"
-import { X, ChevronDown, LogOut } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { MenuItem } from "@/shared/types/menu"
-import { guildName } from '@/shared/constants/game'
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
+import Link from "next/link";
+import { X, ChevronDown, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MenuItem } from "@/shared/types/menu";
+import { guildName } from "@/shared/constants/game";
 
 interface MobileMenuProps {
-  isOpen: boolean
-  onCloseAction: () => void
-  navItems: MenuItem[]
-  isLoggedIn: boolean
-  onLogoutAction: () => void
+  isOpen: boolean;
+  onCloseAction: () => void;
+  navItems: MenuItem[];
+  isLoggedIn: boolean;
+  onLogoutAction: () => void;
 }
 
 // 애니메이션 변수 정의
@@ -42,7 +42,7 @@ const menuVariants: Variants = {
       delayChildren: 0.2,
     },
   },
-}
+};
 
 const itemVariants: Variants = {
   closed: {
@@ -55,58 +55,66 @@ const itemVariants: Variants = {
     x: 0,
     transition: { duration: 0.4 },
   },
-}
+};
 
 const buttonVariants: Variants = {
   initial: { scale: 1 },
   hover: { scale: 1.05 },
   tap: { scale: 0.95 },
-}
+};
 
-export default function MobileMenu({ isOpen, onCloseAction, navItems, isLoggedIn, onLogoutAction }: MobileMenuProps) {
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
-  const menuRef = useRef<HTMLDivElement>(null)
-  const [scrollPosition, setScrollPosition] = useState(0)
+export default function MobileMenu({
+  isOpen,
+  onCloseAction,
+  navItems,
+  isLoggedIn,
+  onLogoutAction,
+}: MobileMenuProps) {
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
+    {},
+  );
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   // 메뉴가 열릴 때 스크롤 위치 저장 및 스크롤 방지
   useEffect(() => {
     if (isOpen) {
       // 현재 스크롤 위치 저장
-      setScrollPosition(window.scrollY)
+      setScrollPosition(window.scrollY);
 
       // body에 고정 스타일 적용
-      document.body.style.position = "fixed"
-      document.body.style.top = `-${scrollPosition}px`
-      document.body.style.width = "100%"
-      document.body.style.overflow = "hidden"
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollPosition}px`;
+      document.body.style.width = "100%";
+      document.body.style.overflow = "hidden";
     } else {
       // 메뉴가 닫힐 때 원래 스크롤 위치로 복원
-      document.body.style.position = ""
-      document.body.style.top = ""
-      document.body.style.width = ""
-      document.body.style.overflow = ""
-      window.scrollTo(0, scrollPosition)
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+      window.scrollTo(0, scrollPosition);
     }
 
     return () => {
       // 컴포넌트 언마운트 시 스타일 초기화
-      document.body.style.position = ""
-      document.body.style.top = ""
-      document.body.style.width = ""
-      document.body.style.overflow = ""
-    }
-  }, [isOpen, scrollPosition])
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, scrollPosition]);
 
   const toggleExpand = (name: string) => {
     setExpandedItems((prev) => ({
       ...prev,
       [name]: !prev[name],
-    }))
-  }
+    }));
+  };
 
   const renderMenuItem = (item: MenuItem, depth = 0) => {
-    const isExpanded = expandedItems[item.name] || false
-    const hasSubmenu = item.submenu && item.submenu.length > 0
+    const isExpanded = expandedItems[item.name] || false;
+    const hasSubmenu = item.submenu && item.submenu.length > 0;
 
     return (
       <motion.div key={item.name} className="w-full" variants={itemVariants}>
@@ -128,12 +136,19 @@ export default function MobileMenu({ isOpen, onCloseAction, navItems, isLoggedIn
                 )}
                 {item.name}
               </span>
-              <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
                 <ChevronDown className="h-5 w-5 text-amber-400" />
               </motion.div>
             </button>
           ) : (
-            <Link href={item.href} className="flex items-center text-xl font-bold w-full" onClick={onCloseAction}>
+            <Link
+              href={item.href}
+              className="flex items-center text-xl font-bold w-full"
+              onClick={onCloseAction}
+            >
               {item.icon && (
                 <item.icon className="mr-3 text-amber-400 h-4 w-4" />
               )}
@@ -167,7 +182,9 @@ export default function MobileMenu({ isOpen, onCloseAction, navItems, isLoggedIn
                             {subItem.name}
                           </span>
                           <motion.div
-                            animate={{ rotate: expandedItems[subItem.name] ? 180 : 0 }}
+                            animate={{
+                              rotate: expandedItems[subItem.name] ? 180 : 0,
+                            }}
                             transition={{ duration: 0.3 }}
                             className="mr-3"
                           >
@@ -212,8 +229,8 @@ export default function MobileMenu({ isOpen, onCloseAction, navItems, isLoggedIn
           </AnimatePresence>
         )}
       </motion.div>
-    )
-  }
+    );
+  };
 
   return (
     <AnimatePresence>
@@ -245,9 +262,13 @@ export default function MobileMenu({ isOpen, onCloseAction, navItems, isLoggedIn
             >
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                  <span className="font-cinzel text-white text-xl font-bold">M</span>
+                  <span className="font-cinzel text-white text-xl font-bold">
+                    M
+                  </span>
                 </div>
-                <span className="font-cinzel text-xl font-bold text-white">{guildName}</span>
+                <span className="font-cinzel text-xl font-bold text-white">
+                  {guildName}
+                </span>
               </div>
               <motion.button
                 variants={buttonVariants}
@@ -267,26 +288,41 @@ export default function MobileMenu({ isOpen, onCloseAction, navItems, isLoggedIn
               </div>
 
               {/* 로그인/프로필/로그아웃 버튼 */}
-              <motion.div variants={itemVariants} className="w-full max-w-xs mx-auto mt-6 space-y-4">
+              <motion.div
+                variants={itemVariants}
+                className="w-full max-w-xs mx-auto mt-6 space-y-4"
+              >
                 {isLoggedIn ? (
                   <div className="flex flex-col gap-4">
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                    <motion.div
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
                       <Button
                         variant="outline"
                         className="w-full text-foreground border-white/20 hover:bg-white/50 hover:border-white/40 h-12 text-lg"
                       >
-                        <Link href="/profile" onClick={onCloseAction} className="w-full">
+                        <Link
+                          href="/profile"
+                          onClick={onCloseAction}
+                          className="w-full"
+                        >
                           프로필
                         </Link>
                       </Button>
                     </motion.div>
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                    <motion.div
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
                       <Button
                         variant="destructive"
                         className="w-full flex items-center justify-center gap-2 h-12 text-lg"
                         onClick={() => {
-                          onLogoutAction()
-                          onCloseAction()
+                          onLogoutAction();
+                          onCloseAction();
                         }}
                       >
                         <LogOut className="h-5 w-5" />
@@ -296,19 +332,35 @@ export default function MobileMenu({ isOpen, onCloseAction, navItems, isLoggedIn
                   </div>
                 ) : (
                   <div className="flex flex-col gap-4">
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                    <motion.div
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
                       <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white h-12 text-lg">
-                        <Link href="/login" onClick={onCloseAction} className="w-full">
+                        <Link
+                          href="/login"
+                          onClick={onCloseAction}
+                          className="w-full"
+                        >
                           로그인
                         </Link>
                       </Button>
                     </motion.div>
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                    <motion.div
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
                       <Button
                         variant="outline"
                         className="w-full text-foreground border-white/20 hover:bg-white/50 hover:border-white/40 h-12 text-lg"
                       >
-                        <Link href="/join" onClick={onCloseAction} className="w-full">
+                        <Link
+                          href="/join"
+                          onClick={onCloseAction}
+                          className="w-full"
+                        >
                           회원가입
                         </Link>
                       </Button>
@@ -323,11 +375,11 @@ export default function MobileMenu({ isOpen, onCloseAction, navItems, isLoggedIn
               variants={itemVariants}
               className="p-6 border-t border-white/10 text-center text-white/60 text-sm"
             >
-              © 2023 마비노기 모바일 - {guildName}
+              © 2025 마비노기 모바일 - {guildName}
             </motion.div>
           </div>
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }
