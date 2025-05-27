@@ -151,9 +151,9 @@ export default function SnakeGame({ user }: GameProps) {
   // 점수 저장 함수 - 중복 방지 로직 추가
   const saveScore = useCallback(
     async (finalScore: number) => {
-      console.log("finalScore is ", finalScore);
       // 이미 저장 중이거나 점수가 0이면 리턴
-      if (isSavingScoreRef.current || finalScore === 0) {
+      if (isSavingScoreRef.current || finalScore == 0) {
+        setGameState(GAME_STATES.GAME_OVER);
         return;
       }
 
