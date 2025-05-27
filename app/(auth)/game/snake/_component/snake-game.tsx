@@ -662,7 +662,7 @@ export default function SnakeGame({ user }: GameProps) {
             <div className="flex flex-col gap-3">
               <Button
                 onClick={restartGame}
-                className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-bold py-3 text-lg shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105"
+                className="w-full bg-primary font-bold py-3 text-md shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105"
               >
                 다시 플레이
               </Button>
@@ -701,7 +701,7 @@ export default function SnakeGame({ user }: GameProps) {
         <div className="text-center space-y-6">
           <div className="text-8xl animate-bounce">🐍</div>
           <div className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-            뱀 게임 로딩 중...
+            로딩 중...
           </div>
           <div className="flex justify-center space-x-2">
             <div className="w-4 h-4 bg-emerald-400 rounded-full animate-pulse"></div>
@@ -812,7 +812,9 @@ export default function SnakeGame({ user }: GameProps) {
                     <div className="w-8 h-8 bg-slate-700 rounded flex items-center justify-center text-xs">
                       ⬆️
                     </div>
-                    <span>방향키 또는 WASD로 뱀을 조작하세요</span>
+                    <span>
+                      방향키 또는 WASD로 뱀을 조작하세요 (모바일 조작 불가)
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-rose-500 rounded-full flex items-center justify-center">
@@ -836,7 +838,7 @@ export default function SnakeGame({ user }: GameProps) {
                 <div className="flex flex-col gap-3">
                   <Button
                     onClick={startGame}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-bold py-3 text-lg shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105"
+                    className="w-full bg-primary font-bold py-3 text-md shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105"
                   >
                     게임 시작
                   </Button>
@@ -897,37 +899,9 @@ export default function SnakeGame({ user }: GameProps) {
 
             {/* 모바일 컨트롤 */}
             <div className="flex justify-center md:hidden px-4">
-              <div className="grid grid-cols-3 gap-2 w-40 sm:w-48">
-                <div></div>
-                <Button
-                  onTouchStart={() => changeDirection(DIRECTIONS.UP)}
-                  className="h-10 sm:h-12 bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600 text-sm" // 높이 조정
-                >
-                  ⬆️
-                </Button>
-                <div></div>
-                <Button
-                  onTouchStart={() => changeDirection(DIRECTIONS.LEFT)}
-                  className="h-10 sm:h-12 bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600 text-sm" // 높이 조정
-                >
-                  ⬅️
-                </Button>
-                <div></div>
-                <Button
-                  onTouchStart={() => changeDirection(DIRECTIONS.RIGHT)}
-                  className="h-10 sm:h-12 bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600 text-sm" // 높이 조정
-                >
-                  ➡️
-                </Button>
-                <div></div>
-                <Button
-                  onTouchStart={() => changeDirection(DIRECTIONS.DOWN)}
-                  className="h-10 sm:h-12 bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600 text-sm" // 높이 조정
-                >
-                  ⬇️
-                </Button>
-                <div></div>
-              </div>
+              <div></div>
+              <p>모바일 환경에서는 동작하지 않아요!</p>
+              <div></div>
             </div>
 
             {/* 현재 속도 표시 */}
