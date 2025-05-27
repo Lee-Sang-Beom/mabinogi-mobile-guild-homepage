@@ -101,6 +101,7 @@ class GameService {
         game.gameType,
       );
 
+      console.log("existingGamesResponse is ", existingGamesResponse);
       if (!existingGamesResponse.success) {
         return {
           success: false,

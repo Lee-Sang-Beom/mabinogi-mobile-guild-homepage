@@ -8,6 +8,7 @@ import { GameProps } from "@/app/(auth)/game/internal";
 import moment from "moment";
 import { useCreateGame } from "@/app/(auth)/game/hooks/use-create-game";
 import { useGetGamesByGameType } from "@/app/(auth)/game/hooks/use-get-games-by-game-type";
+import { GameCreateRequest } from "@/app/(auth)/game/api";
 
 // 게임 상수
 const BOARD_SIZE = 20;
@@ -150,6 +151,7 @@ export default function SnakeGame({ user }: GameProps) {
   // 점수 저장 함수 - 중복 방지 로직 추가
   const saveScore = useCallback(
     async (finalScore: number) => {
+      console.log("finalScore is ", finalScore);
       // 이미 저장 중이거나 점수가 0이면 리턴
       if (isSavingScoreRef.current || finalScore === 0) {
         return;
@@ -168,14 +170,16 @@ export default function SnakeGame({ user }: GameProps) {
             1;
         }
 
-        await createGameMutation.mutateAsync({
+        const postData: GameCreateRequest = {
           gameType: "snake",
           score: finalScore,
           rank: rank,
           userDocId: user.docId,
           userId: user.id,
           regDt: moment().format("YYYY-MM-DD"),
-        });
+        };
+
+        await createGameMutation.mutateAsync(postData);
 
         // 랭킹 데이터 새로고침
         await refetchRanking();
