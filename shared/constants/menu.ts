@@ -14,6 +14,7 @@ import {
   Tag,
   UserCog,
   UserPlus,
+  Gamepad,
 } from "lucide-react";
 import { MenuItem } from "../types/menu";
 
@@ -82,6 +83,11 @@ export const loggedInMenuStructure: MenuItem[] = [
         name: "도감",
         href: "/hub?tab=badge",
         icon: BookmarkIcon,
+      },
+      {
+        name: "게임",
+        href: "/game",
+        icon: Gamepad,
       },
     ],
   },

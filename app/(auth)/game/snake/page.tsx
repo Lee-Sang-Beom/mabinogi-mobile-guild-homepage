@@ -1,4 +1,4 @@
-import MiniGameSelection from "@/app/(auth)/game/_component/mini-game-selection";
+import SnakeGame from "@/app/(auth)/game/snake/_component/snake-game";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/AuthOptions";
 import { redirect } from "next/navigation";
@@ -9,5 +9,5 @@ export default async function Page() {
     redirect("/login");
   }
 
-  return <MiniGameSelection />;
+  return <SnakeGame user={session.user} />;
 }
