@@ -465,7 +465,7 @@ export default function SnakeGame({ user }: GameProps) {
     } else {
       // 요소가 없을 경우 화면 상단에서 100px 아래로 스크롤
       window.scrollTo({
-        top: 100,
+        top: 250,
         behavior: "smooth",
       });
     }
