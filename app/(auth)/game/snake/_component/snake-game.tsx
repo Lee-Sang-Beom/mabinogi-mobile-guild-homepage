@@ -9,6 +9,7 @@ import moment from "moment";
 import { useCreateGame } from "@/app/(auth)/game/hooks/use-create-game";
 import { useGetGamesByGameType } from "@/app/(auth)/game/hooks/use-get-games-by-game-type";
 import { GameCreateRequest } from "@/app/(auth)/game/api";
+import { NumberTicker } from "@/components/magicui/number-ticker";
 
 // 게임 상수
 const BOARD_SIZE = 20;
@@ -465,7 +466,7 @@ export default function SnakeGame({ user }: GameProps) {
     } else {
       // 요소가 없을 경우 화면 상단에서 100px 아래로 스크롤
       window.scrollTo({
-        top: 200,
+        top: 0,
         behavior: "smooth",
       });
     }
@@ -766,34 +767,41 @@ export default function SnakeGame({ user }: GameProps) {
             </h1>
           </div>
 
-          <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 p-3 sm:p-4  rounded-xl shadow-sm backdrop-blur-sm">
-            <Badge
-              variant="secondary"
-              className="text-sm sm:text-base md:text-lg px-2.5 sm:px-3.5 md:px-4 py-1.5 sm:py-2 text-muted-foreground border border-slate-700"
-            >
-              점수:
-              <span className="font-semibold ml-1 text-muted-foreground">
-                {score}
-              </span>
-            </Badge>
-            <Badge
-              variant="secondary"
-              className="text-sm sm:text-base md:text-lg px-2.5 sm:px-3.5 md:px-4 py-1.5 sm:py-2 text-muted-foreground border border-slate-700 "
-            >
-              최고점수:
-              <span className="font-semibold ml-1 text-orange-500">
-                {highScore}
-              </span>
-            </Badge>
-            <Badge
-              variant="secondary"
-              className="text-sm sm:text-base md:text-lg px-2.5 sm:px-3.5 md:px-4 py-1.5 sm:py-2 text-muted-foreground border border-slate-700 "
-            >
-              길이:
-              <span className="font-semibold ml-1 text-muted-foreground">
-                {snake.length}
-              </span>
-            </Badge>
+          <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl shadow-sm backdrop-blur-sm">
+            {(gameState === GAME_STATES.RUNNING ||
+              gameState === GAME_STATES.GAME_OVER) && (
+              <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border border-slate-700 rounded-xl px-3 py-2">
+                <CardContent className="p-0 flex items-center text-sm font-medium">
+                  점수:
+                  <NumberTicker
+                    value={score}
+                    className="ml-1 font-semibold text-white"
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border border-slate-700 rounded-xl px-3 py-2">
+              <CardContent className="p-0 flex items-center text-sm font-medium">
+                최고점수:
+                <span className="ml-1 font-semibold text-yellow-300">
+                  {highScore}
+                </span>
+              </CardContent>
+            </Card>
+
+            {(gameState === GAME_STATES.RUNNING ||
+              gameState === GAME_STATES.GAME_OVER) && (
+              <Card className="bg-gradient-to-r from-pink-500 to-rose-600 text-white border border-slate-700 rounded-xl px-3 py-2">
+                <CardContent className="p-0 flex items-center text-sm font-medium">
+                  길이:
+                  <NumberTicker
+                    value={snake.length}
+                    className="ml-1 font-semibold text-white"
+                  />
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
@@ -871,7 +879,14 @@ export default function SnakeGame({ user }: GameProps) {
 
         {/* 게임 실행 중 화면 */}
         {gameState === GAME_STATES.RUNNING && (
-          <div className="space-y-6">
+          <div className="space-y-2">
+            {/* 현재 속도 표시 */}
+            <div className="text-center">
+              <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
+                속도: {((200 - speed) / 10).toFixed(1)}배
+              </Badge>
+            </div>
+
             {/* 컨트롤 가이드 */}
             <div className="text-center text-slate-400 text-sm">
               방향키 또는 WASD로 조작
@@ -902,13 +917,6 @@ export default function SnakeGame({ user }: GameProps) {
               <div></div>
               <p>모바일 환경에서는 동작하지 않아요!</p>
               <div></div>
-            </div>
-
-            {/* 현재 속도 표시 */}
-            <div className="text-center">
-              <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
-                속도: {((200 - speed) / 10).toFixed(1)}배
-              </Badge>
             </div>
           </div>
         )}
