@@ -565,7 +565,7 @@ export default function SnakeGame({ user }: GameProps) {
               className={`flex justify-between items-center p-3 rounded-lg ${
                 game.userId === user.id
                   ? "bg-emerald-900/30 border border-emerald-500/30"
-                  : "bg-slate-800/30"
+                  : "bg-slate-800/30 border border-gray-700"
               }`}
             >
               <div className="flex items-center gap-3">
@@ -583,7 +583,7 @@ export default function SnakeGame({ user }: GameProps) {
                   {index + 1}
                 </div>
                 <div>
-                  <div className="font-semibold text-muted">
+                  <div className="font-semibold text-white">
                     {game.userId === user.id
                       ? `${user.id}`
                       : `${game.userId.slice(0, 8)}`}
@@ -669,14 +669,14 @@ export default function SnakeGame({ user }: GameProps) {
               <Button
                 onClick={() => setGameState(GAME_STATES.IDLE)}
                 variant="outline"
-                className="w-full border-slate-600 hover:bg-slate-700/50 backdrop-blur py-3"
+                className="w-full backdrop-blur py-3"
               >
                 메인 메뉴로
               </Button>
               <Button
                 onClick={() => setShowRanking(!showRanking)}
                 variant="outline"
-                className="w-full border-slate-600 hover:bg-slate-700/50 backdrop-blur py-3"
+                className="w-full backdrop-blur py-3"
               >
                 {showRanking ? "랭킹 숨기기" : "랭킹 보기"}
               </Button>
@@ -843,14 +843,14 @@ export default function SnakeGame({ user }: GameProps) {
                   <Button
                     onClick={() => setShowRanking(!showRanking)}
                     variant="outline"
-                    className="w-full border-slate-600 hover:bg-slate-700/50 backdrop-blur py-3"
+                    className="w-full backdrop-blur py-3"
                   >
                     {showRanking ? "랭킹 숨기기" : "랭킹 보기"}
                   </Button>
                   <Button
                     onClick={() => router.back()}
                     variant="outline"
-                    className="w-full border-slate-600 hover:bg-slate-700/50 backdrop-blur py-3"
+                    className="w-full backdrop-blur py-3"
                   >
                     돌아가기
                   </Button>
