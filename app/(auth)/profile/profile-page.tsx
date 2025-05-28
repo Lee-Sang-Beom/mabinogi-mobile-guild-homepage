@@ -68,7 +68,7 @@ export default function ProfilePage({ user }: ProfilePageProps) {
         </motion.div>
 
         <Tabs defaultValue="profile" className="mb-8">
-          <TabsList className="mb-6 min-w-full md:min-w-auto max-w-full overflow-x-auto md:overflow-x-hidden">
+          <TabsList className="mb-6 flex-col h-full w-full md:w-fit md:h-fit md:flex-row ">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <UserIcon className="h-4 w-4" />
               프로필 정보

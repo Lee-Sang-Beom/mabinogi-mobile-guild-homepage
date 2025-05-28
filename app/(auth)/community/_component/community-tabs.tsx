@@ -7,6 +7,7 @@ import CommunityArtwork from "./community-artwork";
 import CommunityTips from "./community-tips";
 import { useSearchParams } from "next/navigation";
 import { guildName } from "@/shared/constants/game";
+import CommunityFree from "@/app/(auth)/community/_component/community-free";
 
 export default function CommunityTabs() {
   const [mounted, setMounted] = useState(false);
@@ -20,6 +21,8 @@ export default function CommunityTabs() {
       setActiveTab("tips");
     } else if (tabParam === "artwork") {
       setActiveTab("artwork");
+    } else {
+      setActiveTab("free");
     }
   }, [tabParam]);
 
@@ -77,14 +80,18 @@ export default function CommunityTabs() {
           onValueChange={setActiveTab}
           className="mb-8"
         >
-          <TabsList className="mb-6">
-            <TabsTrigger value="artwork" className="flex items-center gap-2">
+          <TabsList className="mb-6 flex-col h-full w-full md:w-fit md:h-fit md:flex-row ">
+            <TabsTrigger value="artwork" className="flex items-center gap-1">
               <ImageIcon className="h-4 w-4" />
               {`아트워크`}
             </TabsTrigger>
-            <TabsTrigger value="tips" className="flex items-center gap-2">
+            <TabsTrigger value="tips" className="flex items-center gap-1">
               <Info className="h-4 w-4" />
               {`정보(팁)`}
+            </TabsTrigger>
+            <TabsTrigger value="free" className="flex items-center gap-1">
+              <Info className="h-4 w-4" />
+              {`자유게시판`}
             </TabsTrigger>
           </TabsList>
 
@@ -94,6 +101,10 @@ export default function CommunityTabs() {
 
           <TabsContent value="tips">
             <CommunityTips />
+          </TabsContent>
+
+          <TabsContent value="free">
+            <CommunityFree />
           </TabsContent>
         </Tabs>
       </div>

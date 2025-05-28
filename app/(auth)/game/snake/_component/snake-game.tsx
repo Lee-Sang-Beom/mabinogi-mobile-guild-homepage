@@ -103,14 +103,15 @@ export default function SnakeGame({ user }: GameProps) {
   const [countdown, setCountdown] = useState(3);
   const [showRanking, setShowRanking] = useState(false);
   const [isNewRecord, setIsNewRecord] = useState(false);
-  const [cellSize, setCellSize] = useState(20); // 반응형 셀 크기
+  const [cellSize, setCellSize] = useState(20);
 
   // refs - 개선된 방향 관리 시스템
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   const currentDirectionRef = useRef<Direction>(DIRECTIONS.RIGHT);
   const nextDirectionRef = useRef<Direction>(DIRECTIONS.RIGHT);
-  const inputBufferRef = useRef<Direction[]>([]);
+  const inputQueueRef = useRef<Direction[]>([]); // 입력 큐로 변경
   const gameBoardRef = useRef<HTMLDivElement>(null);
+  const lastMoveTimeRef = useRef<number>(0);
 
   // 중복 저장 방지를 위한 ref 추가
   const isSavingScoreRef = useRef(false);
@@ -221,38 +222,53 @@ export default function SnakeGame({ user }: GameProps) {
 
     currentDirectionRef.current = DIRECTIONS.RIGHT;
     nextDirectionRef.current = DIRECTIONS.RIGHT;
-    inputBufferRef.current = [];
+    inputQueueRef.current = [];
+    lastMoveTimeRef.current = 0;
 
     // 모든 플래그 완전 리셋
     isSavingScoreRef.current = false;
     gameOverProcessedRef.current = false;
   }, []);
 
-  // 개선된 방향 변경 - 즉시 반영
+  // 개선된 방향 변경 시스템
   const changeDirection = useCallback(
     (newDirection: Direction) => {
       if (gameState !== GAME_STATES.RUNNING) {
         return;
       }
 
+      // 현재 방향과 반대 방향인지 확인 (즉시 게임오버 방지)
       if (isOppositeDirection(newDirection, currentDirectionRef.current)) {
         return;
       }
 
-      nextDirectionRef.current = newDirection;
+      // 입력 큐의 마지막 방향과도 반대 방향인지 확인
+      const lastQueuedDirection =
+        inputQueueRef.current.length > 0
+          ? inputQueueRef.current[inputQueueRef.current.length - 1]
+          : currentDirectionRef.current;
 
-      const buffer = inputBufferRef.current;
-      if (
-        buffer.length === 0 ||
-        buffer[buffer.length - 1].x !== newDirection.x ||
-        buffer[buffer.length - 1].y !== newDirection.y
-      ) {
-        if (buffer.length >= 3) {
-          buffer.shift();
-        }
-        buffer.push(newDirection);
+      if (isOppositeDirection(newDirection, lastQueuedDirection)) {
+        return;
       }
 
+      // 입력 큐에 추가 (최대 2개까지만 유지)
+      const queue = inputQueueRef.current;
+
+      // 같은 방향이 연속으로 들어오는 것 방지
+      if (
+        queue.length === 0 ||
+        queue[queue.length - 1].x !== newDirection.x ||
+        queue[queue.length - 1].y !== newDirection.y
+      ) {
+        if (queue.length >= 2) {
+          queue.shift(); // 오래된 입력 제거
+        }
+        queue.push(newDirection);
+      }
+
+      // 즉시 방향 변경 (다음 프레임에서 적용)
+      nextDirectionRef.current = newDirection;
       setDirection(newDirection);
     },
     [gameState],
@@ -283,45 +299,45 @@ export default function SnakeGame({ user }: GameProps) {
     [saveScore, gameState],
   );
 
-  // 개선된 게임 루프
+  // 개선된 게임 루프 (더 빠른 방향 처리)
   const moveSnake = useCallback(() => {
     if (gameState !== GAME_STATES.RUNNING) return;
+
+    const currentTime = Date.now();
 
     setSnake((currentSnake) => {
       if (currentSnake.length === 0) return currentSnake;
 
-      let directionToUse = nextDirectionRef.current;
+      // 입력 큐에서 방향 가져오기
+      let directionToUse = currentDirectionRef.current;
+      const queue = inputQueueRef.current;
 
-      const buffer = inputBufferRef.current;
-      if (buffer.length > 0) {
-        const bufferedDirection = buffer.shift()!;
+      if (queue.length > 0) {
+        const queuedDirection = queue.shift()!;
         if (
-          !isOppositeDirection(bufferedDirection, currentDirectionRef.current)
+          !isOppositeDirection(queuedDirection, currentDirectionRef.current)
         ) {
-          directionToUse = bufferedDirection;
-          nextDirectionRef.current = bufferedDirection;
+          directionToUse = queuedDirection;
+          currentDirectionRef.current = directionToUse;
+          nextDirectionRef.current = directionToUse;
         }
       }
-
-      currentDirectionRef.current = directionToUse;
 
       const newHead = {
         x: currentSnake[0].x + directionToUse.x,
         y: currentSnake[0].y + directionToUse.y,
       };
 
-      // 즉시 충돌 검사 - 벽 충돌과 자신과의 충돌을 분리하여 확실히 검사
+      // 충돌 검사
       const wallCollision = checkWallCollision(newHead);
       const selfCollision = checkSelfCollision(newHead, currentSnake.slice(1));
 
       if (wallCollision || selfCollision) {
-        // 게임 상태를 즉시 변경하여 추가 움직임 방지
-        setTimeout(() => {
-          setGameState(GAME_STATES.GAME_OVER); // 먼저 상태 변경
+        // 즉시 게임 오버 처리
+        requestAnimationFrame(() => {
           handleGameOver(score);
-        }, 0); // setTimeout을 0으로 변경하여 즉시 실행
-
-        return currentSnake; // 현재 뱀 상태 유지
+        });
+        return currentSnake;
       }
 
       const newSnake = [newHead, ...currentSnake];
@@ -341,14 +357,21 @@ export default function SnakeGame({ user }: GameProps) {
         newSnake.pop();
       }
 
+      lastMoveTimeRef.current = currentTime;
       return newSnake;
     });
   }, [gameState, food.x, food.y, score, handleGameOver]);
 
-  // 키보드 입력 처리
+  // 개선된 키보드 입력 처리 - 키 반복 방지 및 즉시 반응
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
+    const pressedKeys = new Set<string>();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (gameState !== GAME_STATES.RUNNING) return;
+
+      // 이미 눌려진 키는 무시 (키 반복 방지)
+      if (pressedKeys.has(e.key)) return;
+      pressedKeys.add(e.key);
 
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
         e.preventDefault();
@@ -356,25 +379,21 @@ export default function SnakeGame({ user }: GameProps) {
 
       let newDirection: Direction | null = null;
 
-      switch (e.key) {
-        case "ArrowUp":
+      switch (e.key.toLowerCase()) {
+        case "arrowup":
         case "w":
-        case "W":
           newDirection = DIRECTIONS.UP;
           break;
-        case "ArrowDown":
+        case "arrowdown":
         case "s":
-        case "S":
           newDirection = DIRECTIONS.DOWN;
           break;
-        case "ArrowLeft":
+        case "arrowleft":
         case "a":
-        case "A":
           newDirection = DIRECTIONS.LEFT;
           break;
-        case "ArrowRight":
+        case "arrowright":
         case "d":
-        case "D":
           newDirection = DIRECTIONS.RIGHT;
           break;
       }
@@ -384,14 +403,20 @@ export default function SnakeGame({ user }: GameProps) {
       }
     };
 
-    const handleKeyDown = (e: KeyboardEvent) => handleKeyPress(e);
+    const handleKeyUp = (e: KeyboardEvent) => {
+      pressedKeys.delete(e.key);
+    };
+
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, [gameState, changeDirection]);
 
-  // 게임 루프 관리
+  // 개선된 게임 루프 관리 - 더 정확한 타이밍
   useEffect(() => {
     if (gameLoopRef.current) {
       clearInterval(gameLoopRef.current);
@@ -400,7 +425,6 @@ export default function SnakeGame({ user }: GameProps) {
 
     if (gameState === GAME_STATES.RUNNING) {
       gameLoopRef.current = setInterval(() => {
-        // 게임 상태를 다시 한번 확인
         if (
           gameState === GAME_STATES.RUNNING &&
           !gameOverProcessedRef.current
@@ -514,8 +538,7 @@ export default function SnakeGame({ user }: GameProps) {
     const board = [];
     for (let y = 0; y < BOARD_SIZE; y++) {
       for (let x = 0; x < BOARD_SIZE; x++) {
-        let cellClass =
-          "border border-slate-800/30 transition-all duration-100";
+        let cellClass = "border border-slate-800/30 transition-all duration-75"; // duration 단축
 
         if (snake.length > 0 && snake[0].x === x && snake[0].y === y) {
           cellClass +=

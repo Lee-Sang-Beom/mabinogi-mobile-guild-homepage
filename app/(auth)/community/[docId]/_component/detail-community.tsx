@@ -131,7 +131,9 @@ export default function CommunityDetailPage({
             noticeCollectionName={
               tabType == "artwork"
                 ? "collection_artwork_comment"
-                : "collection_tip_comment"
+                : tabType == "tips"
+                  ? "collection_tip_comment"
+                  : "collection_free_comment"
             }
             noticeDocId={noticeData.docId}
             currentUser={user}

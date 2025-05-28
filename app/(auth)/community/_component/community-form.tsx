@@ -86,7 +86,7 @@ export default function CommunityForm({
   const onSubmit: SubmitHandler<NoticeFormSchema> = async (data) => {
     try {
       const contentWithCompressedImages = await compressContentImages(
-        data.content
+        data.content,
       );
       const postData = {
         ...data,
@@ -122,6 +122,12 @@ export default function CommunityForm({
         setTabTypeObj({
           type: "tips",
           name: "정보(팁)",
+        });
+        break;
+      case "free":
+        setTabTypeObj({
+          type: "free",
+          name: "자유게시판",
         });
         break;
       default:

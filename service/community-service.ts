@@ -21,6 +21,8 @@ class CommunityService {
         return collection(db, "collection_artwork");
       case "tips":
         return collection(db, "collection_tip");
+      case "free":
+        return collection(db, "collection_free");
       default:
         throw new Error("잘못된 타입입니다.");
     }
@@ -32,6 +34,8 @@ class CommunityService {
         return "아트워크";
       case "tips":
         return "정보(팁)";
+      case "free":
+        return "자유게시판";
       default:
         return "커뮤니티";
     }
@@ -211,7 +215,9 @@ class CommunityService {
           await commentService.deleteAllComments(
             type === "artwork"
               ? "collection_artwork_comment"
-              : "collection_tip_comment",
+              : type === "tips"
+                ? "collection_tip_comment"
+                : "collection_free_comment",
             id,
           );
 

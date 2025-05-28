@@ -10,13 +10,14 @@ export type CommentNoticeCollectionName =
   | "collection_announcement_comment"
   | "collection_update_comment"
   | "collection_artwork_comment"
-  | "collection_tip_comment";
+  | "collection_tip_comment"
+  | "collection_free_comment";
 
 /**
  * @name CommunityNoticeType
  * @description 커뮤니티 게시판의 Tab 종류 (타입)
  */
-export type CommunityNoticeType = "artwork" | "tips";
+export type CommunityNoticeType = "artwork" | "tips" | "free";
 
 /**
  * @name NoticeListProps
