@@ -72,7 +72,7 @@ const CHARACTERS = [
 const WEAPONS = {
   fireball: {
     name: "파이어볼",
-    damage: 30,
+    damage: 20,
     cooldown: 1000,
     color: "#FF6B35",
     range: 150,
@@ -83,7 +83,7 @@ const WEAPONS = {
   },
   sword: {
     name: "검",
-    damage: 50,
+    damage: 40,
     cooldown: 800,
     color: "#C0C0C0",
     range: 80,
@@ -92,7 +92,7 @@ const WEAPONS = {
   },
   arrow: {
     name: "화살",
-    damage: 25,
+    damage: 20,
     cooldown: 600,
     color: "#8B4513",
     range: 200,
@@ -101,7 +101,7 @@ const WEAPONS = {
   },
   lightning: {
     name: "번개",
-    damage: 40,
+    damage: 35,
     cooldown: 1200,
     color: "#FFD700",
     range: 180,
@@ -113,7 +113,7 @@ const WEAPONS = {
   },
   ice: {
     name: "얼음",
-    damage: 35,
+    damage: 30,
     cooldown: 1000,
     color: "#87CEEB",
     range: 120,
@@ -128,7 +128,7 @@ const WEAPONS = {
 const ENEMY_TYPES = [
   {
     type: "zombie" as const,
-    hp: 50,
+    hp: 100,
     speed: 1,
     color: "#8B4513",
     exp: 10,
@@ -137,7 +137,7 @@ const ENEMY_TYPES = [
   },
   {
     type: "skeleton" as const,
-    hp: 30,
+    hp: 150,
     speed: 1.5,
     color: "#F5F5DC",
     exp: 15,
@@ -146,7 +146,7 @@ const ENEMY_TYPES = [
   },
   {
     type: "orc" as const,
-    hp: 80,
+    hp: 150,
     speed: 0.8,
     color: "#228B22",
     exp: 25,
@@ -155,7 +155,7 @@ const ENEMY_TYPES = [
   },
   {
     type: "demon" as const,
-    hp: 120,
+    hp: 200,
     speed: 1.2,
     color: "#8B0000",
     exp: 40,
