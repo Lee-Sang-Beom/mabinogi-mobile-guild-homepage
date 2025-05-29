@@ -576,7 +576,7 @@ export default function SnakeGame({ user }: GameProps) {
     return (
       <div className="space-y-3">
         <h3 className="text-xl font-bold text-center text-emerald-400 mb-4">
-          🏆 Snake 게임 랭킹 TOP 10
+          🏆 뱀 게임 랭킹 TOP 10
         </h3>
         {topRankings.length === 0 ? (
           <div className="text-center text-slate-400">
