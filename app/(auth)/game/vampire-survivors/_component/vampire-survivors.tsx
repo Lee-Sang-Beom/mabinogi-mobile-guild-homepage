@@ -1,27 +1,27 @@
 "use client";
 import React, {
-  useState,
-  useEffect,
-  useRef,
   useCallback,
+  useEffect,
   useMemo,
+  useRef,
+  useState,
 } from "react";
 import {
-  Zap,
-  Sword,
-  Flame,
-  Snowflake,
-  Skull,
-  Users,
-  Shield,
-  Crown,
-  Sparkles,
   Bot,
-  Play,
-  Pause,
-  RotateCcw,
+  Crown,
+  Flame,
   Home,
+  Pause,
+  Play,
+  Shield,
+  Skull,
+  Snowflake,
+  Sparkles,
+  Sword,
+  Users,
+  Zap,
 } from "lucide-react";
+import { GameProps } from "@/app/(auth)/game/internal";
 
 // 게임 설정
 const GAME_CONFIG = {
@@ -225,7 +225,7 @@ interface Effect {
   [key: string]: any;
 }
 
-export default function VampireSurvivalGame() {
+export default function VampireSurvivalGame({ user: _user }: GameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number | null>(null);
   const keysRef = useRef<Record<string, boolean>>({});
@@ -522,7 +522,7 @@ export default function VampireSurvivalGame() {
             }
           });
 
-          if (closestEnemy && closestEnemy != null) {
+          if (closestEnemy != null) {
             const angle = Math.atan2(
               (closestEnemy as Enemy).y - player.y,
               (closestEnemy as Enemy).x - player.x,
@@ -1101,7 +1101,7 @@ export default function VampireSurvivalGame() {
       <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 flex items-center justify-center p-4">
         <div className="bg-black/50 backdrop-blur-lg rounded-2xl p-8 max-w-4xl w-full">
           <div className="text-center mb-8">
-            <h1 className="text-6xl font-bold text-white mb-4 bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+            <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
               🧛 뱀파이버 서바이벌
             </h1>
             <p className="text-xl text-gray-300">

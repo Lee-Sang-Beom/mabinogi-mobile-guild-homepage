@@ -10,6 +10,7 @@ import { useCreateGame } from "@/app/(auth)/game/hooks/use-create-game";
 import { useGetGamesByGameType } from "@/app/(auth)/game/hooks/use-get-games-by-game-type";
 import { GameCreateRequest } from "@/app/(auth)/game/api";
 import { NumberTicker } from "@/components/magicui/number-ticker";
+import { JSX } from "react/jsx-runtime";
 
 // 게임 상수
 const BOARD_SIZE = 20;
@@ -535,7 +536,7 @@ export default function SnakeGame({ user }: GameProps) {
 
   // 게임 보드 렌더링
   const renderGameBoard = () => {
-    const board = [];
+    const board: JSX.Element[] = [];
     for (let y = 0; y < BOARD_SIZE; y++) {
       for (let x = 0; x < BOARD_SIZE; x++) {
         let cellClass = "border border-slate-800/30 transition-all duration-75"; // duration 단축

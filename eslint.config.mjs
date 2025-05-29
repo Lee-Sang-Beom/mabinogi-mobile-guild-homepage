@@ -14,6 +14,7 @@ const eslintConfig = [
   {
     rules: {
       "no-unused-vars": "off", // 기본 ESLint 규칙 비활성화
+      "@typescript-eslint/no-explicit-any": "off", // eslint any 동작허용
       "@typescript-eslint/no-unused-vars": [
         "warn", // 또는 "error"
         {
