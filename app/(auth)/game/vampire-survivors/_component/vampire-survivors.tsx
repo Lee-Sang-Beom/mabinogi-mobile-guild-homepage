@@ -72,7 +72,7 @@ const CHARACTERS = [
 const WEAPONS = {
   fireball: {
     name: "파이어볼",
-    damage: 20,
+    damage: 25,
     cooldown: 1000,
     color: "#FF6B35",
     range: 150,
@@ -83,7 +83,7 @@ const WEAPONS = {
   },
   sword: {
     name: "검",
-    damage: 40,
+    damage: 30,
     cooldown: 800,
     color: "#C0C0C0",
     range: 80,
@@ -92,7 +92,7 @@ const WEAPONS = {
   },
   arrow: {
     name: "화살",
-    damage: 20,
+    damage: 40,
     cooldown: 600,
     color: "#8B4513",
     range: 200,
@@ -101,7 +101,7 @@ const WEAPONS = {
   },
   lightning: {
     name: "번개",
-    damage: 35,
+    damage: 30,
     cooldown: 1200,
     color: "#FFD700",
     range: 180,
