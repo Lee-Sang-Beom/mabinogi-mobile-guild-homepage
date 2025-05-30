@@ -6,223 +6,57 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  Bot,
-  Crown,
-  Flame,
-  Home,
-  Pause,
-  Play,
-  Shield,
-  Skull,
-  Snowflake,
-  Sparkles,
-  Sword,
-  Users,
-  Zap,
-} from "lucide-react";
+import { Home, Pause, Play, Shield, Sparkles, Sword, Zap } from "lucide-react";
 import { GameProps } from "@/app/(auth)/game/internal";
+import {
+  GAME_CONFIG,
+  CHARACTERS,
+  WEAPONS,
+  ENEMY_TYPES,
+} from "@/app/(auth)/game/vampire-survivors/data";
+import {
+  Player,
+  Enemy,
+  Bullet,
+  ExpOrb,
+  Effect,
+  WeaponType,
+} from "@/app/(auth)/game/vampire-survivors/internal";
 
-// 게임 설정
-const GAME_CONFIG = {
-  CANVAS_WIDTH: 800,
-  CANVAS_HEIGHT: 600,
-  PLAYER_SIZE: 20,
-  ENEMY_SIZE: 15,
-  BULLET_SIZE: 5,
-  PLAYER_SPEED: 3,
-  ENEMY_SPEED: 1,
-  BULLET_SPEED: 8,
-  GAME_DURATION: 30 * 60 * 1000, // 30분
-  EXP_ORB_SIZE: 8,
-};
+// 유틸리티 함수: 점과 선분 사이의 거리 계산 (레이저용)
+function getDistanceToLine(
+  lineStart: { x: number; y: number },
+  lineEnd: { x: number; y: number },
+  point: { x: number; y: number },
+): number {
+  const A = point.x - lineStart.x;
+  const B = point.y - lineStart.y;
+  const C = lineEnd.x - lineStart.x;
+  const D = lineEnd.y - lineStart.y;
 
-// 캐릭터 데이터
-const CHARACTERS = [
-  {
-    id: 1,
-    name: "마법사",
-    hp: 100,
-    speed: 3,
-    startWeapon: "fireball" as const,
-    color: "#4A90E2",
-    icon: Sparkles,
-  },
-  {
-    id: 2,
-    name: "전사",
-    hp: 150,
-    speed: 2,
-    startWeapon: "sword" as const,
-    color: "#E74C3C",
-    icon: Shield,
-  },
-  {
-    id: 3,
-    name: "궁수",
-    hp: 80,
-    speed: 4,
-    startWeapon: "arrow" as const,
-    color: "#27AE60",
-    icon: Users,
-  },
-];
+  const dot = A * C + B * D;
+  const lenSq = C * C + D * D;
 
-// 무기 데이터
-const WEAPONS = {
-  fireball: {
-    name: "파이어볼",
-    damage: 25,
-    cooldown: 1000,
-    color: "#FF6B35",
-    range: 150,
-    type: "projectile" as const,
-    explosionRadius: 60,
-    explosionDamage: 20,
-    icon: Flame,
-  },
-  sword: {
-    name: "검",
-    damage: 30,
-    cooldown: 800,
-    color: "#C0C0C0",
-    range: 80,
-    type: "melee" as const,
-    icon: Sword,
-  },
-  arrow: {
-    name: "화살",
-    damage: 40,
-    cooldown: 600,
-    color: "#8B4513",
-    range: 200,
-    type: "projectile" as const,
-    icon: Users,
-  },
-  lightning: {
-    name: "번개",
-    damage: 30,
-    cooldown: 1200,
-    color: "#FFD700",
-    range: 180,
-    type: "chain" as const,
-    chainRange: 80,
-    chainDamage: 15,
-    maxChains: 3,
-    icon: Zap,
-  },
-  ice: {
-    name: "얼음",
-    damage: 30,
-    cooldown: 1000,
-    color: "#87CEEB",
-    range: 120,
-    type: "projectile" as const,
-    slowEffect: 0.5,
-    slowDuration: 2000,
-    icon: Snowflake,
-  },
-};
+  if (lenSq === 0) return Math.sqrt(A * A + B * B);
 
-// 적 유형
-const ENEMY_TYPES = [
-  {
-    type: "zombie" as const,
-    hp: 100,
-    speed: 1,
-    color: "#8B4513",
-    exp: 10,
-    size: 15,
-    icon: Bot,
-  },
-  {
-    type: "skeleton" as const,
-    hp: 150,
-    speed: 1.5,
-    color: "#F5F5DC",
-    exp: 15,
-    size: 12,
-    icon: Skull,
-  },
-  {
-    type: "orc" as const,
-    hp: 150,
-    speed: 0.8,
-    color: "#228B22",
-    exp: 25,
-    size: 18,
-    icon: Users,
-  },
-  {
-    type: "demon" as const,
-    hp: 200,
-    speed: 1.2,
-    color: "#8B0000",
-    exp: 40,
-    size: 20,
-    icon: Crown,
-  },
-];
+  const param = dot / lenSq;
 
-// 타입 정의
-type WeaponType = keyof typeof WEAPONS;
+  let xx: number, yy: number;
 
-interface Player {
-  x: number;
-  y: number;
-  hp: number;
-  maxHp: number;
-  level: number;
-  exp: number;
-  expToNext: number;
-  weapons: WeaponType[];
-  passives: string[];
-}
+  if (param < 0) {
+    xx = lineStart.x;
+    yy = lineStart.y;
+  } else if (param > 1) {
+    xx = lineEnd.x;
+    yy = lineEnd.y;
+  } else {
+    xx = lineStart.x + param * C;
+    yy = lineStart.y + param * D;
+  }
 
-interface Enemy {
-  id: number;
-  x: number;
-  y: number;
-  type: string;
-  hp: number;
-  maxHp: number;
-  speed: number;
-  color: string;
-  exp: number;
-  size: number;
-  slowEffect?: number;
-  slowEndTime?: number;
-}
-
-interface Bullet {
-  id: number;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  damage: number;
-  color: string;
-  range: number;
-  traveled: number;
-  weaponType: WeaponType;
-  targetId?: number;
-}
-
-interface ExpOrb {
-  id: number;
-  x: number;
-  y: number;
-  exp: number;
-}
-
-interface Effect {
-  id: number;
-  type: string;
-  x: number;
-  y: number;
-  duration: number;
-  startTime: number;
-  [key: string]: any;
+  const dx = point.x - xx;
+  const dy = point.y - yy;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 export default function VampireSurvivalGame({ user: _user }: GameProps) {
@@ -478,39 +312,193 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
       const lastAttackTime = lastAttackRef.current[weaponId] ?? 0;
 
       if (now - lastAttackTime > weapon.cooldown) {
-        if (weapon.type === "melee") {
+        if (weapon.type === "melee" || weapon.type === "defensive") {
+          // 근접 무기 처리 (sword, axe, shield)
           const enemiesInRange = enemies.filter(
             (enemy) => getDistance(player, enemy) <= weapon.range,
           );
+
           if (enemiesInRange.length > 0) {
-            createEffect("slash", player.x, player.y, {
-              radius: weapon.range,
-              color: weapon.color,
-              duration: 300,
+            // 이펙트 생성
+            if (weaponId === "axe" && "cleave" in weapon) {
+              createEffect("cleave", player.x, player.y, {
+                radius: weapon.range,
+                angle: weapon.cleaveAngle,
+                color: weapon.color,
+                duration: 400,
+              });
+            } else if (weaponId === "shield") {
+              createEffect("knockback", player.x, player.y, {
+                radius: weapon.range,
+                color: weapon.color,
+                duration: 300,
+              });
+            } else {
+              createEffect("slash", player.x, player.y, {
+                radius: weapon.range,
+                color: weapon.color,
+                duration: 300,
+              });
+            }
+
+            // ✅ 추가: 실제 데미지 처리
+            enemiesInRange.forEach((enemy) => {
+              setEnemies((prev) =>
+                prev.reduce<Enemy[]>((acc, e) => {
+                  if (e.id === enemy.id) {
+                    const newHp = e.hp - weapon.damage;
+                    if (newHp > 0) {
+                      acc.push({ ...e, hp: newHp });
+                    } else {
+                      // 적 사망 시 경험치 드롭
+                      setExpOrbs((prevOrbs) => [
+                        ...prevOrbs,
+                        { id: Math.random(), x: e.x, y: e.y, exp: e.exp },
+                      ]);
+                      setScore((prev) => prev + e.exp);
+                    }
+                  } else {
+                    acc.push(e);
+                  }
+                  return acc;
+                }, []),
+              );
             });
 
-            setEnemies((prev) =>
-              prev.reduce<Enemy[]>((acc, e) => {
-                if (enemiesInRange.some((enemy) => enemy.id === e.id)) {
-                  const newHp = e.hp - weapon.damage;
-                  if (newHp > 0) {
-                    acc.push({ ...e, hp: newHp });
-                  } else {
-                    setExpOrbs((prevOrbs) => [
-                      ...prevOrbs,
-                      { id: Math.random(), x: e.x, y: e.y, exp: e.exp },
-                    ]);
-                    setScore((prev) => prev + e.exp);
-                  }
-                } else {
-                  acc.push(e);
-                }
-                return acc;
-              }, []),
+            lastAttackRef.current[weaponId] = now;
+          }
+        } else if (weapon.type === "multi") {
+          // 수리검 - 여러 발사체
+          let closestEnemy: Enemy | null = null;
+          let closestDistance = weapon.range;
+
+          enemies.forEach((enemy) => {
+            const distance = getDistance(player, enemy);
+            if (distance < closestDistance) {
+              closestEnemy = enemy;
+              closestDistance = distance;
+            }
+          });
+
+          if (
+            closestEnemy &&
+            "projectileCount" in weapon &&
+            "spread" in weapon
+          ) {
+            const baseAngle = Math.atan2(
+              (closestEnemy as Enemy).y - player.y,
+              (closestEnemy as Enemy).x - player.x,
             );
+
+            for (let i = 0; i < weapon.projectileCount; i++) {
+              const spreadAngle =
+                ((weapon.spread * Math.PI) / 180) *
+                (i - (weapon.projectileCount - 1) / 2);
+              const angle = baseAngle + spreadAngle;
+
+              setBullets((prev) => [
+                ...prev,
+                {
+                  id: Math.random(),
+                  x: player.x,
+                  y: player.y,
+                  vx: Math.cos(angle) * GAME_CONFIG.BULLET_SPEED,
+                  vy: Math.sin(angle) * GAME_CONFIG.BULLET_SPEED,
+                  damage: weapon.damage,
+                  color: weapon.color,
+                  range: weapon.range,
+                  traveled: 0,
+                  weaponType: weaponId,
+                  targetId: closestEnemy!.id,
+                },
+              ]);
+            }
+            lastAttackRef.current[weaponId] = now;
+          }
+        } else if (weapon.type === "explosive") {
+          // 폭탄 - 지연 폭발
+          let closestEnemy: Enemy | null = null;
+          let closestDistance = weapon.range;
+
+          enemies.forEach((enemy) => {
+            const distance = getDistance(player, enemy);
+            if (distance < closestDistance) {
+              closestEnemy = enemy;
+              closestDistance = distance;
+            }
+          });
+
+          if (closestEnemy && "delay" in weapon) {
+            setBullets((prev) => [
+              ...prev,
+              {
+                id: Math.random(),
+                x: closestEnemy!.x,
+                y: closestEnemy!.y,
+                vx: 0,
+                vy: 0,
+                damage: weapon.damage,
+                color: weapon.color,
+                range: weapon.range,
+                traveled: 0,
+                weaponType: weaponId,
+                targetId: closestEnemy!.id,
+                targetX: closestEnemy!.x,
+                targetY: closestEnemy!.y,
+                delay: weapon.delay,
+                startTime: now,
+              },
+            ]);
+            lastAttackRef.current[weaponId] = now;
+          }
+        } else if (weapon.type === "beam") {
+          // 레이저 - 차징 필요
+          let closestEnemy: Enemy | null = null;
+          let closestDistance = weapon.range;
+
+          enemies.forEach((enemy) => {
+            const distance = getDistance(player, enemy);
+            if (distance < closestDistance) {
+              closestEnemy = enemy;
+              closestDistance = distance;
+            }
+          });
+
+          if (closestEnemy && "chargeTime" in weapon) {
+            // 차징 이펙트 먼저 생성
+            createEffect("charging", player.x, player.y, {
+              targetX: (closestEnemy as Enemy).x,
+              targetY: (closestEnemy as Enemy).y,
+              color: weapon.color,
+              duration: weapon.chargeTime,
+            });
+
+            // 차징 후 레이저 발사
+            setTimeout(() => {
+              setBullets((prev) => [
+                ...prev,
+                {
+                  id: Math.random(),
+                  x: player.x,
+                  y: player.y,
+                  vx: 0,
+                  vy: 0,
+                  damage: weapon.damage,
+                  color: weapon.color,
+                  range: weapon.range,
+                  traveled: 0,
+                  weaponType: weaponId,
+                  targetId: closestEnemy!.id,
+                  targetX: closestEnemy!.x,
+                  targetY: closestEnemy!.y,
+                },
+              ]);
+            }, weapon.chargeTime);
+
             lastAttackRef.current[weaponId] = now;
           }
         } else {
+          // 기존 투사체 무기들 + 새로운 투사체 무기들
           let closestEnemy: Enemy | null = null;
           let closestDistance = weapon.range;
 
@@ -527,22 +515,27 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
               (closestEnemy as Enemy).y - player.y,
               (closestEnemy as Enemy).x - player.x,
             );
-            setBullets((prev) => [
-              ...prev,
-              {
-                id: Math.random(),
-                x: player.x,
-                y: player.y,
-                vx: Math.cos(angle) * GAME_CONFIG.BULLET_SPEED,
-                vy: Math.sin(angle) * GAME_CONFIG.BULLET_SPEED,
-                damage: weapon.damage,
-                color: weapon.color,
-                range: weapon.range,
-                traveled: 0,
-                weaponType: weaponId,
-                targetId: closestEnemy!.id,
-              },
-            ]);
+
+            const bulletData: Bullet = {
+              id: Math.random(),
+              x: player.x,
+              y: player.y,
+              vx: Math.cos(angle) * GAME_CONFIG.BULLET_SPEED,
+              vy: Math.sin(angle) * GAME_CONFIG.BULLET_SPEED,
+              damage: weapon.damage,
+              color: weapon.color,
+              range: weapon.range,
+              traveled: 0,
+              weaponType: weaponId,
+              targetId: (closestEnemy as Enemy)!.id,
+            };
+
+            // 석궁의 관통 속성 추가
+            if (weaponId === "crossbow" && "piercing" in weapon) {
+              bulletData.piercing = weapon.piercing;
+            }
+
+            setBullets((prev) => [...prev, bulletData]);
             lastAttackRef.current[weaponId] = now;
           }
         }
@@ -572,6 +565,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
   }, []);
 
   // 충돌 처리
+  // 충돌 처리
   const handleCollisions = useCallback(() => {
     // 총알과 적 충돌
     setBullets((prevBullets) => {
@@ -582,135 +576,280 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
         let hit = false;
         const weapon = WEAPONS[bullet.weaponType];
 
+        // 폭탄 타입 처리 (지연 폭발)
+        if (weapon.type === "explosive" && bullet.delay && bullet.startTime) {
+          const currentTime = Date.now();
+          if (currentTime - bullet.startTime >= bullet.delay) {
+            // 폭발 처리
+            createEffect("explosion", bullet.x, bullet.y, {
+              radius: weapon.explosionRadius,
+              color: weapon.color,
+              duration: 600,
+            });
+
+            // 폭발 범위 내 모든 적에게 데미지
+            enemies.forEach((enemy) => {
+              if (getDistance(bullet, enemy) <= weapon.explosionRadius) {
+                setEnemies((prev) =>
+                  prev.reduce<Enemy[]>((acc, e) => {
+                    if (e.id === enemy.id) {
+                      const newHp = e.hp - weapon.explosionDamage;
+                      if (newHp > 0) {
+                        acc.push({ ...e, hp: newHp });
+                      } else {
+                        setExpOrbs((prevOrbs) => [
+                          ...prevOrbs,
+                          { id: Math.random(), x: e.x, y: e.y, exp: e.exp },
+                        ]);
+                        setScore((prev) => prev + e.exp);
+                      }
+                    } else {
+                      acc.push(e);
+                    }
+                    return acc;
+                  }, []),
+                );
+              }
+            });
+            hit = true; // 폭탄은 폭발 후 제거
+          } else {
+            remainingBullets.push(bullet); // 아직 폭발 시간이 안됨
+          }
+          return;
+        }
+
+        // 레이저 타입 처리 (즉시 히트스캔)
+        if (weapon.type === "beam" && bullet.targetX && bullet.targetY) {
+          // 레이저 이펙트 생성
+          createEffect("beam", bullet.x, bullet.y, {
+            targetX: bullet.targetX,
+            targetY: bullet.targetY,
+            width: weapon.beamWidth,
+            color: weapon.color,
+            duration: 400,
+          });
+
+          // 레이저 경로상의 모든 적에게 데미지
+          enemies.forEach((enemy) => {
+            const distance = getDistanceToLine(
+              { x: bullet.x, y: bullet.y },
+              { x: bullet.targetX!, y: bullet.targetY! },
+              enemy,
+            );
+
+            if (distance <= weapon.beamWidth / 2 && !hitEnemies.has(enemy.id)) {
+              hitEnemies.add(enemy.id);
+
+              setEnemies((prev) =>
+                prev.reduce<Enemy[]>((acc, e) => {
+                  if (e.id === enemy.id) {
+                    const newHp = e.hp - bullet.damage;
+                    if (newHp > 0) {
+                      acc.push({ ...e, hp: newHp });
+                    } else {
+                      setExpOrbs((prevOrbs) => [
+                        ...prevOrbs,
+                        { id: Math.random(), x: e.x, y: e.y, exp: e.exp },
+                      ]);
+                      setScore((prev) => prev + e.exp);
+                    }
+                  } else {
+                    acc.push(e);
+                  }
+                  return acc;
+                }, []),
+              );
+            }
+          });
+          hit = true; // 레이저는 즉시 제거
+          return;
+        }
+
+        // 일반 투사체 처리
         enemies.forEach((enemy) => {
           if (
             !hitEnemies.has(enemy.id) &&
             checkCollision(bullet, enemy, GAME_CONFIG.BULLET_SIZE, enemy.size)
           ) {
             hitEnemies.add(enemy.id);
-            hit = true;
 
+            // 석궁의 관통 처리
             if (
-              bullet.weaponType === "fireball" &&
-              "explosionRadius" in weapon
+              bullet.weaponType === "crossbow" &&
+              bullet.piercing &&
+              bullet.piercing > 0
             ) {
-              createEffect("explosion", enemy.x, enemy.y, {
-                radius: weapon.explosionRadius,
-                color: weapon.color,
-                duration: 400,
-              });
-
-              enemies.forEach((e) => {
-                if (
-                  e.id !== enemy.id &&
-                  getDistance(enemy, e) <= weapon.explosionRadius
-                ) {
-                  setEnemies((prev) =>
-                    prev.reduce<Enemy[]>((acc, en) => {
-                      if (en.id === e.id) {
-                        const newHp = en.hp - weapon.explosionDamage;
-                        if (newHp > 0) {
-                          acc.push({ ...en, hp: newHp });
-                        } else {
-                          setExpOrbs((prevOrbs) => [
-                            ...prevOrbs,
-                            {
-                              id: Math.random(),
-                              x: en.x,
-                              y: en.y,
-                              exp: en.exp,
-                            },
-                          ]);
-                          setScore((prev) => prev + en.exp);
-                        }
-                      } else {
-                        acc.push(en);
-                      }
-                      return acc;
-                    }, []),
-                  );
-                }
-              });
-            } else if (
-              bullet.weaponType === "lightning" &&
-              "chainRange" in weapon
-            ) {
-              createEffect("lightning", enemy.x, enemy.y, {
-                duration: 600,
-                color: weapon.color,
-              });
-
-              const chainTargets: number[] = [];
-              let currentTarget = enemy;
-
-              for (let i = 0; i < weapon.maxChains; i++) {
-                const nearbyEnemies = enemies.filter(
-                  (e) =>
-                    e.id !== currentTarget.id &&
-                    !chainTargets.includes(e.id) &&
-                    getDistance(currentTarget, e) <= weapon.chainRange,
-                );
-
-                if (nearbyEnemies.length > 0) {
-                  const nextTarget = nearbyEnemies[0];
-                  chainTargets.push(nextTarget.id);
-                  createEffect("chain", currentTarget.x, currentTarget.y, {
-                    targetX: nextTarget.x,
-                    targetY: nextTarget.y,
-                    color: weapon.color,
-                    duration: 300,
-                  });
-
-                  setEnemies((prev) =>
-                    prev.reduce<Enemy[]>((acc, e) => {
-                      if (e.id === nextTarget.id) {
-                        const newHp = e.hp - weapon.chainDamage;
-                        if (newHp > 0) {
-                          acc.push({ ...e, hp: newHp });
-                        } else {
-                          setExpOrbs((prevOrbs) => [
-                            ...prevOrbs,
-                            { id: Math.random(), x: e.x, y: e.y, exp: e.exp },
-                          ]);
-                          setScore((prev) => prev + e.exp);
-                        }
-                      } else {
-                        acc.push(e);
-                      }
-                      return acc;
-                    }, []),
-                  );
-
-                  currentTarget = nextTarget;
-                } else {
-                  break;
-                }
+              bullet.piercing -= 1;
+              if (bullet.piercing <= 0) {
+                hit = true;
               }
-            } else if (bullet.weaponType === "ice") {
-              createEffect("freeze", enemy.x, enemy.y, {
-                color: weapon.color,
-                duration: 800,
-              });
+            } else {
+              hit = true;
             }
 
+            // 무기별 특수 효과 처리
+            switch (bullet.weaponType) {
+              case "fireball":
+                if (
+                  "explosionRadius" in weapon &&
+                  "explosionDamage" in weapon
+                ) {
+                  createEffect("explosion", enemy.x, enemy.y, {
+                    radius: weapon.explosionRadius,
+                    color: weapon.color,
+                    duration: 400,
+                  });
+
+                  // 폭발 범위 내 다른 적들에게도 데미지
+                  enemies.forEach((e) => {
+                    if (
+                      e.id !== enemy.id &&
+                      getDistance(enemy, e) <= weapon.explosionRadius
+                    ) {
+                      setEnemies((prev) =>
+                        prev.reduce<Enemy[]>((acc, en) => {
+                          if (en.id === e.id) {
+                            const newHp = en.hp - weapon.explosionDamage;
+                            if (newHp > 0) {
+                              acc.push({ ...en, hp: newHp });
+                            } else {
+                              setExpOrbs((prevOrbs) => [
+                                ...prevOrbs,
+                                {
+                                  id: Math.random(),
+                                  x: en.x,
+                                  y: en.y,
+                                  exp: en.exp,
+                                },
+                              ]);
+                              setScore((prev) => prev + en.exp);
+                            }
+                          } else {
+                            acc.push(en);
+                          }
+                          return acc;
+                        }, []),
+                      );
+                    }
+                  });
+                }
+                break;
+
+              case "lightning":
+                if (
+                  "chainRange" in weapon &&
+                  "chainDamage" in weapon &&
+                  "maxChains" in weapon
+                ) {
+                  createEffect("lightning", enemy.x, enemy.y, {
+                    duration: 600,
+                    color: weapon.color,
+                  });
+
+                  // 체인 라이트닝 처리
+                  const chainTargets: number[] = [];
+                  let currentTarget = enemy;
+
+                  for (let i = 0; i < weapon.maxChains; i++) {
+                    const nearbyEnemies = enemies.filter(
+                      (e) =>
+                        e.id !== currentTarget.id &&
+                        !chainTargets.includes(e.id) &&
+                        !hitEnemies.has(e.id) &&
+                        getDistance(currentTarget, e) <= weapon.chainRange,
+                    );
+
+                    if (nearbyEnemies.length > 0) {
+                      const nextTarget = nearbyEnemies[0];
+                      chainTargets.push(nextTarget.id);
+                      hitEnemies.add(nextTarget.id);
+
+                      createEffect("chain", currentTarget.x, currentTarget.y, {
+                        targetX: nextTarget.x,
+                        targetY: nextTarget.y,
+                        color: weapon.color,
+                        duration: 300,
+                      });
+
+                      setEnemies((prev) =>
+                        prev.reduce<Enemy[]>((acc, e) => {
+                          if (e.id === nextTarget.id) {
+                            const newHp = e.hp - weapon.chainDamage;
+                            if (newHp > 0) {
+                              acc.push({ ...e, hp: newHp });
+                            } else {
+                              setExpOrbs((prevOrbs) => [
+                                ...prevOrbs,
+                                {
+                                  id: Math.random(),
+                                  x: e.x,
+                                  y: e.y,
+                                  exp: e.exp,
+                                },
+                              ]);
+                              setScore((prev) => prev + e.exp);
+                            }
+                          } else {
+                            acc.push(e);
+                          }
+                          return acc;
+                        }, []),
+                      );
+
+                      currentTarget = nextTarget;
+                    } else {
+                      break;
+                    }
+                  }
+                }
+                break;
+
+              case "ice":
+                createEffect("freeze", enemy.x, enemy.y, {
+                  color: weapon.color,
+                  duration: 800,
+                });
+                break;
+
+              case "shuriken":
+                createEffect("hit", enemy.x, enemy.y, {
+                  color: weapon.color,
+                  duration: 200,
+                });
+                break;
+
+              case "crossbow":
+                createEffect("pierce", enemy.x, enemy.y, {
+                  color: weapon.color,
+                  duration: 300,
+                });
+                break;
+
+              default:
+                createEffect("hit", enemy.x, enemy.y, {
+                  color: weapon.color,
+                  duration: 200,
+                });
+                break;
+            }
+
+            // 기본 데미지 처리
             setEnemies((prev) =>
               prev.reduce<Enemy[]>((acc, e) => {
                 if (e.id === enemy.id) {
                   const newHp = e.hp - bullet.damage;
                   if (newHp > 0) {
-                    // 타입 가드 추가
-                    if ("slowEffect" in weapon && "slowDuration" in weapon) {
+                    // 얼음 무기의 슬로우 효과 적용
+                    if (
+                      bullet.weaponType === "ice" &&
+                      "slowEffect" in weapon &&
+                      "slowDuration" in weapon
+                    ) {
                       acc.push({
                         ...e,
                         hp: newHp,
-                        slowEffect:
-                          bullet.weaponType === "ice"
-                            ? weapon.slowEffect
-                            : e.slowEffect,
-                        slowEndTime:
-                          bullet.weaponType === "ice"
-                            ? Date.now() + weapon.slowDuration
-                            : e.slowEndTime,
+                        slowEffect: weapon.slowEffect,
+                        slowEndTime: Date.now() + weapon.slowDuration,
                       });
                     } else {
                       acc.push({
@@ -721,6 +860,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
                       });
                     }
                   } else {
+                    // 적 사망 시 경험치 드롭
                     setExpOrbs((prevOrbs) => [
                       ...prevOrbs,
                       { id: Math.random(), x: e.x, y: e.y, exp: e.exp },
@@ -735,18 +875,31 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
             );
           }
         });
+
+        // 총알이 살아남을지 결정
         if (!hit) {
           remainingBullets.push(bullet);
         }
       });
+
       return remainingBullets;
     });
 
-    // 플레이어와 적 충돌
+    // 플레이어와 적 충돌 (데미지)
     enemies.forEach((enemy) => {
       if (checkCollision(player, enemy, GAME_CONFIG.PLAYER_SIZE, enemy.size)) {
         setPlayer((prev) => {
-          const newHp = prev.hp - 10;
+          let damage = 10;
+
+          // 방패 무기가 있으면 데미지 감소
+          if (prev.weapons.includes("shield")) {
+            const shieldWeapon = WEAPONS["shield"];
+            if ("block" in shieldWeapon) {
+              damage = Math.floor(damage * (1 - shieldWeapon.block));
+            }
+          }
+
+          const newHp = prev.hp - damage;
           if (newHp <= 0) {
             setGameState("gameover");
           }
@@ -755,7 +908,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
       }
     });
 
-    // 경험치 오브 충돌
+    // 경험치 오브 충돌 (수집)
     setExpOrbs((prevOrbs) => {
       const remainingOrbs: ExpOrb[] = [];
       let totalExp = 0;
@@ -775,6 +928,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
         }
       });
 
+      // 경험치 획득 시 레벨업 처리
       if (totalExp > 0) {
         setPlayer((prev) => {
           const newExp = prev.exp + totalExp;
@@ -782,11 +936,14 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
           const remainingExp = newExp % prev.expToNext;
 
           if (newLevel > prev.level) {
+            // 레벨업 시 업그레이드 옵션 생성
             const upgradeOptions: any[] = [];
             const weaponKeys = Object.keys(WEAPONS);
             const availableWeapons = weaponKeys.filter(
               (w) => !prev.weapons.includes(w as WeaponType),
             );
+
+            // 새로운 무기 옵션
             if (availableWeapons.length > 0) {
               const randomWeapon =
                 availableWeapons[
@@ -800,6 +957,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
               });
             }
 
+            // 체력 회복 옵션
             upgradeOptions.push({
               type: "heal",
               id: "heal",
@@ -807,6 +965,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
               icon: Shield,
             });
 
+            // 스탯 증가 옵션
             upgradeOptions.push({
               type: "stat",
               id: "speed",
@@ -830,7 +989,6 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
       return remainingOrbs;
     });
   }, [player, enemies, checkCollision, createEffect, getDistance]);
-
   // 게임 루프
   const gameLoop = useCallback(() => {
     if (gameState !== "playing") return;
@@ -990,6 +1148,54 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
           case "chain":
             ctx.strokeStyle = effect.color;
             ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(effect.x, effect.y);
+            ctx.lineTo(effect.targetX!, effect.targetY!);
+            ctx.stroke();
+            break;
+
+          case "cleave":
+            ctx.strokeStyle = effect.color;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(
+              effect.x,
+              effect.y,
+              effect.radius,
+              (-effect.angle * Math.PI) / 360,
+              (effect.angle * Math.PI) / 360,
+            );
+            ctx.stroke();
+            break;
+
+          case "knockback":
+            ctx.strokeStyle = effect.color;
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(
+              effect.x,
+              effect.y,
+              effect.radius * progress,
+              0,
+              Math.PI * 2,
+            );
+            ctx.stroke();
+            break;
+
+          case "charging":
+            ctx.strokeStyle = effect.color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(effect.x, effect.y);
+            ctx.lineTo(effect.targetX!, effect.targetY!);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            break;
+
+          case "laser":
+            ctx.strokeStyle = effect.color;
+            ctx.lineWidth = effect.width;
             ctx.beginPath();
             ctx.moveTo(effect.x, effect.y);
             ctx.lineTo(effect.targetX!, effect.targetY!);

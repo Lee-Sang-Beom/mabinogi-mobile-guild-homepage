@@ -11,42 +11,18 @@ import { useGetGamesByGameType } from "@/app/(auth)/game/hooks/use-get-games-by-
 import { GameCreateRequest } from "@/app/(auth)/game/api";
 import { NumberTicker } from "@/components/magicui/number-ticker";
 import { JSX } from "react/jsx-runtime";
-
-// 게임 상수
-const BOARD_SIZE = 20;
-const INITIAL_SPEED = 150;
-const SPEED_INCREASE = 5;
-
-// 방향 상수
-const DIRECTIONS = {
-  UP: { x: 0, y: -1 },
-  DOWN: { x: 0, y: 1 },
-  LEFT: { x: -1, y: 0 },
-  RIGHT: { x: 1, y: 0 },
-} as const;
-
-// 게임 상태
-const GAME_STATES = {
-  LOADING: "loading",
-  IDLE: "idle",
-  COUNTDOWN: "countdown",
-  RUNNING: "running",
-  GAME_OVER: "gameOver",
-  SAVING_SCORE: "savingScore",
-} as const;
-
-// 타입 정의
-interface Position {
-  x: number;
-  y: number;
-}
-
-interface Direction {
-  x: number;
-  y: number;
-}
-
-type GameState = (typeof GAME_STATES)[keyof typeof GAME_STATES];
+import {
+  BOARD_SIZE,
+  INITIAL_SPEED,
+  SPEED_INCREASE,
+  DIRECTIONS,
+  GAME_STATES,
+} from "@/app/(auth)/game/snake/data";
+import {
+  Position,
+  Direction,
+  GameState,
+} from "@/app/(auth)/game/snake/internal";
 
 // 유틸리티 함수들
 const generateRandomFood = (snake: Position[]): Position => {

@@ -1,0 +1,253 @@
+import {
+  Bot,
+  Crown,
+  Flame,
+  Shield,
+  Skull,
+  Snowflake,
+  Sparkles,
+  Sword,
+  Users,
+  Zap,
+  Target,
+  Crosshair,
+  ShieldCheck,
+  Wind,
+  Bomb,
+  Axe,
+  Star,
+  Tornado,
+} from "lucide-react";
+
+// 게임 설정
+export const GAME_CONFIG = {
+  CANVAS_WIDTH: 800,
+  CANVAS_HEIGHT: 600,
+  PLAYER_SIZE: 20,
+  ENEMY_SIZE: 15,
+  BULLET_SIZE: 5,
+  PLAYER_SPEED: 3,
+  ENEMY_SPEED: 1,
+  BULLET_SPEED: 8,
+  GAME_DURATION: 30 * 60 * 1000, // 30분
+  EXP_ORB_SIZE: 8,
+};
+
+// 캐릭터 데이터
+export const CHARACTERS = [
+  {
+    id: 1,
+    name: "마법사",
+    hp: 100,
+    speed: 3,
+    startWeapon: "fireball" as const,
+    color: "#4A90E2",
+    icon: Sparkles,
+  },
+  {
+    id: 2,
+    name: "전사",
+    hp: 150,
+    speed: 2,
+    startWeapon: "sword" as const,
+    color: "#E74C3C",
+    icon: Shield,
+  },
+  {
+    id: 3,
+    name: "궁수",
+    hp: 80,
+    speed: 4,
+    startWeapon: "arrow" as const,
+    color: "#27AE60",
+    icon: Users,
+  },
+];
+
+// 무기 데이터
+export const WEAPONS = {
+  // 기존 무기들
+  fireball: {
+    name: "파이어볼",
+    damage: 25,
+    cooldown: 1000,
+    color: "#FF6B35",
+    range: 150,
+    type: "projectile" as const,
+    explosionRadius: 60,
+    explosionDamage: 20,
+    icon: Flame,
+  },
+  sword: {
+    name: "검",
+    damage: 30,
+    cooldown: 800,
+    color: "#C0C0C0",
+    range: 80,
+    type: "melee" as const,
+    icon: Sword,
+  },
+  arrow: {
+    name: "화살",
+    damage: 40,
+    cooldown: 600,
+    color: "#8B4513",
+    range: 200,
+    type: "projectile" as const,
+    icon: Users,
+  },
+  lightning: {
+    name: "번개",
+    damage: 30,
+    cooldown: 1200,
+    color: "#FFD700",
+    range: 180,
+    type: "chain" as const,
+    chainRange: 80,
+    chainDamage: 15,
+    maxChains: 3,
+    icon: Zap,
+  },
+  ice: {
+    name: "얼음",
+    damage: 30,
+    cooldown: 1000,
+    color: "#87CEEB",
+    range: 120,
+    type: "projectile" as const,
+    slowEffect: 0.5,
+    slowDuration: 2000,
+    icon: Snowflake,
+  },
+
+  // 새로 추가된 무기들
+  crossbow: {
+    name: "석궁",
+    damage: 50,
+    cooldown: 1500,
+    color: "#654321",
+    range: 250,
+    type: "projectile" as const,
+    piercing: 3, // 관통 횟수
+    icon: Crosshair,
+  },
+  shield: {
+    name: "방패",
+    damage: 20,
+    cooldown: 500,
+    color: "#B87333",
+    range: 60,
+    type: "defensive" as const,
+    knockback: 40,
+    block: 0.3, // 30% 데미지 감소
+    icon: ShieldCheck,
+  },
+  whirlwind: {
+    name: "회오리바람",
+    damage: 15,
+    cooldown: 800,
+    color: "#87CEEB",
+    range: 100,
+    type: "area" as const,
+    duration: 3000,
+    pullForce: 2, // 적을 끌어당기는 힘
+    icon: Wind,
+  },
+  bomb: {
+    name: "폭탄",
+    damage: 80,
+    cooldown: 3000,
+    color: "#FF4500",
+    range: 120,
+    type: "explosive" as const,
+    explosionRadius: 100,
+    explosionDamage: 60,
+    delay: 2000, // 폭발 지연시간
+    icon: Bomb,
+  },
+  axe: {
+    name: "도끼",
+    damage: 45,
+    cooldown: 1000,
+    color: "#8B4513",
+    range: 90,
+    type: "melee" as const,
+    cleave: true, // 범위 공격
+    cleaveAngle: 60, // 도 단위
+    icon: Axe,
+  },
+  shuriken: {
+    name: "수리검",
+    damage: 25,
+    cooldown: 400,
+    color: "#708090",
+    range: 180,
+    type: "multi" as const,
+    projectileCount: 3,
+    spread: 30, // 각도 분산
+    icon: Star,
+  },
+  tornado: {
+    name: "토네이도",
+    damage: 20,
+    cooldown: 2000,
+    color: "#696969",
+    range: 150,
+    type: "moving" as const,
+    duration: 5000,
+    moveSpeed: 2,
+    areaRadius: 80,
+    icon: Tornado,
+  },
+  laser: {
+    name: "레이저",
+    damage: 35,
+    cooldown: 1800,
+    color: "#FF1493",
+    range: 300,
+    type: "beam" as const,
+    beamWidth: 20,
+    chargeTime: 1000,
+    icon: Target,
+  },
+};
+
+// 적 유형
+export const ENEMY_TYPES = [
+  {
+    type: "zombie" as const,
+    hp: 100,
+    speed: 1,
+    color: "#8B4513",
+    exp: 10,
+    size: 15,
+    icon: Bot,
+  },
+  {
+    type: "skeleton" as const,
+    hp: 150,
+    speed: 1.5,
+    color: "#F5F5DC",
+    exp: 15,
+    size: 12,
+    icon: Skull,
+  },
+  {
+    type: "orc" as const,
+    hp: 150,
+    speed: 0.8,
+    color: "#228B22",
+    exp: 25,
+    size: 18,
+    icon: Users,
+  },
+  {
+    type: "demon" as const,
+    hp: 200,
+    speed: 1.2,
+    color: "#8B0000",
+    exp: 40,
+    size: 20,
+    icon: Crown,
+  },
+];
