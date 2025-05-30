@@ -17,6 +17,7 @@ import {
   Axe,
   Star,
   Tornado,
+  Heart,
 } from "lucide-react";
 
 // 게임 설정
@@ -69,13 +70,13 @@ export const WEAPONS = {
   // 기존 무기들
   fireball: {
     name: "파이어볼",
-    damage: 25,
+    damage: 30,
     cooldown: 1400,
     color: "#FF6B35",
     range: 150,
     type: "projectile" as const,
     explosionRadius: 60,
-    explosionDamage: 20,
+    explosionDamage: 10,
     icon: Flame,
   },
   sword: {
@@ -89,7 +90,7 @@ export const WEAPONS = {
   },
   arrow: {
     name: "화살",
-    damage: 20,
+    damage: 30,
     cooldown: 850,
     color: "#e81189",
     range: 200,
@@ -151,13 +152,13 @@ export const WEAPONS = {
     color: "#00b3ff",
     range: 100,
     type: "area" as const,
-    duration: 3000,
+    duration: 1500,
     pullForce: 2, // 적을 끌어당기는 힘
     icon: Wind,
   },
   bomb: {
     name: "폭탄",
-    damage: 80,
+    damage: 100,
     cooldown: 3000,
     color: "#FF4500",
     range: 120,
@@ -194,9 +195,9 @@ export const WEAPONS = {
     damage: 20,
     cooldown: 5000,
     color: "#1b5c6a",
-    range: 150,
+    range: 100,
     type: "moving" as const,
-    duration: 5000,
+    duration: 3000,
     moveSpeed: 2,
     areaRadius: 80,
     icon: Tornado,
@@ -218,7 +219,7 @@ export const WEAPONS = {
 export const ENEMY_TYPES = [
   {
     type: "zombie" as const,
-    hp: 90,
+    hp: 100,
     speed: 1,
     color: "#8B4513",
     exp: 10,
@@ -227,8 +228,8 @@ export const ENEMY_TYPES = [
   },
   {
     type: "skeleton" as const,
-    hp: 130,
-    speed: 1.3,
+    hp: 150,
+    speed: 1.1,
     color: "#F5F5DC",
     exp: 15,
     size: 12,
@@ -245,11 +246,38 @@ export const ENEMY_TYPES = [
   },
   {
     type: "demon" as const,
-    hp: 300,
-    speed: 1.2,
+    hp: 250,
+    speed: 1,
     color: "#8B0000",
     exp: 40,
     size: 20,
     icon: Crown,
+  },
+  {
+    type: "golem" as const,
+    hp: 500,
+    speed: 0.6,
+    color: "#A9A9A9",
+    exp: 60,
+    size: 25,
+    icon: Shield, // 체력이 높고 느림
+  },
+  {
+    type: "vampire" as const,
+    hp: 150,
+    speed: 1.4,
+    color: "#800080",
+    exp: 50,
+    size: 17,
+    icon: Heart, // 빠르고 회피형 (추후 특성 구현 가능)
+  },
+  {
+    type: "mage" as const,
+    hp: 150,
+    speed: 1.1,
+    color: "#1E90FF",
+    exp: 35,
+    size: 16,
+    icon: Sparkles,
   },
 ];
