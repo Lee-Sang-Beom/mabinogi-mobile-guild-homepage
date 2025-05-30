@@ -95,7 +95,7 @@ export const WEAPONS = {
     range: 200,
     type: "multi" as const,
     projectileCount: 3,
-    spread: 30,
+    spread: 15,
     icon: Users,
   },
   lightning: {
@@ -218,7 +218,7 @@ export const WEAPONS = {
 export const ENEMY_TYPES = [
   {
     type: "zombie" as const,
-    hp: 100,
+    hp: 90,
     speed: 1,
     color: "#8B4513",
     exp: 10,
@@ -227,7 +227,7 @@ export const ENEMY_TYPES = [
   },
   {
     type: "skeleton" as const,
-    hp: 160,
+    hp: 130,
     speed: 1.3,
     color: "#F5F5DC",
     exp: 15,
@@ -236,7 +236,7 @@ export const ENEMY_TYPES = [
   },
   {
     type: "orc" as const,
-    hp: 220,
+    hp: 200,
     speed: 0.8,
     color: "#228B22",
     exp: 25,
