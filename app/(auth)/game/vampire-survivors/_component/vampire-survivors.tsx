@@ -22,6 +22,7 @@ import {
   Effect,
   WeaponType,
 } from "@/app/(auth)/game/vampire-survivors/internal";
+import { getRandomAudio } from "@/app/(auth)/game/util";
 
 // 유틸리티 함수: 점과 선분 사이의 거리 계산 (레이저용)
 function getDistanceToLine(
@@ -60,6 +61,8 @@ function getDistanceToLine(
 }
 
 export default function VampireSurvivalGame({ user: _user }: GameProps) {
+  const [selectedAudio, setSelectedAudio] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number | null>(null);
   const keysRef = useRef<Record<string, boolean>>({});
@@ -188,10 +191,27 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
 
     const isGameActive = ["playing", "paused", "levelup"].includes(gameState);
     if (isGameActive) {
+      if (audioRef.current) {
+        const audio = audioRef.current;
+
+        if (isGameActive) {
+          if (audio.paused) {
+            // 정지된 경우에만 재생
+            audio.play().catch((err) => {
+              console.warn("음악 재생 실패:", err);
+            });
+          }
+        }
+      }
+
       document.body.style.overflow = "hidden";
       window.addEventListener("wheel", preventScroll, { passive: false });
       window.addEventListener("touchmove", preventScroll, { passive: false });
     } else {
+      if (gameState === "gameover" && audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
       document.body.style.overflow = "";
       window.removeEventListener("wheel", preventScroll);
       window.removeEventListener("touchmove", preventScroll);
@@ -1188,7 +1208,6 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
     };
   }, [gameLoop, gameState]);
 
-  // 렌더링
   // 렌더링 부분 (useEffect 내부의 Canvas 렌더링 코드)
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1535,6 +1554,9 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
 
   // 게임 시작
   const startGame = useCallback((character: (typeof CHARACTERS)[0]) => {
+    const randomAudio = getRandomAudio();
+    setSelectedAudio(randomAudio);
+
     setSelectedCharacter(character);
     setPlayer({
       x: GAME_CONFIG.CANVAS_WIDTH / 2,
@@ -1748,6 +1770,10 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
   // 게임 플레이 화면
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+      {selectedAudio && (
+        <audio ref={audioRef} src={selectedAudio} preload="auto" loop />
+      )}
+
       {/* 게임 UI */}
       <div className="flex justify-between w-full max-w-4xl mb-4">
         <div className="flex gap-4 text-white">

@@ -23,6 +23,7 @@ import {
   Direction,
   GameState,
 } from "@/app/(auth)/game/snake/internal";
+import { getRandomAudio } from "@/app/(auth)/game/util";
 
 // 유틸리티 함수들
 const generateRandomFood = (snake: Position[]): Position => {
@@ -81,6 +82,7 @@ export default function SnakeGame({ user }: GameProps) {
   const [showRanking, setShowRanking] = useState(false);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [cellSize, setCellSize] = useState(20);
+  const [selectedAudio, setSelectedAudio] = useState<string | null>(null);
 
   // refs - 개선된 방향 관리 시스템
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
@@ -475,6 +477,9 @@ export default function SnakeGame({ user }: GameProps) {
 
   // 게임 시작
   const startGame = useCallback(() => {
+    const randomAudio = getRandomAudio();
+    setSelectedAudio(randomAudio);
+
     initializeGame();
     setGameState(GAME_STATES.COUNTDOWN);
     setCountdown(3);
@@ -740,7 +745,9 @@ export default function SnakeGame({ user }: GameProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white p-2 sm:p-4 flex items-center justify-center">
-      <audio ref={audioRef} src="/audios/fergus-song.mp3" preload="auto" loop />
+      {selectedAudio && (
+        <audio ref={audioRef} src={selectedAudio} preload="auto" loop />
+      )}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
 
       {/* 카운트다운 화면 */}
