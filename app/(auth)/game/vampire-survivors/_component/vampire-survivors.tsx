@@ -1215,13 +1215,13 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
       if (selectedCharacter) {
         switch (selectedCharacter.name) {
           case "전사":
-            playerSymbol = "⚔️";
+            playerSymbol = "👨‍🦲"; // 대머리 남자 (묵직한 전사)
             break;
           case "마법사":
             playerSymbol = "🧙‍♂️";
             break;
           case "궁수":
-            playerSymbol = "🏹";
+            playerSymbol = "👨"; // 깔끔한 남자 (날렵한 궁수)
             break;
           default:
             playerSymbol = "🧙‍♂️";
