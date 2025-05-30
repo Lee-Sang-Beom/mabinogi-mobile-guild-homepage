@@ -89,11 +89,13 @@ export const WEAPONS = {
   },
   arrow: {
     name: "화살",
-    damage: 25,
+    damage: 20,
     cooldown: 850,
     color: "#e81189",
     range: 200,
-    type: "projectile" as const,
+    type: "multi" as const,
+    projectileCount: 3,
+    spread: 30,
     icon: Users,
   },
   lightning: {
