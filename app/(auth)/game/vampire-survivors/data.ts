@@ -69,7 +69,7 @@ export const WEAPONS = {
   // 기존 무기들
   fireball: {
     name: "파이어볼",
-    damage: 16,
+    damage: 25,
     cooldown: 1400,
     color: "#FF6B35",
     range: 150,
@@ -89,7 +89,7 @@ export const WEAPONS = {
   },
   arrow: {
     name: "화살",
-    damage: 20,
+    damage: 25,
     cooldown: 850,
     color: "#e81189",
     range: 200,
