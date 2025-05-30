@@ -70,7 +70,7 @@ export const WEAPONS = {
   // 기존 무기들
   fireball: {
     name: "파이어볼",
-    damage: 30,
+    damage: 25,
     cooldown: 1400,
     color: "#FF6B35",
     range: 150,
@@ -90,7 +90,7 @@ export const WEAPONS = {
   },
   arrow: {
     name: "화살",
-    damage: 30,
+    damage: 25,
     cooldown: 850,
     color: "#e81189",
     range: 200,
@@ -219,8 +219,8 @@ export const WEAPONS = {
 export const ENEMY_TYPES = [
   {
     type: "zombie" as const,
-    hp: 100,
-    speed: 1,
+    hp: 80,
+    speed: 0.8,
     color: "#8B4513",
     exp: 10,
     size: 15,
@@ -228,8 +228,8 @@ export const ENEMY_TYPES = [
   },
   {
     type: "skeleton" as const,
-    hp: 150,
-    speed: 1.1,
+    hp: 130,
+    speed: 1,
     color: "#F5F5DC",
     exp: 15,
     size: 12,
@@ -237,8 +237,8 @@ export const ENEMY_TYPES = [
   },
   {
     type: "orc" as const,
-    hp: 200,
-    speed: 0.8,
+    hp: 180,
+    speed: 0.7,
     color: "#228B22",
     exp: 25,
     size: 18,
@@ -247,7 +247,7 @@ export const ENEMY_TYPES = [
   {
     type: "demon" as const,
     hp: 250,
-    speed: 1,
+    speed: 0.9,
     color: "#8B0000",
     exp: 40,
     size: 20,
@@ -265,7 +265,7 @@ export const ENEMY_TYPES = [
   {
     type: "vampire" as const,
     hp: 150,
-    speed: 1.4,
+    speed: 1,
     color: "#800080",
     exp: 50,
     size: 17,
@@ -274,7 +274,7 @@ export const ENEMY_TYPES = [
   {
     type: "mage" as const,
     hp: 150,
-    speed: 1.1,
+    speed: 0.9,
     color: "#1E90FF",
     exp: 35,
     size: 16,

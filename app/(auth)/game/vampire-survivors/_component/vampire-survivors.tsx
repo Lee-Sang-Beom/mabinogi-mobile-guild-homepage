@@ -136,6 +136,26 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     [],
   );
 
+  function getWeightedEnemyType(maxIndex: number) {
+    const weights = Array.from(
+      { length: maxIndex + 1 },
+      (_, i) => Math.pow(1 / (i + 1), 1.5), // 뒤로 갈수록 가중치가 낮아짐
+    );
+
+    const totalWeight = weights.reduce((acc, w) => acc + w, 0);
+    const rand = Math.random() * totalWeight;
+
+    let cumulative = 0;
+    for (let i = 0; i <= maxIndex; i++) {
+      cumulative += weights[i];
+      if (rand < cumulative) {
+        return ENEMY_TYPES[i];
+      }
+    }
+
+    return ENEMY_TYPES[0]; // fallback
+  }
+
   const createEffect = useCallback(
     (
       type: string,
@@ -274,16 +294,64 @@ export default function VampireSurvivalGame({ user }: GameProps) {
   }, [playerSpeed]);
 
   // 적 생성
+  // const spawnEnemies = useCallback(() => {
+  //   const now = Date.now();
+  //   if (now - enemySpawnRef.current > spawnRate) {
+  //     const enemyType =
+  //       ENEMY_TYPES[
+  //         Math.floor(
+  //           Math.random() *
+  //             Math.min(ENEMY_TYPES.length, Math.floor(wave / 2) + 1),
+  //         )
+  //       ];
+  //     const side = Math.floor(Math.random() * 4);
+  //     let x = 0;
+  //     let y = 0;
+  //
+  //     switch (side) {
+  //       case 0:
+  //         x = Math.random() * GAME_CONFIG.CANVAS_WIDTH;
+  //         y = -enemyType.size;
+  //         break;
+  //       case 1:
+  //         x = GAME_CONFIG.CANVAS_WIDTH + enemyType.size;
+  //         y = Math.random() * GAME_CONFIG.CANVAS_HEIGHT;
+  //         break;
+  //       case 2:
+  //         x = Math.random() * GAME_CONFIG.CANVAS_WIDTH;
+  //         y = GAME_CONFIG.CANVAS_HEIGHT + enemyType.size;
+  //         break;
+  //       default:
+  //         x = -enemyType.size;
+  //         y = Math.random() * GAME_CONFIG.CANVAS_HEIGHT;
+  //         break;
+  //     }
+  //
+  //     setEnemies((prev) => [
+  //       ...prev,
+  //       {
+  //         id: Math.random(),
+  //         x,
+  //         y,
+  //         ...enemyType,
+  //         maxHp: enemyType.hp,
+  //         slowEffect: 1,
+  //         slowEndTime: 0,
+  //       },
+  //     ]);
+  //     enemySpawnRef.current = now;
+  //   }
+  // }, [spawnRate, wave]);
+
   const spawnEnemies = useCallback(() => {
     const now = Date.now();
     if (now - enemySpawnRef.current > spawnRate) {
-      const enemyType =
-        ENEMY_TYPES[
-          Math.floor(
-            Math.random() *
-              Math.min(ENEMY_TYPES.length, Math.floor(wave / 2) + 1),
-          )
-        ];
+      const maxEnemyIndex = Math.min(
+        ENEMY_TYPES.length - 1,
+        Math.floor(wave / 2),
+      );
+      const enemyType = getWeightedEnemyType(maxEnemyIndex);
+
       const side = Math.floor(Math.random() * 4);
       let x = 0;
       let y = 0;
