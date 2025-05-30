@@ -70,13 +70,13 @@ export const WEAPONS = {
   // 기존 무기들
   fireball: {
     name: "파이어볼",
-    damage: 25,
+    damage: 20,
     cooldown: 1400,
     color: "#FF6B35",
     range: 150,
     type: "projectile" as const,
     explosionRadius: 60,
-    explosionDamage: 10,
+    explosionDamage: 20,
     icon: Flame,
   },
   sword: {
@@ -90,8 +90,8 @@ export const WEAPONS = {
   },
   arrow: {
     name: "화살",
-    damage: 25,
-    cooldown: 850,
+    damage: 30,
+    cooldown: 700,
     color: "#e81189",
     range: 200,
     type: "multi" as const,

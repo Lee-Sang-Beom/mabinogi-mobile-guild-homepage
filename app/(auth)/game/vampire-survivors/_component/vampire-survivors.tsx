@@ -9,12 +9,6 @@ import React, {
 import { Home, Pause, Play, Shield, Sparkles, Sword, Zap } from "lucide-react";
 import { GameProps } from "@/app/(auth)/game/internal";
 import {
-  CHARACTERS,
-  ENEMY_TYPES,
-  GAME_CONFIG,
-  WEAPONS,
-} from "@/app/(auth)/game/vampire-survivors/data";
-import {
   Bullet,
   Effect,
   Enemy,
@@ -27,6 +21,12 @@ import { useCreateGame } from "@/app/(auth)/game/hooks/use-create-game";
 import { useGetGamesByGameType } from "@/app/(auth)/game/hooks/use-get-games-by-game-type";
 import { GameCreateRequest } from "../../api";
 import moment from "moment";
+import {
+  CHARACTERS,
+  ENEMY_TYPES,
+  GAME_CONFIG,
+  WEAPONS,
+} from "@/app/(auth)/game/vampire-survivors/data";
 
 // 유틸리티 함수: 점과 선분 사이의 거리 계산 (레이저용)
 function getDistanceToLine(
@@ -1174,7 +1174,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
           return {
             ...prev,
             hp: Math.max(0, newHp),
-            invulnerableUntil: currentTime + 200, // 200ms = 0.2초
+            invulnerableUntil: currentTime + 100, // 100ms = 0.1초
           };
         });
       }
