@@ -13,6 +13,7 @@ export interface Player {
   expToNext: number;
   weapons: WeaponType[];
   passives: string[];
+  invulnerableUntil: number;
 }
 
 export interface Enemy {

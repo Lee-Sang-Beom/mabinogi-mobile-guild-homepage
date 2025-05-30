@@ -186,7 +186,7 @@ export const WEAPONS = {
     color: "#67ffa8",
     range: 180,
     type: "multi" as const,
-    projectileCount: 3,
+    projectileCount: 4,
     spread: 30, // 각도 분산
     icon: Star,
   },

@@ -32,7 +32,7 @@ import moment from "moment";
 function getDistanceToLine(
   lineStart: { x: number; y: number },
   lineEnd: { x: number; y: number },
-  point: { x: number; y: number },
+  point: { x: number; y: number }
 ): number {
   const A = point.x - lineStart.x;
   const B = point.y - lineStart.y;
@@ -98,6 +98,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     expToNext: 100,
     weapons: [],
     passives: [],
+    invulnerableUntil: 0,
   });
 
   // 게임 오브젝트
@@ -117,14 +118,14 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       obj1: { x: number; y: number },
       obj2: { x: number; y: number },
       size1: number = GAME_CONFIG.PLAYER_SIZE,
-      size2: number = GAME_CONFIG.ENEMY_SIZE,
+      size2: number = GAME_CONFIG.ENEMY_SIZE
     ) => {
       const dx = obj1.x - obj2.x;
       const dy = obj1.y - obj2.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
       return distance < (size1 + size2) / 2;
     },
-    [],
+    []
   );
 
   const getDistance = useCallback(
@@ -133,13 +134,13 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       const dy = obj1.y - obj2.y;
       return Math.sqrt(dx * dx + dy * dy);
     },
-    [],
+    []
   );
 
   function getWeightedEnemyType(maxIndex: number) {
     const weights = Array.from(
       { length: maxIndex + 1 },
-      (_, i) => Math.pow(1 / (i + 1), 1.5), // 뒤로 갈수록 가중치가 낮아짐
+      (_, i) => Math.pow(1 / (i + 1), 1.5) // 뒤로 갈수록 가중치가 낮아짐
     );
 
     const totalWeight = weights.reduce((acc, w) => acc + w, 0);
@@ -161,7 +162,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       type: string,
       x: number,
       y: number,
-      options: { duration?: number; [key: string]: any },
+      options: { duration?: number; [key: string]: any }
     ) => {
       const effectId = Math.random();
       const effect: Effect = {
@@ -179,12 +180,12 @@ export default function VampireSurvivalGame({ user }: GameProps) {
         setEffects((prev) => prev.filter((e) => e.id !== effectId));
       }, effect.duration);
     },
-    [],
+    []
   );
 
   const playerSpeed = useMemo(
     () => selectedCharacter?.speed ?? GAME_CONFIG.PLAYER_SPEED,
-    [selectedCharacter],
+    [selectedCharacter]
   );
   const spawnRate = useMemo(() => Math.max(500 - wave * 50, 100), [wave]);
 
@@ -282,11 +283,11 @@ export default function VampireSurvivalGame({ user }: GameProps) {
 
       newX = Math.max(
         GAME_CONFIG.PLAYER_SIZE / 2,
-        Math.min(GAME_CONFIG.CANVAS_WIDTH - GAME_CONFIG.PLAYER_SIZE / 2, newX),
+        Math.min(GAME_CONFIG.CANVAS_WIDTH - GAME_CONFIG.PLAYER_SIZE / 2, newX)
       );
       newY = Math.max(
         GAME_CONFIG.PLAYER_SIZE / 2,
-        Math.min(GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.PLAYER_SIZE / 2, newY),
+        Math.min(GAME_CONFIG.CANVAS_HEIGHT - GAME_CONFIG.PLAYER_SIZE / 2, newY)
       );
 
       return { ...prev, x: newX, y: newY };
@@ -348,7 +349,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     if (now - enemySpawnRef.current > spawnRate) {
       const maxEnemyIndex = Math.min(
         ENEMY_TYPES.length - 1,
-        Math.floor(wave / 2),
+        Math.floor(wave / 2)
       );
       const enemyType = getWeightedEnemyType(maxEnemyIndex);
 
@@ -409,7 +410,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
           return { ...enemy, x: enemy.x + moveX, y: enemy.y + moveY };
         }
         return enemy;
-      }),
+      })
     );
   }, [player.x, player.y]);
 
@@ -424,7 +425,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
         if (weapon.type === "melee" || weapon.type === "defensive") {
           // 근접 무기 처리 (sword, axe, shield)
           const enemiesInRange = enemies.filter(
-            (enemy) => getDistance(player, enemy) <= weapon.range,
+            (enemy) => getDistance(player, enemy) <= weapon.range
           );
 
           if (enemiesInRange.length > 0) {
@@ -470,7 +471,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                     acc.push(e);
                   }
                   return acc;
-                }, []),
+                }, [])
               );
             });
 
@@ -496,7 +497,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
           ) {
             const baseAngle = Math.atan2(
               (closestEnemy as Enemy).y - player.y,
-              (closestEnemy as Enemy).x - player.x,
+              (closestEnemy as Enemy).x - player.x
             );
 
             for (let i = 0; i < weapon.projectileCount; i++) {
@@ -619,7 +620,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
             // 지속 데미지를 위한 인터벌 설정
             const whirlwindInterval = setInterval(() => {
               const enemiesInRange = enemies.filter(
-                (enemy) => getDistance(player, enemy) <= weapon.range,
+                (enemy) => getDistance(player, enemy) <= weapon.range
               );
 
               enemiesInRange.forEach((enemy) => {
@@ -655,7 +656,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                       acc.push(e);
                     }
                     return acc;
-                  }, []),
+                  }, [])
                 );
               });
             }, 300); // 0.3초마다 데미지
@@ -736,7 +737,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                           acc.push(e);
                         }
                         return acc;
-                      }, []),
+                      }, [])
                     );
                   }
                 });
@@ -746,8 +747,8 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                   prev.map((effect) =>
                     effect.id === tornadoId
                       ? { ...effect, x: tornadoX, y: tornadoY }
-                      : effect,
-                  ),
+                      : effect
+                  )
                 );
               }, 100); // 0.1초마다 업데이트
 
@@ -774,7 +775,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
           if (closestEnemy != null) {
             const angle = Math.atan2(
               (closestEnemy as Enemy).y - player.y,
-              (closestEnemy as Enemy).x - player.x,
+              (closestEnemy as Enemy).x - player.x
             );
 
             const bulletData: Bullet = {
@@ -820,8 +821,8 @@ export default function VampireSurvivalGame({ user }: GameProps) {
             bullet.x > 0 &&
             bullet.x < GAME_CONFIG.CANVAS_WIDTH &&
             bullet.y > 0 &&
-            bullet.y < GAME_CONFIG.CANVAS_HEIGHT,
-        ),
+            bullet.y < GAME_CONFIG.CANVAS_HEIGHT
+        )
     );
   }, []);
 
@@ -867,7 +868,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                       acc.push(e);
                     }
                     return acc;
-                  }, []),
+                  }, [])
                 );
               }
             });
@@ -894,7 +895,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
             const distance = getDistanceToLine(
               { x: bullet.x, y: bullet.y },
               { x: bullet.targetX!, y: bullet.targetY! },
-              enemy,
+              enemy
             );
 
             if (distance <= weapon.beamWidth / 2 && !hitEnemies.has(enemy.id)) {
@@ -917,7 +918,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                     acc.push(e);
                   }
                   return acc;
-                }, []),
+                }, [])
               );
             }
           });
@@ -988,7 +989,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                             acc.push(en);
                           }
                           return acc;
-                        }, []),
+                        }, [])
                       );
                     }
                   });
@@ -1016,7 +1017,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                         e.id !== currentTarget.id &&
                         !chainTargets.includes(e.id) &&
                         !hitEnemies.has(e.id) &&
-                        getDistance(currentTarget, e) <= weapon.chainRange,
+                        getDistance(currentTarget, e) <= weapon.chainRange
                     );
 
                     if (nearbyEnemies.length > 0) {
@@ -1053,7 +1054,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                             acc.push(e);
                           }
                           return acc;
-                        }, []),
+                        }, [])
                       );
 
                       currentTarget = nextTarget;
@@ -1131,7 +1132,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                   acc.push(e);
                 }
                 return acc;
-              }, []),
+              }, [])
             );
           }
         });
@@ -1145,9 +1146,14 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       return remainingBullets;
     });
 
-    // 플레이어와 적 충돌 (데미지)
+    // 플레이어와 적 충돌 (데미지) - 무적 시간 추가
+    const currentTime = Date.now();
+
     enemies.forEach((enemy) => {
-      if (checkCollision(player, enemy, GAME_CONFIG.PLAYER_SIZE, enemy.size)) {
+      if (
+        checkCollision(player, enemy, GAME_CONFIG.PLAYER_SIZE, enemy.size) &&
+        (!player.invulnerableUntil || currentTime > player.invulnerableUntil)
+      ) {
         setPlayer((prev) => {
           let damage = 10;
 
@@ -1163,7 +1169,13 @@ export default function VampireSurvivalGame({ user }: GameProps) {
           if (newHp <= 0) {
             setIsDead(true);
           }
-          return { ...prev, hp: Math.max(0, newHp) };
+
+          // 피격 시 0.2초간 무적 상태 설정
+          return {
+            ...prev,
+            hp: Math.max(0, newHp),
+            invulnerableUntil: currentTime + 200, // 200ms = 0.2초
+          };
         });
       }
     });
@@ -1179,7 +1191,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
             player,
             orb,
             GAME_CONFIG.PLAYER_SIZE,
-            GAME_CONFIG.EXP_ORB_SIZE,
+            GAME_CONFIG.EXP_ORB_SIZE
           )
         ) {
           totalExp += orb.exp;
@@ -1200,7 +1212,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
             const upgradeOptions: any[] = [];
             const weaponKeys = Object.keys(WEAPONS);
             const availableWeapons = weaponKeys.filter(
-              (w) => !prev.weapons.includes(w as WeaponType),
+              (w) => !prev.weapons.includes(w as WeaponType)
             );
 
             // 새로운 무기 옵션
@@ -1424,7 +1436,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
           enemy.x - 15,
           enemy.y - enemy.size / 2 - 10,
           30 * hpPercent,
-          4,
+          4
         );
         ctx.restore();
       });
@@ -1438,7 +1450,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
           bullet.y,
           GAME_CONFIG.BULLET_SIZE / 2,
           0,
-          Math.PI * 2,
+          Math.PI * 2
         );
         ctx.fill();
       });
@@ -1471,7 +1483,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
               effect.y,
               effect.radius * progress,
               0,
-              Math.PI * 2,
+              Math.PI * 2
             );
             ctx.stroke();
             break;
@@ -1512,7 +1524,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
               effect.y,
               effect.radius,
               (-effect.angle * Math.PI) / 360,
-              (effect.angle * Math.PI) / 360,
+              (effect.angle * Math.PI) / 360
             );
             ctx.stroke();
             break;
@@ -1526,7 +1538,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
               effect.y,
               effect.radius * progress,
               0,
-              Math.PI * 2,
+              Math.PI * 2
             );
             ctx.stroke();
             break;
@@ -1568,7 +1580,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                 effect.y + Math.sin(rotation) * 10,
                 radius,
                 0,
-                Math.PI * 2,
+                Math.PI * 2
               );
               ctx.stroke();
             }
@@ -1613,7 +1625,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                 effect.y - height + Math.sin(rotation) * 5,
                 radius,
                 0,
-                Math.PI * 2,
+                Math.PI * 2
               );
               ctx.stroke();
             }
@@ -1656,13 +1668,13 @@ export default function VampireSurvivalGame({ user }: GameProps) {
         ctx.fillText(
           "일시정지",
           GAME_CONFIG.CANVAS_WIDTH / 2,
-          GAME_CONFIG.CANVAS_HEIGHT / 2,
+          GAME_CONFIG.CANVAS_HEIGHT / 2
         );
         ctx.font = "24px Arial";
         ctx.fillText(
           "스페이스바를 눌러 계속하기",
           GAME_CONFIG.CANVAS_WIDTH / 2,
-          GAME_CONFIG.CANVAS_HEIGHT / 2 + 50,
+          GAME_CONFIG.CANVAS_HEIGHT / 2 + 50
         );
       }
     }
@@ -1693,6 +1705,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       expToNext: 100,
       weapons: [character.startWeapon],
       passives: [],
+      invulnerableUntil: 0, // 게임 시작 시 무적 상태 아님
     });
     setEnemies([]);
     setBullets([]);
