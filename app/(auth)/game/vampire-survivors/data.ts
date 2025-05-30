@@ -226,7 +226,7 @@ export const ENEMY_TYPES = [
   {
     type: "skeleton" as const,
     hp: 160,
-    speed: 1.5,
+    speed: 1.3,
     color: "#F5F5DC",
     exp: 15,
     size: 12,
