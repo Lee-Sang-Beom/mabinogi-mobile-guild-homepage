@@ -497,6 +497,158 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
 
             lastAttackRef.current[weaponId] = now;
           }
+        } else if (weapon.type === "area") {
+          // 회오리바람 처리 - 새로 추가
+          if (weaponId === "whirlwind") {
+            createEffect("whirlwind", player.x, player.y, {
+              radius: weapon.range,
+              color: weapon.color,
+              duration: weapon.duration,
+              pullForce: weapon.pullForce,
+            });
+
+            // 지속 데미지를 위한 인터벌 설정
+            const whirlwindInterval = setInterval(() => {
+              const enemiesInRange = enemies.filter(
+                (enemy) => getDistance(player, enemy) <= weapon.range,
+              );
+
+              enemiesInRange.forEach((enemy) => {
+                setEnemies((prev) =>
+                  prev.reduce<Enemy[]>((acc, e) => {
+                    if (e.id === enemy.id) {
+                      const newHp = e.hp - weapon.damage;
+                      if (newHp > 0) {
+                        // 적을 플레이어 쪽으로 끌어당기기
+                        const dx = player.x - e.x;
+                        const dy = player.y - e.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance > 0) {
+                          const pullX = (dx / distance) * weapon.pullForce;
+                          const pullY = (dy / distance) * weapon.pullForce;
+                          acc.push({
+                            ...e,
+                            hp: newHp,
+                            x: e.x + pullX,
+                            y: e.y + pullY,
+                          });
+                        } else {
+                          acc.push({ ...e, hp: newHp });
+                        }
+                      } else {
+                        setExpOrbs((prevOrbs) => [
+                          ...prevOrbs,
+                          { id: Math.random(), x: e.x, y: e.y, exp: e.exp },
+                        ]);
+                        setScore((prev) => prev + e.exp);
+                      }
+                    } else {
+                      acc.push(e);
+                    }
+                    return acc;
+                  }, []),
+                );
+              });
+            }, 300); // 0.3초마다 데미지
+
+            // duration 후에 정리
+            setTimeout(() => {
+              clearInterval(whirlwindInterval);
+            }, weapon.duration);
+
+            lastAttackRef.current[weaponId] = now;
+          }
+        } else if (weapon.type === "moving") {
+          // 토네이도 처리 - 새로 추가
+          if (weaponId === "tornado") {
+            // 가장 가까운 적을 향해 토네이도 생성
+            let closestEnemy: Enemy | null = null;
+            let closestDistance = weapon.range;
+
+            enemies.forEach((enemy) => {
+              const distance = getDistance(player, enemy);
+              if (distance < closestDistance) {
+                closestEnemy = enemy;
+                closestDistance = distance;
+              }
+            });
+
+            if (closestEnemy) {
+              const tornadoId = Math.random();
+
+              createEffect("tornado", player.x, player.y, {
+                id: tornadoId,
+                targetX: (closestEnemy as Enemy).x,
+                targetY: (closestEnemy as Enemy).y,
+                radius: weapon.areaRadius,
+                color: weapon.color,
+                duration: weapon.duration,
+                moveSpeed: weapon.moveSpeed,
+                damage: weapon.damage,
+              });
+
+              // 토네이도 이동 및 데미지 처리
+              let tornadoX = player.x;
+              let tornadoY = player.y;
+              const targetX = (closestEnemy as Enemy).x;
+              const targetY = (closestEnemy as Enemy).y;
+
+              const tornadoInterval = setInterval(() => {
+                // 타겟을 향해 이동
+                const dx = targetX - tornadoX;
+                const dy = targetY - tornadoY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > weapon.moveSpeed) {
+                  tornadoX += (dx / distance) * weapon.moveSpeed;
+                  tornadoY += (dy / distance) * weapon.moveSpeed;
+                }
+
+                // 토네이도 범위 내 적들에게 데미지
+                enemies.forEach((enemy) => {
+                  if (
+                    getDistance({ x: tornadoX, y: tornadoY }, enemy) <=
+                    weapon.areaRadius
+                  ) {
+                    setEnemies((prev) =>
+                      prev.reduce<Enemy[]>((acc, e) => {
+                        if (e.id === enemy.id) {
+                          const newHp = e.hp - weapon.damage;
+                          if (newHp > 0) {
+                            acc.push({ ...e, hp: newHp });
+                          } else {
+                            setExpOrbs((prevOrbs) => [
+                              ...prevOrbs,
+                              { id: Math.random(), x: e.x, y: e.y, exp: e.exp },
+                            ]);
+                            setScore((prev) => prev + e.exp);
+                          }
+                        } else {
+                          acc.push(e);
+                        }
+                        return acc;
+                      }, []),
+                    );
+                  }
+                });
+
+                // 이펙트 위치 업데이트
+                setEffects((prev) =>
+                  prev.map((effect) =>
+                    effect.id === tornadoId
+                      ? { ...effect, x: tornadoX, y: tornadoY }
+                      : effect,
+                  ),
+                );
+              }, 100); // 0.1초마다 업데이트
+
+              setTimeout(() => {
+                clearInterval(tornadoInterval);
+              }, weapon.duration);
+            }
+
+            lastAttackRef.current[weaponId] = now;
+          }
         } else {
           // 기존 투사체 무기들 + 새로운 투사체 무기들
           let closestEnemy: Enemy | null = null;
@@ -1037,6 +1189,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
   }, [gameLoop, gameState]);
 
   // 렌더링
+  // 렌더링 부분 (useEffect 내부의 Canvas 렌더링 코드)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -1050,19 +1203,67 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
       ctx.fillStyle = "#1a1a2e";
       ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
 
-      // 플레이어
+      // 플레이어 - 아이콘으로 렌더링
+      ctx.save();
       ctx.fillStyle = selectedCharacter?.color ?? "#4A90E2";
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, GAME_CONFIG.PLAYER_SIZE / 2, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.font = `${GAME_CONFIG.PLAYER_SIZE}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
 
-      // 적
+      // 캐릭터별 아이콘 심볼
+      let playerSymbol = "🧙‍♂️"; // 기본값
+      if (selectedCharacter) {
+        switch (selectedCharacter.name) {
+          case "전사":
+            playerSymbol = "⚔️";
+            break;
+          case "마법사":
+            playerSymbol = "🧙‍♂️";
+            break;
+          case "궁수":
+            playerSymbol = "🏹";
+            break;
+          default:
+            playerSymbol = "🧙‍♂️";
+        }
+      }
+
+      ctx.fillText(playerSymbol, player.x, player.y);
+      ctx.restore();
+
+      // 적들 - 아이콘으로 렌더링
       enemies.forEach((enemy) => {
+        ctx.save();
         ctx.fillStyle = enemy.color;
-        ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, enemy.size / 2, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.font = `${enemy.size}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
 
+        // 적 타입별 아이콘 심볼
+        let enemySymbol; // 기본값
+        switch (enemy.type) {
+          case "goblin":
+            enemySymbol = "👹";
+            break;
+          case "orc":
+            enemySymbol = "👺";
+            break;
+          case "skeleton":
+            enemySymbol = "💀";
+            break;
+          case "demon":
+            enemySymbol = "😈";
+            break;
+          case "dragon":
+            enemySymbol = "🐉";
+            break;
+          default:
+            enemySymbol = "👾";
+        }
+
+        ctx.fillText(enemySymbol, enemy.x, enemy.y);
+
+        // 슬로우 이펙트 표시
         if (Date.now() < (enemy.slowEndTime ?? 0)) {
           ctx.strokeStyle = "#87CEEB";
           ctx.lineWidth = 2;
@@ -1071,6 +1272,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
           ctx.stroke();
         }
 
+        // 체력바
         const hpPercent = enemy.hp / enemy.maxHp;
         ctx.fillStyle = "#ff0000";
         ctx.fillRect(enemy.x - 15, enemy.y - enemy.size / 2 - 10, 30, 4);
@@ -1081,6 +1283,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
           30 * hpPercent,
           4,
         );
+        ctx.restore();
       });
 
       // 총알
@@ -1099,13 +1302,16 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
 
       // 경험치 오브
       expOrbs.forEach((orb) => {
+        ctx.save();
         ctx.fillStyle = "#00BFFF";
-        ctx.beginPath();
-        ctx.arc(orb.x, orb.y, GAME_CONFIG.EXP_ORB_SIZE / 2, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.font = `${GAME_CONFIG.EXP_ORB_SIZE}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("💎", orb.x, orb.y);
+        ctx.restore();
       });
 
-      // 이펙트
+      // 이펙트 (나머지 이펙트 코드는 동일)
       effects.forEach((effect) => {
         const progress = (Date.now() - effect.startTime) / effect.duration;
         const alpha = 1 - progress;
@@ -1200,6 +1406,97 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
             ctx.moveTo(effect.x, effect.y);
             ctx.lineTo(effect.targetX!, effect.targetY!);
             ctx.stroke();
+            break;
+          case "whirlwind":
+            // 회오리바람 시각 효과
+            ctx.strokeStyle = effect.color;
+            ctx.lineWidth = 3;
+            ctx.save();
+
+            // 회전하는 원들로 회오리 표현
+            const whirlProgress = (Date.now() - effect.startTime) / 100;
+            for (let i = 0; i < 3; i++) {
+              const radius = effect.radius * (0.3 + i * 0.35);
+              const rotation = whirlProgress * (i + 1) * 0.1;
+
+              ctx.beginPath();
+              ctx.arc(
+                effect.x + Math.cos(rotation) * 10,
+                effect.y + Math.sin(rotation) * 10,
+                radius,
+                0,
+                Math.PI * 2,
+              );
+              ctx.stroke();
+            }
+
+            // 중심에서 바깥으로 나선 그리기
+            ctx.beginPath();
+            for (let angle = 0; angle < Math.PI * 4; angle += 0.1) {
+              const spiralRadius = (angle / (Math.PI * 4)) * effect.radius;
+              const x =
+                effect.x + Math.cos(angle + whirlProgress * 0.2) * spiralRadius;
+              const y =
+                effect.y + Math.sin(angle + whirlProgress * 0.2) * spiralRadius;
+
+              if (angle === 0) {
+                ctx.moveTo(x, y);
+              } else {
+                ctx.lineTo(x, y);
+              }
+            }
+            ctx.stroke();
+            ctx.restore();
+            break;
+
+          case "tornado":
+            // 토네이도 시각 효과
+            ctx.strokeStyle = effect.color;
+            ctx.lineWidth = 4;
+            ctx.save();
+
+            const tornadoProgress = (Date.now() - effect.startTime) / 50;
+
+            // 토네이도의 원뿔 모양 그리기
+            for (let i = 0; i < 5; i++) {
+              const height = i * 15;
+              const radius = effect.radius * (1 - i * 0.15);
+              const rotation = tornadoProgress * (i + 1) * 0.05;
+
+              ctx.globalAlpha = alpha * (1 - i * 0.15);
+              ctx.beginPath();
+              ctx.arc(
+                effect.x + Math.cos(rotation) * 5,
+                effect.y - height + Math.sin(rotation) * 5,
+                radius,
+                0,
+                Math.PI * 2,
+              );
+              ctx.stroke();
+            }
+
+            // 중심 소용돌이
+            ctx.globalAlpha = alpha;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let angle = 0; angle < Math.PI * 6; angle += 0.2) {
+              const spiralRadius =
+                (angle / (Math.PI * 6)) * effect.radius * 0.5;
+              const x =
+                effect.x +
+                Math.cos(angle + tornadoProgress * 0.3) * spiralRadius;
+              const y =
+                effect.y +
+                Math.sin(angle + tornadoProgress * 0.3) * spiralRadius;
+
+              if (angle === 0) {
+                ctx.moveTo(x, y);
+              } else {
+                ctx.lineTo(x, y);
+              }
+            }
+            ctx.stroke();
+            ctx.restore();
             break;
         }
 

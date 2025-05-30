@@ -90,7 +90,7 @@ export const WEAPONS = {
   arrow: {
     name: "화살",
     damage: 40,
-    cooldown: 600,
+    cooldown: 800,
     color: "#8B4513",
     range: 200,
     type: "projectile" as const,
@@ -134,7 +134,7 @@ export const WEAPONS = {
   shield: {
     name: "방패",
     damage: 20,
-    cooldown: 500,
+    cooldown: 800,
     color: "#B87333",
     range: 60,
     type: "defensive" as const,
@@ -145,7 +145,7 @@ export const WEAPONS = {
   whirlwind: {
     name: "회오리바람",
     damage: 15,
-    cooldown: 800,
+    cooldown: 3000,
     color: "#87CEEB",
     range: 100,
     type: "area" as const,
@@ -179,7 +179,7 @@ export const WEAPONS = {
   shuriken: {
     name: "수리검",
     damage: 25,
-    cooldown: 400,
+    cooldown: 1000,
     color: "#708090",
     range: 180,
     type: "multi" as const,
@@ -190,7 +190,7 @@ export const WEAPONS = {
   tornado: {
     name: "토네이도",
     damage: 20,
-    cooldown: 2000,
+    cooldown: 5000,
     color: "#696969",
     range: 150,
     type: "moving" as const,
