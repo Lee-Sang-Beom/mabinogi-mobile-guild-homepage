@@ -1837,7 +1837,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                           <span className="text-slate-400 font-medium">
                             🗡️ 시작 무기
                           </span>
-                          <span className="text-yellow-400 font-bold text-lg">
+                          <span className="text-yellow-400 font-bold text-md">
                             {WEAPONS[character.startWeapon].name}
                           </span>
                         </div>
