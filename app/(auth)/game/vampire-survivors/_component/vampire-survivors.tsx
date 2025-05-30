@@ -2175,7 +2175,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       </div>
 
       {/* 상단 게임 UI */}
-      <div className="relative z-10 flex justify-between w-full max-w-5xl mb-8">
+      <div className="relative z-10 flex justify-between w-full max-w-5xl mb-4">
         {/* 게임 정보 */}
         <div className="flex gap-3">
           <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl px-4 py-2 rounded-xl border border-slate-600/50 shadow-lg">
@@ -2247,8 +2247,8 @@ export default function VampireSurvivalGame({ user }: GameProps) {
 
           <canvas
             ref={canvasRef}
-            width={GAME_CONFIG.CANVAS_WIDTH * 0.8} // 너비 20% 축소
-            height={GAME_CONFIG.CANVAS_HEIGHT * 0.7} // 높이 30% 축소
+            width={GAME_CONFIG.CANVAS_WIDTH} // 너비 20% 축소
+            height={GAME_CONFIG.CANVAS_HEIGHT * 0.9} // 높이 30% 축소
             className="relative border-2 border-slate-600/50 rounded-lg bg-gradient-to-br from-gray-900 to-black shadow-2xl"
           />
 
