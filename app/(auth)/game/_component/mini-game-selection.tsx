@@ -21,11 +21,11 @@ const games = [
   {
     id: "vampire-survivors",
     title: "뱀파이어 서바이벌",
-    description: "몰려오는 적들을 물리치며 생존하세요!",
+    description: "몰려오는 동굴이.. 아아니 몬스터들을 물리치며 생존하세요!",
     icon: "🧛",
     url: "/game/vampire-survivors",
-    available: false,
-    difficulty: "어려움",
+    available: true,
+    difficulty: "보통",
     players: "1인",
   },
   {

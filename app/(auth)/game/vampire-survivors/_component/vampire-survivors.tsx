@@ -9,20 +9,24 @@ import React, {
 import { Home, Pause, Play, Shield, Sparkles, Sword, Zap } from "lucide-react";
 import { GameProps } from "@/app/(auth)/game/internal";
 import {
-  GAME_CONFIG,
   CHARACTERS,
-  WEAPONS,
   ENEMY_TYPES,
+  GAME_CONFIG,
+  WEAPONS,
 } from "@/app/(auth)/game/vampire-survivors/data";
 import {
-  Player,
-  Enemy,
   Bullet,
-  ExpOrb,
   Effect,
+  Enemy,
+  ExpOrb,
+  Player,
   WeaponType,
 } from "@/app/(auth)/game/vampire-survivors/internal";
 import { getRandomAudio } from "@/app/(auth)/game/util";
+import { useCreateGame } from "@/app/(auth)/game/hooks/use-create-game";
+import { useGetGamesByGameType } from "@/app/(auth)/game/hooks/use-get-games-by-game-type";
+import { GameCreateRequest } from "../../api";
+import moment from "moment";
 
 // 유틸리티 함수: 점과 선분 사이의 거리 계산 (레이저용)
 function getDistanceToLine(
@@ -60,7 +64,12 @@ function getDistanceToLine(
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-export default function VampireSurvivalGame({ user: _user }: GameProps) {
+export default function VampireSurvivalGame({ user }: GameProps) {
+  // CRUD 훅들
+  const createGameMutation = useCreateGame();
+  const { data: rankingData, refetch: refetchRanking } =
+    useGetGamesByGameType("vampire");
+
   const [selectedAudio, setSelectedAudio] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -69,6 +78,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
   const lastAttackRef = useRef<Record<string, number>>({});
   const enemySpawnRef = useRef<number>(0);
 
+  const [highScore, setHighScore] = useState(0);
   // 게임 상태
   const [gameState, setGameState] = useState<
     "menu" | "playing" | "paused" | "levelup" | "gameover"
@@ -91,6 +101,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
   });
 
   // 게임 오브젝트
+  const [isDead, setIsDead] = useState(false);
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [bullets, setBullets] = useState<Bullet[]>([]);
   const [expOrbs, setExpOrbs] = useState<ExpOrb[]>([]);
@@ -156,6 +167,16 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
     [selectedCharacter],
   );
   const spawnRate = useMemo(() => Math.max(500 - wave * 50, 100), [wave]);
+
+  // 랭킹 데이터에서 최고점수 가져오기
+  useEffect(() => {
+    if (rankingData?.success && rankingData.data) {
+      const userBestScore = rankingData.data
+        .filter((game) => game.userId === user.id)
+        .reduce((max, game) => Math.max(max, game.score), 0);
+      setHighScore(userBestScore);
+    }
+  }, [rankingData, user.id]);
 
   // 키보드 이벤트
   useEffect(() => {
@@ -737,7 +758,6 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
   }, []);
 
   // 충돌 처리
-  // 충돌 처리
   const handleCollisions = useCallback(() => {
     // 총알과 적 충돌
     setBullets((prevBullets) => {
@@ -1073,7 +1093,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
 
           const newHp = prev.hp - damage;
           if (newHp <= 0) {
-            setGameState("gameover");
+            setIsDead(true);
           }
           return { ...prev, hp: Math.max(0, newHp) };
         });
@@ -1161,6 +1181,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
       return remainingOrbs;
     });
   }, [player, enemies, checkCollision, createEffect, getDistance]);
+
   // 게임 루프
   const gameLoop = useCallback(() => {
     if (gameState !== "playing") return;
@@ -1193,6 +1214,41 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
     handleCollisions,
     wave,
   ]);
+
+  const onSubmit = useCallback(async () => {
+    setGameState("gameover");
+
+    try {
+      // 현재 랭킹에서 사용자의 순위 계산
+      let rank = 1;
+      if (rankingData?.success && rankingData.data) {
+        rank = rankingData.data.filter((game) => game.score > score).length + 1;
+      }
+
+      const postData: GameCreateRequest = {
+        gameType: "vampire",
+        score: score,
+        rank: rank,
+        userDocId: user.docId,
+        userId: user.id,
+        regDt: moment().format("YYYY-MM-DD"),
+      };
+
+      await createGameMutation.mutateAsync(postData);
+
+      // 랭킹 데이터 새로고침
+      await refetchRanking();
+    } catch (error) {
+      console.error("점수 저장 실패:", error);
+    }
+  }, [createGameMutation, rankingData, refetchRanking, user.id, highScore]);
+
+  useEffect(() => {
+    if (isDead) {
+      onSubmit(); // ✅ 단 한 번만 실행됨
+      setIsDead(false);
+    }
+  }, [isDead]);
 
   // 게임 루프 실행
   useEffect(() => {
@@ -1554,6 +1610,7 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
 
   // 게임 시작
   const startGame = useCallback((character: (typeof CHARACTERS)[0]) => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     const randomAudio = getRandomAudio();
     setSelectedAudio(randomAudio);
 
@@ -1620,69 +1677,213 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   }, []);
 
+  // 랭킹 렌더링
+  const renderRanking = () => {
+    if (!rankingData?.success || !rankingData.data) {
+      return (
+        <div className="text-center text-slate-400">
+          랭킹 정보를 불러오는 중...
+        </div>
+      );
+    }
+
+    const topRankings = rankingData.data.slice(0, 10);
+
+    return (
+      <div className="space-y-3">
+        <h3 className="text-xl font-bold text-center text-emerald-400 mb-4">
+          🏆 뱀파이어 서바이벌 랭킹 TOP 10
+        </h3>
+        {topRankings.length === 0 ? (
+          <div className="text-center text-slate-400">
+            아직 기록이 없습니다. 첫 번째 기록을 남겨보세요!
+          </div>
+        ) : (
+          topRankings.map((game, index) => (
+            <div
+              key={game.docId}
+              className={`flex justify-between items-center p-3 rounded-lg ${
+                game.userId === user.id
+                  ? "bg-emerald-900/30 border border-emerald-500/30"
+                  : "bg-slate-800/30 border border-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                    index === 0
+                      ? "bg-yellow-500 text-black"
+                      : index === 1
+                        ? "bg-gray-400 text-black"
+                        : index === 2
+                          ? "bg-amber-600 text-white"
+                          : "bg-slate-600 text-white"
+                  }`}
+                >
+                  {index + 1}
+                </div>
+                <div>
+                  <div className="font-semibold text-white">
+                    {game.userId === user.id
+                      ? `${user.id}`
+                      : `${game.userId.slice(0, 8)}`}
+                  </div>
+                  <div className="text-sm text-primary">{game.regDt}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="font-bold text-sm text-yellow-400">
+                  {game.score} 점
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    );
+  };
+
   // 메뉴 화면
   if (gameState === "menu") {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 flex items-center justify-center p-4">
-        <div className="bg-black/50 backdrop-blur-lg rounded-2xl p-8 max-w-4xl w-full">
-          <div className="text-center mb-8">
-            <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
-              🧛 뱀파이버 서바이벌
-            </h1>
-            <p className="text-xl text-gray-300">
-              캐릭터를 선택하여 게임을 시작하세요
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {CHARACTERS.map((character) => {
-              const IconComponent = character.icon;
-              return (
-                <div
-                  key={character.id}
-                  onClick={() => startGame(character)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      startGame(character);
-                    }
-                  }}
-                  className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl cursor-pointer hover:from-gray-700 hover:to-gray-800 transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-gray-700"
-                >
-                  <div className="text-center">
-                    <div
-                      className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl"
-                      style={{ backgroundColor: character.color }}
-                    >
-                      <IconComponent className="text-white" size={32} />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      {character.name}
-                    </h3>
-                    <div className="space-y-2 text-sm text-gray-300">
-                      <div className="flex justify-between">
-                        <span>체력:</span>
-                        <span className="text-green-400">{character.hp}</span>
+      <div className="min-h-screen w-full bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 p-4 relative overflow-hidden">
+        {/* 배경 애니메이션 효과 */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-20 w-40 h-40 bg-purple-500 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-32 h-32 bg-indigo-500 rounded-full blur-2xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-pink-500 rounded-full blur-xl animate-pulse delay-500"></div>
+          <div className="absolute top-1/3 right-1/3 w-16 h-16 bg-blue-500 rounded-full blur-lg animate-pulse delay-700"></div>
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center gap-8 py-12">
+          {/* 메인 메뉴 카드 */}
+          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-2xl rounded-3xl border border-purple-500/30 shadow-2xl shadow-purple-500/20 p-8 max-w-6xl w-full">
+            {/* 타이틀 섹션 */}
+            <div className="text-center mb-12">
+              <div className="relative mb-6">
+                <h1 className="text-5xl font-black mb-4 bg-gradient-to-r from-red-500 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-pulse">
+                  🧛 뱀파이어 서바이벌
+                </h1>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-2 bg-gradient-to-r from-red-500 via-purple-500 to-pink-500 rounded-full blur-sm"></div>
+              </div>
+              <p className="text-lg text-slate-300 font-light tracking-wide">
+                ⚔️ 캐릭터를 선택하여 생존의 여정을 시작하세요 ⚔️
+              </p>
+            </div>
+
+            {/* 캐릭터 선택 그리드 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              {CHARACTERS.map((character, index) => {
+                const IconComponent = character.icon;
+                return (
+                  <div
+                    key={character.id}
+                    onClick={() => startGame(character)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        startGame(character);
+                      }
+                    }}
+                    className="group relative bg-gradient-to-br from-slate-700/80 to-slate-800/80 p-8 rounded-2xl cursor-pointer hover:from-slate-600/80 hover:to-slate-700/80 transition-all duration-500 hover:scale-105 hover:shadow-2xl border border-slate-600/50 hover:border-purple-400/50 backdrop-blur-sm"
+                    style={{
+                      animationDelay: `${index * 150}ms`,
+                    }}
+                  >
+                    {/* 호버시 글로우 효과 */}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/0 via-purple-500/20 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                    <div className="relative text-center">
+                      <div className="relative mb-6">
+                        <div
+                          className="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-4xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110"
+                          style={{
+                            backgroundColor: character.color,
+                            boxShadow: `0 0 20px ${character.color}40`,
+                          }}
+                        >
+                          <IconComponent
+                            className="text-white group-hover:animate-bounce"
+                            size={36}
+                          />
+                        </div>
+                        {/* 캐릭터 아이콘 주변 링 */}
+                        <div className="absolute inset-0 rounded-full group-hover:border-purple-400/60 transition-colors duration-300 animate-spin-slow"></div>
                       </div>
-                      <div className="flex justify-between">
-                        <span>속도:</span>
-                        <span className="text-blue-400">{character.speed}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>시작 무기:</span>
-                        <span className="text-yellow-400">
-                          {WEAPONS[character.startWeapon].name}
-                        </span>
+
+                      <h3 className="text-3xl font-bold text-white mb-6 group-hover:text-purple-200 transition-colors duration-300">
+                        {character.name}
+                      </h3>
+
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                          <span className="text-slate-400 font-medium">
+                            💗 체력
+                          </span>
+                          <span className="text-green-400 font-bold text-lg">
+                            {character.hp}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                          <span className="text-slate-400 font-medium">
+                            ⚡ 속도
+                          </span>
+                          <span className="text-blue-400 font-bold text-lg">
+                            {character.speed}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                          <span className="text-slate-400 font-medium">
+                            🗡️ 시작 무기
+                          </span>
+                          <span className="text-yellow-400 font-bold text-lg">
+                            {WEAPONS[character.startWeapon].name}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
+                );
+              })}
+            </div>
+
+            {/* 조작법 안내 */}
+            <div className="bg-gradient-to-r from-slate-800/60 to-slate-700/60 rounded-2xl p-6 border border-slate-600/30">
+              <div className="text-center">
+                <h4 className="text-xl font-bold text-white mb-4 flex items-center justify-center gap-2">
+                  <span>🎮</span> 게임 조작법
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-300">
+                  <div className="flex items-center justify-center gap-3 bg-slate-800/50 rounded-xl p-4 border border-slate-700/30">
+                    <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center text-sm font-bold">
+                      ⌨️
+                    </div>
+                    <span className="font-medium">WASD 또는 방향키로 이동</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-3 bg-slate-800/50 rounded-xl p-4 border border-slate-700/30">
+                    <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-sm font-bold">
+                      ⏸️
+                    </div>
+                    <span className="font-medium">
+                      스페이스바: 일시정지/재개
+                    </span>
+                  </div>
                 </div>
-              );
-            })}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center text-gray-400">
-            <p className="mb-2">🎮 조작법: WASD 또는 방향키로 이동</p>
-            <p>⏸️ 스페이스바: 일시정지/재개</p>
+
+          {/* 랭킹 카드 */}
+          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-2xl rounded-3xl border border-slate-600/30 shadow-2xl max-w-6xl w-full p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-lg font-bold text-slate-900">🏆</span>
+              </div>
+              <h3 className="text-3xl font-bold text-white">명예의 전당</h3>
+              <div className="flex-1 h-px bg-gradient-to-r from-yellow-400/50 to-transparent"></div>
+            </div>
+            {renderRanking()}
           </div>
         </div>
       </div>
@@ -1692,42 +1893,162 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
   // 레벨업 화면
   if (gameState === "levelup") {
     return (
-      <div className="min-h-screen bg-black/80 flex items-center justify-center p-4">
-        <div className="bg-gradient-to-br from-yellow-600 to-orange-600 p-8 rounded-2xl max-w-4xl w-full">
-          <div className="text-center mb-8">
-            <h2 className="text-5xl font-bold text-white mb-4">🎉 레벨 업!</h2>
-            <p className="text-xl text-yellow-100">업그레이드를 선택하세요</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {availableUpgrades.map((upgrade, index) => {
-              const IconComponent = upgrade.icon;
-              return (
-                <div
-                  key={index}
-                  onClick={() => selectUpgrade(upgrade)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      selectUpgrade(upgrade);
-                    }
-                  }}
-                  className="bg-black/30 p-6 rounded-xl cursor-pointer hover:bg-black/50 transition-all duration-300 hover:scale-105 border border-yellow-400"
-                >
-                  <div className="text-center">
-                    <IconComponent
-                      className="text-yellow-300 mx-auto mb-4"
-                      size={48}
-                    />
-                    <h3 className="text-xl font-bold text-white mb-2">
-                      {upgrade.name}
-                    </h3>
-                  </div>
+      <div className="min-h-screen bg-black/90 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* 축하 배경 애니메이션 */}
+        <div className="absolute inset-0">
+          {/* 반짝이는 별들 */}
+          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
+          <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-orange-400 rounded-full animate-ping delay-300"></div>
+          <div className="absolute bottom-1/3 left-1/3 w-2 h-2 bg-yellow-300 rounded-full animate-ping delay-700"></div>
+          <div className="absolute bottom-1/4 right-1/3 w-3 h-3 bg-orange-300 rounded-full animate-ping delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-yellow-500 rounded-full animate-ping delay-500"></div>
+
+          {/* 큰 글로우 효과 */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-red-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-yellow-400/30 via-orange-400/30 to-amber-400/30 rounded-full blur-2xl animate-pulse delay-500"></div>
+        </div>
+
+        <div className="relative z-10 max-w-5xl w-full">
+          {/* 메인 레벨업 카드 */}
+          <div className="bg-gradient-to-br from-amber-500/95 via-orange-500/95 to-red-500/95 backdrop-blur-xl rounded-3xl border-2 border-yellow-300/50 shadow-2xl shadow-orange-500/50 overflow-hidden">
+            {/* 상단 장식 */}
+            <div className="bg-gradient-to-r from-yellow-400/20 to-orange-400/20 p-2">
+              <div className="flex justify-center items-center gap-2">
+                <div className="w-8 h-1 bg-yellow-300 rounded-full animate-pulse"></div>
+                <div className="w-4 h-1 bg-orange-300 rounded-full animate-pulse delay-200"></div>
+                <div className="w-8 h-1 bg-yellow-300 rounded-full animate-pulse delay-400"></div>
+              </div>
+            </div>
+
+            <div className="p-10">
+              {/* 타이틀 섹션 */}
+              <div className="text-center mb-12 relative">
+                {/* 배경 장식 원 */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-48 h-48 border-4 border-yellow-300/30 rounded-full animate-spin-slow"></div>
+                  <div
+                    className="absolute w-32 h-32 border-2 border-orange-300/40 rounded-full animate-spin-slow"
+                    style={{ animationDirection: "reverse" }}
+                  ></div>
                 </div>
-              );
-            })}
+
+                <div className="relative z-10">
+                  <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-6 shadow-lg shadow-yellow-500/50 animate-bounce">
+                    <span className="text-5xl">🎉</span>
+                  </div>
+
+                  <h2 className="text-7xl font-black text-white mb-4 drop-shadow-lg animate-pulse">
+                    LEVEL UP!
+                  </h2>
+
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <div className="w-16 h-1 bg-gradient-to-r from-transparent via-yellow-300 to-transparent rounded-full"></div>
+                    <span className="text-3xl animate-spin">⭐</span>
+                    <div className="w-16 h-1 bg-gradient-to-r from-transparent via-yellow-300 to-transparent rounded-full"></div>
+                  </div>
+
+                  <p className="text-2xl text-yellow-100 font-semibold tracking-wide">
+                    ✨ 업그레이드를 선택하여 더 강해지세요 ✨
+                  </p>
+                </div>
+              </div>
+
+              {/* 업그레이드 선택 그리드 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {availableUpgrades.map((upgrade, index) => {
+                  const IconComponent = upgrade.icon;
+                  return (
+                    <div
+                      key={index}
+                      onClick={() => selectUpgrade(upgrade)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          selectUpgrade(upgrade);
+                        }
+                      }}
+                      className="group relative bg-black/40 backdrop-blur-sm p-8 rounded-2xl cursor-pointer hover:bg-black/60 transition-all duration-500 hover:scale-110 border-2 border-yellow-400/60 hover:border-yellow-300 shadow-lg hover:shadow-2xl hover:shadow-yellow-400/30"
+                      style={{
+                        animationDelay: `${index * 200}ms`,
+                        animation: "fadeInUp 0.6s ease-out forwards",
+                      }}
+                    >
+                      {/* 선택 효과 링 */}
+                      <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-yellow-300 transition-all duration-300">
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-yellow-400/0 via-yellow-400/20 to-yellow-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      </div>
+
+                      {/* 반짝이는 효과 */}
+                      <div className="absolute top-2 right-2 w-3 h-3 bg-yellow-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping"></div>
+                      <div className="absolute bottom-2 left-2 w-2 h-2 bg-orange-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping delay-300"></div>
+
+                      <div className="relative text-center">
+                        {/* 아이콘 배경 */}
+                        <div className="relative mb-6">
+                          <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl mx-auto flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
+                            <IconComponent
+                              className="text-white group-hover:animate-pulse"
+                              size={40}
+                            />
+                          </div>
+                          {/* 아이콘 글로우 */}
+                          <div className="absolute inset-0 bg-yellow-400/30 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        </div>
+
+                        <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-yellow-200 transition-colors duration-300">
+                          {upgrade.name}
+                        </h3>
+
+                        {/* 선택 표시 */}
+                        <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center shadow-lg">
+                          <span className="text-white text-sm font-bold">
+                            ✓
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 하단 장식 */}
+            <div className="bg-gradient-to-r from-orange-400/20 to-red-400/20 p-3">
+              <div className="flex justify-center items-center gap-1">
+                {[...Array(7)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                  ></div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
+
+        <style jsx>{`
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes spin-slow {
+            from {
+              transform: rotate(0deg);
+            }
+            to {
+              transform: rotate(360deg);
+            }
+          }
+        `}</style>
       </div>
     );
   }
@@ -1736,131 +2057,280 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
   if (gameState === "gameover") {
     const survivedTime = formatTime(gameTime);
     return (
-      <div className="min-h-screen bg-gradient-to-b from-red-900 to-black flex items-center justify-center p-4">
-        <div className="bg-black/50 backdrop-blur-lg rounded-2xl p-8 max-w-2xl w-full text-center">
-          <h2 className="text-6xl font-bold text-red-500 mb-4">💀 게임 오버</h2>
-          <div className="space-y-4 mb-8">
-            <div className="text-2xl text-white">
-              <span className="text-gray-400">생존 시간:</span> {survivedTime}
+      <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-red-950 to-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        {/* 배경 애니메이션 효과 */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-red-500 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-orange-500 rounded-full blur-2xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 right-1/3 w-16 h-16 bg-yellow-500 rounded-full blur-xl animate-pulse delay-500"></div>
+        </div>
+
+        {/* 메인 게임오버 카드 */}
+        <div className="relative z-10 max-w-3xl w-full">
+          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-2xl rounded-3xl border border-red-500/30 shadow-2xl shadow-red-500/20 p-8 mb-6">
+            {/* 헤더 */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-full mb-4 shadow-lg shadow-red-500/50">
+                <span className="text-4xl">💀</span>
+              </div>
+              <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-600 mb-2">
+                GAME OVER
+              </h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-red-500 to-orange-500 mx-auto rounded-full"></div>
             </div>
-            <div className="text-2xl text-white">
-              <span className="text-gray-400">점수:</span>{" "}
-              {score.toLocaleString()}
+
+            {/* 통계 그리드 */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-2xl p-6 border border-slate-600/30 hover:border-red-400/50 transition-all duration-300 group">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-3 h-3 bg-green-400 rounded-full group-hover:animate-pulse"></div>
+                  <span className="text-slate-400 text-sm font-medium uppercase tracking-wider">
+                    생존 시간
+                  </span>
+                </div>
+                <div className="text-3xl font-bold text-white">
+                  {survivedTime}
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-2xl p-6 border border-slate-600/30 hover:border-orange-400/50 transition-all duration-300 group">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-3 h-3 bg-orange-400 rounded-full group-hover:animate-pulse"></div>
+                  <span className="text-slate-400 text-sm font-medium uppercase tracking-wider">
+                    점수
+                  </span>
+                </div>
+                <div className="text-3xl font-bold text-white">
+                  {score.toLocaleString()}
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-2xl p-6 border border-slate-600/30 hover:border-blue-400/50 transition-all duration-300 group">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-3 h-3 bg-blue-400 rounded-full group-hover:animate-pulse"></div>
+                  <span className="text-slate-400 text-sm font-medium uppercase tracking-wider">
+                    웨이브
+                  </span>
+                </div>
+                <div className="text-3xl font-bold text-white">{wave}</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-2xl p-6 border border-slate-600/30 hover:border-purple-400/50 transition-all duration-300 group">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-3 h-3 bg-purple-400 rounded-full group-hover:animate-pulse"></div>
+                  <span className="text-slate-400 text-sm font-medium uppercase tracking-wider">
+                    레벨
+                  </span>
+                </div>
+                <div className="text-3xl font-bold text-white">
+                  {player.level}
+                </div>
+              </div>
             </div>
-            <div className="text-2xl text-white">
-              <span className="text-gray-400">웨이브:</span> {wave}
-            </div>
-            <div className="text-2xl text-white">
-              <span className="text-gray-400">레벨:</span> {player.level}
+
+            {/* 액션 버튼 */}
+            <div className="flex justify-center">
+              <button
+                onClick={restartGame}
+                className="group relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 hover:from-emerald-500 hover:via-green-500 hover:to-emerald-600 text-white px-12 py-4 rounded-2xl font-bold text-xl shadow-lg shadow-green-500/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-green-500/40"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                <div className="relative flex items-center gap-3">
+                  <Home
+                    size={24}
+                    className="group-hover:rotate-12 transition-transform duration-300"
+                  />
+                  <span>메뉴로 돌아가기</span>
+                </div>
+              </button>
             </div>
           </div>
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={restartGame}
-              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-4 rounded-xl font-bold text-xl transition-all duration-300 hover:scale-105 flex items-center gap-2"
-            >
-              <Home size={24} /> 메뉴로 돌아가기
-            </button>
+
+          {/* 랭킹 카드 */}
+          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-2xl rounded-3xl border border-slate-600/30 shadow-2xl p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                <span className="text-sm font-bold text-slate-900">🏆</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white">랭킹</h3>
+            </div>
+            {renderRanking()}
           </div>
         </div>
       </div>
     );
   }
 
-  // 게임 플레이 화면
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {selectedAudio && (
         <audio ref={audioRef} src={selectedAudio} preload="auto" loop />
       )}
 
-      {/* 게임 UI */}
-      <div className="flex justify-between w-full max-w-4xl mb-4">
-        <div className="flex gap-4 text-white">
-          <div className="bg-black/50 px-4 py-2 rounded-lg">
-            <span className="text-gray-400">시간:</span> {formatTime(gameTime)}
+      {/* 배경 효과 */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 left-20 w-32 h-32 bg-blue-500 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 bg-purple-500 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-green-500 rounded-full blur-xl animate-pulse delay-500"></div>
+      </div>
+
+      {/* 상단 게임 UI */}
+      <div className="relative z-10 flex justify-between w-full max-w-5xl mb-8">
+        {/* 게임 정보 */}
+        <div className="flex gap-3">
+          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl px-4 py-2 rounded-xl border border-slate-600/50 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+              <span className="text-slate-400 font-medium text-sm">시간</span>
+              <span className="text-white font-bold">
+                {formatTime(gameTime)}
+              </span>
+            </div>
           </div>
-          <div className="bg-black/50 px-4 py-2 rounded-lg">
-            <span className="text-gray-400">점수:</span>{" "}
-            {score.toLocaleString()}
+
+          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl px-4 py-2 rounded-xl border border-slate-600/50 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+              <span className="text-slate-400 font-medium text-sm">점수</span>
+              <span className="text-white font-bold">
+                {score.toLocaleString()}
+              </span>
+            </div>
           </div>
-          <div className="bg-black/50 px-4 py-2 rounded-lg">
-            <span className="text-gray-400">웨이브:</span> {wave}
+
+          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl px-4 py-2 rounded-xl border border-slate-600/50 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+              <span className="text-slate-400 font-medium text-sm">웨이브</span>
+              <span className="text-white font-bold">{wave}</span>
+            </div>
           </div>
         </div>
+
+        {/* 컨트롤 버튼 */}
         <div className="flex gap-2">
           <button
             onClick={() =>
               setGameState(gameState === "paused" ? "playing" : "paused")
             }
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
+            className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105 flex items-center gap-2 shadow-lg hover:shadow-xl border border-blue-400/30"
           >
-            {gameState === "paused" ? <Play size={16} /> : <Pause size={16} />}
-            {gameState === "paused" ? "재개" : "일시정지"}
+            <div className="group-hover:scale-110 transition-transform duration-200">
+              {gameState === "paused" ? (
+                <Play size={16} />
+              ) : (
+                <Pause size={16} />
+              )}
+            </div>
+            <span className="font-semibold text-sm">
+              {gameState === "paused" ? "재개" : "일시정지"}
+            </span>
           </button>
+
           <button
             onClick={restartGame}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
+            className="group bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105 flex items-center gap-2 shadow-lg hover:shadow-xl border border-red-400/30"
           >
-            <Home size={16} /> 메뉴
+            <div className="group-hover:rotate-12 transition-transform duration-200">
+              <Home size={16} />
+            </div>
+            <span className="font-semibold text-sm">메뉴</span>
           </button>
         </div>
       </div>
 
-      {/* 게임 캔버스 */}
-      <div className="relative">
-        <canvas
-          ref={canvasRef}
-          width={GAME_CONFIG.CANVAS_WIDTH}
-          height={GAME_CONFIG.CANVAS_HEIGHT}
-          className="border-2 border-gray-600 rounded-lg bg-gray-900"
-        />
+      {/* 게임 캔버스 - 높이 축소 */}
+      <div className="relative z-10 mb-4">
+        <div className="relative">
+          {/* 캔버스 글로우 효과 */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-green-600/20 rounded-xl blur-lg"></div>
+
+          <canvas
+            ref={canvasRef}
+            width={GAME_CONFIG.CANVAS_WIDTH * 0.8} // 너비 20% 축소
+            height={GAME_CONFIG.CANVAS_HEIGHT * 0.7} // 높이 30% 축소
+            className="relative border-2 border-slate-600/50 rounded-lg bg-gradient-to-br from-gray-900 to-black shadow-2xl"
+          />
+
+          {/* 캔버스 모서리 장식 */}
+          <div className="absolute top-1 left-1 w-3 h-3 border-l-2 border-t-2 border-blue-400/60 rounded-tl-lg"></div>
+          <div className="absolute top-1 right-1 w-3 h-3 border-r-2 border-t-2 border-blue-400/60 rounded-tr-lg"></div>
+          <div className="absolute bottom-1 left-1 w-3 h-3 border-l-2 border-b-2 border-blue-400/60 rounded-bl-lg"></div>
+          <div className="absolute bottom-1 right-1 w-3 h-3 border-r-2 border-b-2 border-blue-400/60 rounded-br-lg"></div>
+        </div>
       </div>
 
-      {/* 플레이어 상태 UI */}
-      <div className="w-full max-w-4xl mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* 플레이어 상태 UI - 컴팩트하게 조정 */}
+      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* 체력 */}
-        <div className="bg-black/50 p-4 rounded-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <Shield className="text-red-500" size={20} />
-            <span className="text-white font-semibold">체력</span>
+        <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-slate-600/50 shadow-lg hover:border-red-400/50 transition-all duration-300 group">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <Shield className="text-white" size={16} />
+            </div>
+            <span className="text-white font-bold text-lg">체력</span>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-3">
-            <div
-              className="bg-red-500 h-3 rounded-full transition-all duration-300"
-              style={{ width: `${(player.hp / player.maxHp) * 100}%` }}
-            />
-          </div>
-          <div className="text-sm text-gray-300 mt-1">
-            {player.hp} / {player.maxHp}
+
+          <div className="relative">
+            <div className="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden border border-slate-600/30">
+              <div
+                className="bg-gradient-to-r from-red-500 to-red-400 h-3 rounded-full transition-all duration-500 relative overflow-hidden"
+                style={{ width: `${(player.hp / player.maxHp) * 100}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent animate-pulse"></div>
+              </div>
+            </div>
+            <div className="flex justify-between items-center mt-1">
+              <span className="text-xs text-slate-400 font-medium">
+                {player.hp} / {player.maxHp}
+              </span>
+              <span className="text-xs text-red-400 font-bold">
+                {Math.round((player.hp / player.maxHp) * 100)}%
+              </span>
+            </div>
           </div>
         </div>
 
         {/* 경험치 */}
-        <div className="bg-black/50 p-4 rounded-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="text-blue-500" size={20} />
-            <span className="text-white font-semibold">
+        <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-slate-600/50 shadow-lg hover:border-blue-400/50 transition-all duration-300 group">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <Sparkles className="text-white" size={16} />
+            </div>
+            <span className="text-white font-bold text-lg">
               레벨 {player.level}
             </span>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-3">
-            <div
-              className="bg-blue-500 h-3 rounded-full transition-all duration-300"
-              style={{ width: `${(player.exp / player.expToNext) * 100}%` }}
-            />
-          </div>
-          <div className="text-sm text-gray-300 mt-1">
-            {player.exp} / {player.expToNext}
+
+          <div className="relative">
+            <div className="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden border border-slate-600/30">
+              <div
+                className="bg-gradient-to-r from-blue-500 to-blue-400 h-3 rounded-full transition-all duration-500 relative overflow-hidden"
+                style={{ width: `${(player.exp / player.expToNext) * 100}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent animate-pulse"></div>
+              </div>
+            </div>
+            <div className="flex justify-between items-center mt-1">
+              <span className="text-xs text-slate-400 font-medium">
+                {player.exp} / {player.expToNext}
+              </span>
+              <span className="text-xs text-blue-400 font-bold">
+                {Math.round((player.exp / player.expToNext) * 100)}%
+              </span>
+            </div>
           </div>
         </div>
 
         {/* 무기 */}
-        <div className="bg-black/50 p-4 rounded-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <Sword className="text-yellow-500" size={20} />
-            <span className="text-white font-semibold">무기</span>
+        <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-slate-600/50 shadow-lg hover:border-yellow-400/50 transition-all duration-300 group">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <Sword className="text-white" size={16} />
+            </div>
+            <span className="text-white font-bold text-lg">무기</span>
           </div>
+
           <div className="flex gap-2 flex-wrap">
             {player.weapons.map((weaponId, index) => {
               const weapon = WEAPONS[weaponId];
@@ -1868,14 +2338,25 @@ export default function VampireSurvivalGame({ user: _user }: GameProps) {
               return (
                 <div
                   key={index}
-                  className="bg-gray-700 p-2 rounded flex items-center gap-1"
+                  className="bg-gradient-to-br from-slate-700/80 to-slate-800/80 p-2 rounded-lg flex items-center gap-1 border border-slate-600/30 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105 group/weapon"
                   title={weapon.name}
                 >
-                  <IconComponent size={16} style={{ color: weapon.color }} />
-                  <span className="text-xs text-white">{weapon.name}</span>
+                  <div className="group-hover/weapon:animate-pulse">
+                    <IconComponent size={14} style={{ color: weapon.color }} />
+                  </div>
+                  <span className="text-xs text-white font-medium">
+                    {weapon.name}
+                  </span>
                 </div>
               );
             })}
+
+            {/* 빈 슬롯 표시 */}
+            {player.weapons.length < 6 && (
+              <div className="bg-slate-700/30 border-2 border-dashed border-slate-600/50 p-2 rounded-lg flex items-center justify-center min-w-[50px]">
+                <span className="text-slate-500 text-xs">빈 슬롯</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
