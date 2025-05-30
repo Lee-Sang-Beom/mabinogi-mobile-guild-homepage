@@ -190,18 +190,6 @@ export const WEAPONS = {
     spread: 30, // 각도 분산
     icon: Star,
   },
-  tornado: {
-    name: "토네이도",
-    damage: 20,
-    cooldown: 5000,
-    color: "#1b5c6a",
-    range: 100,
-    type: "moving" as const,
-    duration: 3000,
-    moveSpeed: 2,
-    areaRadius: 80,
-    icon: Tornado,
-  },
   laser: {
     name: "레이저",
     damage: 40,
