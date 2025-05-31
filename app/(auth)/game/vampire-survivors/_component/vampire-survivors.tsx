@@ -381,9 +381,26 @@ export default function VampireSurvivalGame({ user }: GameProps) {
           if (enemiesInRange.length > 0) {
             // 이펙트 생성
             if (weaponId === "axe" && "cleave" in weapon) {
+              // 가장 가까운 적 방향 계산
+              let targetAngle = 0; // 기본값 (오른쪽)
+
+              if (enemiesInRange.length > 0) {
+                const closestEnemy = enemiesInRange.reduce((closest, enemy) => {
+                  const distToClosest = getDistance(player, closest);
+                  const distToEnemy = getDistance(player, enemy);
+                  return distToEnemy < distToClosest ? enemy : closest;
+                });
+
+                targetAngle = Math.atan2(
+                  closestEnemy.y - player.y,
+                  closestEnemy.x - player.x
+                );
+              }
+
               createEffect("cleave", player.x, player.y, {
                 radius: weapon.range,
                 angle: weapon.cleaveAngle,
+                direction: targetAngle, // 방향 추가
                 color: weapon.color,
                 duration: 400,
               });
@@ -745,7 +762,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     setBullets((prev) =>
       prev
         .map((bullet) => {
-          let newBullet = { ...bullet };
+          const newBullet = { ...bullet };
 
           // 그림자 화살의 유도 기능
           if (bullet.weaponType === "shadowbolt" && bullet.homingStrength) {
