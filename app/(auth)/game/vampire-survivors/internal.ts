@@ -29,6 +29,7 @@ export interface Enemy {
   size: number;
   slowEffect?: number;
   slowEndTime?: number;
+  stunEndTime?: number; // 기절 종료 시간
 }
 
 // internal.ts 파일에 추가
@@ -50,6 +51,9 @@ export interface Bullet {
   delay?: number;
   startTime?: number;
   piercing?: number; // crossbow용
+  homingStrength?: number; // 유도 강도
+  lifeSteal?: number; // 생명력 흡수
+  floatingTime?: number; // 떠있는 시간
 }
 
 export interface ExpOrb {

@@ -294,56 +294,6 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     });
   }, [playerSpeed]);
 
-  // 적 생성
-  // const spawnEnemies = useCallback(() => {
-  //   const now = Date.now();
-  //   if (now - enemySpawnRef.current > spawnRate) {
-  //     const enemyType =
-  //       ENEMY_TYPES[
-  //         Math.floor(
-  //           Math.random() *
-  //             Math.min(ENEMY_TYPES.length, Math.floor(wave / 2) + 1),
-  //         )
-  //       ];
-  //     const side = Math.floor(Math.random() * 4);
-  //     let x = 0;
-  //     let y = 0;
-  //
-  //     switch (side) {
-  //       case 0:
-  //         x = Math.random() * GAME_CONFIG.CANVAS_WIDTH;
-  //         y = -enemyType.size;
-  //         break;
-  //       case 1:
-  //         x = GAME_CONFIG.CANVAS_WIDTH + enemyType.size;
-  //         y = Math.random() * GAME_CONFIG.CANVAS_HEIGHT;
-  //         break;
-  //       case 2:
-  //         x = Math.random() * GAME_CONFIG.CANVAS_WIDTH;
-  //         y = GAME_CONFIG.CANVAS_HEIGHT + enemyType.size;
-  //         break;
-  //       default:
-  //         x = -enemyType.size;
-  //         y = Math.random() * GAME_CONFIG.CANVAS_HEIGHT;
-  //         break;
-  //     }
-  //
-  //     setEnemies((prev) => [
-  //       ...prev,
-  //       {
-  //         id: Math.random(),
-  //         x,
-  //         y,
-  //         ...enemyType,
-  //         maxHp: enemyType.hp,
-  //         slowEffect: 1,
-  //         slowEndTime: 0,
-  //       },
-  //     ]);
-  //     enemySpawnRef.current = now;
-  //   }
-  // }, [spawnRate, wave]);
-
   const spawnEnemies = useCallback(() => {
     const now = Date.now();
     if (now - enemySpawnRef.current > spawnRate) {
@@ -451,7 +401,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
               });
             }
 
-            // ✅ 추가: 실제 데미지 처리
+            // 실제 데미지 처리
             enemiesInRange.forEach((enemy) => {
               setEnemies((prev) =>
                 prev.reduce<Enemy[]>((acc, e) => {
@@ -478,7 +428,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
             lastAttackRef.current[weaponId] = now;
           }
         } else if (weapon.type === "multi") {
-          // 수리검 - 여러 발사체
+          // 화살, 수리검 - 여러 발사체
           let closestEnemy: Enemy | null = null;
           let closestDistance = weapon.range;
 
@@ -523,6 +473,80 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                 },
               ]);
             }
+            lastAttackRef.current[weaponId] = now;
+          }
+        } else if (weapon.type === "scatter") {
+          // 깃털날개 - 전방향 산탄 발사
+          if (
+            weaponId === "feather" &&
+            "spreadAngle" in weapon &&
+            "floatingTime" in weapon
+          ) {
+            for (let i = 0; i < weapon.projectileCount; i++) {
+              const angle = (2 * Math.PI * i) / weapon.projectileCount;
+
+              setBullets((prev) => [
+                ...prev,
+                {
+                  id: Math.random(),
+                  x: player.x,
+                  y: player.y,
+                  vx: Math.cos(angle) * (GAME_CONFIG.BULLET_SPEED * 0.7), // 속도 조금 느리게
+                  vy: Math.sin(angle) * (GAME_CONFIG.BULLET_SPEED * 0.7),
+                  damage: weapon.damage,
+                  color: weapon.color,
+                  range: weapon.range,
+                  traveled: 0,
+                  weaponType: weaponId,
+                  targetId: -1, // 타겟 없음
+                  floatingTime: weapon.floatingTime,
+                  startTime: now,
+                },
+              ]);
+            }
+            lastAttackRef.current[weaponId] = now;
+          }
+        } else if (weapon.type === "homing") {
+          // 그림자 화살 - 유도 미사일
+          let closestEnemy: Enemy | null = null;
+          let closestDistance = weapon.range;
+
+          enemies.forEach((enemy) => {
+            const distance = getDistance(player, enemy);
+            if (distance < closestDistance) {
+              closestEnemy = enemy;
+              closestDistance = distance;
+            }
+          });
+
+          if (
+            closestEnemy &&
+            "homingStrength" in weapon &&
+            "lifeSteal" in weapon
+          ) {
+            const angle = Math.atan2(
+              (closestEnemy as Enemy).y - player.y,
+              (closestEnemy as Enemy).x - player.x
+            );
+
+            setBullets((prev) => [
+              ...prev,
+              {
+                id: Math.random(),
+                x: player.x,
+                y: player.y,
+                vx: Math.cos(angle) * GAME_CONFIG.BULLET_SPEED,
+                vy: Math.sin(angle) * GAME_CONFIG.BULLET_SPEED,
+                damage: weapon.damage,
+                color: weapon.color,
+                range: weapon.range,
+                traveled: 0,
+                weaponType: weaponId,
+                targetId: closestEnemy!.id,
+                homingStrength: weapon.homingStrength,
+                lifeSteal: weapon.lifeSteal,
+              },
+            ]);
             lastAttackRef.current[weaponId] = now;
           }
         } else if (weapon.type === "explosive") {
@@ -608,7 +632,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
             lastAttackRef.current[weaponId] = now;
           }
         } else if (weapon.type === "area") {
-          // 회오리바람 처리 - 새로 추가
+          // 회오리바람 처리
           if (weaponId === "whirlwind") {
             createEffect("whirlwind", player.x, player.y, {
               radius: weapon.range,
@@ -669,7 +693,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
             lastAttackRef.current[weaponId] = now;
           }
         } else {
-          // 기존 투사체 무기들 + 새로운 투사체 무기들
+          // 기존 투사체 무기들 (fireball, ice, crossbow 등)
           let closestEnemy: Enemy | null = null;
           let closestDistance = weapon.range;
 
@@ -714,28 +738,94 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     });
   }, [player, enemies, getDistance, createEffect]);
 
-  // 총알 이동
+  // 총알 이동 함수 개선 (유도 미사일과 떠있는 무기 처리)
   const moveBullets = useCallback(() => {
+    const currentTime = Date.now();
+
     setBullets((prev) =>
       prev
-        .map((bullet) => ({
-          ...bullet,
-          x: bullet.x + bullet.vx,
-          y: bullet.y + bullet.vy,
-          traveled: bullet.traveled + GAME_CONFIG.BULLET_SPEED,
-        }))
-        .filter(
-          (bullet) =>
-            bullet.traveled < bullet.range &&
-            bullet.x > 0 &&
-            bullet.x < GAME_CONFIG.CANVAS_WIDTH &&
-            bullet.y > 0 &&
-            bullet.y < GAME_CONFIG.CANVAS_HEIGHT
-        )
-    );
-  }, []);
+        .map((bullet) => {
+          let newBullet = { ...bullet };
 
-  // 충돌 처리
+          // 그림자 화살의 유도 기능
+          if (bullet.weaponType === "shadowbolt" && bullet.homingStrength) {
+            const targetEnemy = enemies.find((e) => e.id === bullet.targetId);
+            if (targetEnemy) {
+              // 타겟 방향으로 서서히 회전
+              const targetAngle = Math.atan2(
+                targetEnemy.y - bullet.y,
+                targetEnemy.x - bullet.x
+              );
+              const currentAngle = Math.atan2(bullet.vy, bullet.vx);
+
+              // 각도 차이 계산 및 보정
+              let angleDiff = targetAngle - currentAngle;
+              if (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+              if (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+
+              // 유도 강도에 따라 회전
+              const newAngle = currentAngle + angleDiff * bullet.homingStrength;
+              const speed = Math.sqrt(
+                bullet.vx * bullet.vx + bullet.vy * bullet.vy
+              );
+
+              newBullet.vx = Math.cos(newAngle) * speed;
+              newBullet.vy = Math.sin(newAngle) * speed;
+            }
+          }
+
+          // 깃털의 떠있는 효과 (중력과 바람 효과)
+          if (
+            bullet.weaponType === "feather" &&
+            bullet.floatingTime &&
+            bullet.startTime
+          ) {
+            const elapsed = currentTime - bullet.startTime;
+            const floatProgress = elapsed / bullet.floatingTime;
+
+            if (floatProgress < 1) {
+              // 서서히 아래로 떨어지면서 속도 감소
+              newBullet.vy += 0.1; // 중력 효과
+              newBullet.vx *= 0.99; // 공기 저항
+              newBullet.vy *= 0.99;
+            }
+          }
+
+          // 기본 이동
+          newBullet.x += newBullet.vx;
+          newBullet.y += newBullet.vy;
+          newBullet.traveled += Math.sqrt(
+            newBullet.vx * newBullet.vx + newBullet.vy * newBullet.vy
+          );
+
+          return newBullet;
+        })
+        .filter((bullet) => {
+          // 범위 체크
+          if (bullet.traveled >= bullet.range) return false;
+
+          // 깃털의 떠있는 시간 체크
+          if (
+            bullet.weaponType === "feather" &&
+            bullet.floatingTime &&
+            bullet.startTime
+          ) {
+            const elapsed = currentTime - bullet.startTime;
+            if (elapsed >= bullet.floatingTime) return false;
+          }
+
+          // 화면 경계 체크
+          return (
+            bullet.x > -50 &&
+            bullet.x < GAME_CONFIG.CANVAS_WIDTH + 50 &&
+            bullet.y > -50 &&
+            bullet.y < GAME_CONFIG.CANVAS_HEIGHT + 50
+          );
+        })
+    );
+  }, [enemies]);
+
+  // 충돌 처리 함수 개선
   const handleCollisions = useCallback(() => {
     // 총알과 적 충돌
     setBullets((prevBullets) => {
@@ -796,7 +886,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
             targetY: bullet.targetY,
             width: weapon.beamWidth,
             color: weapon.color,
-            duration: 400,
+            duration: 800,
           });
 
           // 레이저 경로상의 모든 적에게 데미지
@@ -981,6 +1071,33 @@ export default function VampireSurvivalGame({ user }: GameProps) {
                 });
                 break;
 
+              case "shadowbolt":
+                // 그림자 화살 - 생명력 흡수 효과
+                if (bullet.lifeSteal) {
+                  const healAmount = Math.floor(
+                    bullet.damage * bullet.lifeSteal
+                  );
+                  setPlayer((prev) => ({
+                    ...prev,
+                    hp: Math.min(prev.maxHp, prev.hp + healAmount),
+                  }));
+
+                  createEffect("lifesteal", enemy.x, enemy.y, {
+                    color: weapon.color,
+                    duration: 500,
+                    healAmount,
+                  });
+                }
+                break;
+
+              case "feather":
+                // 깃털 - 부드러운 타격 효과
+                createEffect("flutter", enemy.x, enemy.y, {
+                  color: weapon.color,
+                  duration: 300,
+                });
+                break;
+
               case "shuriken":
                 createEffect("hit", enemy.x, enemy.y, {
                   color: weapon.color,
@@ -1079,7 +1196,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
             setIsDead(true);
           }
 
-          // 피격 시 0.2초간 무적 상태 설정
+          // 피격 시 0.1초간 무적 상태 설정
           return {
             ...prev,
             hp: Math.max(0, newHp),
@@ -1455,7 +1572,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
           case "charging":
             ctx.strokeStyle = effect.color;
             ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
+            ctx.setLineDash([]);
             ctx.beginPath();
             ctx.moveTo(effect.x, effect.y);
             ctx.lineTo(effect.targetX!, effect.targetY!);

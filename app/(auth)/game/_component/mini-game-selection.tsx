@@ -24,7 +24,7 @@ const games = [
     description: "몰려오는 동굴이.. 아아니 몬스터들을 물리치며 생존하세요!",
     icon: "🧛",
     url: "/game/vampire-survivors",
-    available: true,
+    available: false,
     difficulty: "보통",
     players: "1인",
   },

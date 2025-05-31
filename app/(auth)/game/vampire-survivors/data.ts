@@ -18,6 +18,10 @@ import {
   Star,
   Tornado,
   Heart,
+  Eclipse,
+  Feather,
+  Ghost,
+  Hammer,
 } from "lucide-react";
 
 // 게임 설정
@@ -30,7 +34,7 @@ export const GAME_CONFIG = {
   PLAYER_SPEED: 3,
   ENEMY_SPEED: 1,
   BULLET_SPEED: 8,
-  GAME_DURATION: 30 * 60 * 1000, // 30분
+  GAME_DURATION: 10 * 60 * 1000, // 10분
   EXP_ORB_SIZE: 8,
 };
 
@@ -70,28 +74,28 @@ export const WEAPONS = {
   // 기존 무기들
   fireball: {
     name: "파이어볼",
-    damage: 30,
+    damage: 20,
     cooldown: 1200,
     color: "#FF6B35",
     range: 150,
     type: "projectile" as const,
-    explosionRadius: 60,
-    explosionDamage: 20,
+    explosionRadius: 120,
+    explosionDamage: 5,
     icon: Flame,
   },
   sword: {
     name: "검",
     damage: 40,
-    cooldown: 1200,
+    cooldown: 800,
     color: "#C0C0C0",
-    range: 70,
+    range: 60,
     type: "melee" as const,
     icon: Sword,
   },
   arrow: {
     name: "화살",
     damage: 35,
-    cooldown: 700,
+    cooldown: 800,
     color: "#e81189",
     range: 200,
     type: "multi" as const,
@@ -123,15 +127,14 @@ export const WEAPONS = {
     icon: Snowflake,
   },
 
-  // 새로 추가된 무기들
   crossbow: {
     name: "석궁",
-    damage: 40,
-    cooldown: 1500,
+    damage: 80,
+    cooldown: 2000,
     color: "#f87f08",
-    range: 250,
+    range: 500,
     type: "projectile" as const,
-    piercing: 3, // 관통 횟수
+    piercing: 10, // 관통 횟수
     icon: Crosshair,
   },
   shield: {
@@ -141,7 +144,7 @@ export const WEAPONS = {
     color: "#4f4f5a",
     range: 60,
     type: "defensive" as const,
-    knockback: 40,
+    knockback: 400,
     block: 0.3, // 30% 데미지 감소
     icon: ShieldCheck,
   },
@@ -153,7 +156,7 @@ export const WEAPONS = {
     range: 100,
     type: "area" as const,
     duration: 1500,
-    pullForce: 2, // 적을 끌어당기는 힘
+    pullForce: 3, // 적을 끌어당기는 힘
     icon: Wind,
   },
   bomb: {
@@ -195,11 +198,36 @@ export const WEAPONS = {
     damage: 40,
     cooldown: 1800,
     color: "#eefb00",
-    range: 300,
+    range: 1000,
     type: "beam" as const,
-    beamWidth: 40,
+    beamWidth: 80,
     chargeTime: 1000,
     icon: Target,
+  },
+
+  // 새로 추가된 무기들
+  shadowbolt: {
+    name: "흡혈 화살",
+    damage: 35,
+    cooldown: 900,
+    color: "#dbdbdb",
+    range: 220,
+    type: "homing" as const,
+    homingStrength: 0.3, // 유도 강도
+    lifeSteal: 0.01, // 1% 생명력 흡수
+    icon: Eclipse,
+  },
+  feather: {
+    name: "깃털날개",
+    damage: 18,
+    cooldown: 500,
+    color: "#FFE4E1",
+    range: 160,
+    type: "scatter" as const,
+    projectileCount: 6,
+    spreadAngle: 360, // 전방향 발사
+    floatingTime: 2000, // 공중에 떠있는 시간
+    icon: Feather,
   },
 };
 
@@ -207,64 +235,64 @@ export const WEAPONS = {
 export const ENEMY_TYPES = [
   {
     type: "zombie" as const,
-    hp: 80,
+    hp: 160,
     speed: 0.8,
     color: "#8B4513",
-    exp: 10,
+    exp: 2,
     size: 15,
     icon: Bot,
   },
   {
     type: "skeleton" as const,
-    hp: 130,
+    hp: 300,
     speed: 1,
     color: "#F5F5DC",
-    exp: 15,
+    exp: 3,
     size: 12,
     icon: Skull,
   },
   {
     type: "orc" as const,
-    hp: 180,
+    hp: 500,
     speed: 0.7,
     color: "#228B22",
-    exp: 25,
+    exp: 4,
     size: 18,
     icon: Users,
   },
   {
     type: "demon" as const,
-    hp: 250,
+    hp: 750,
     speed: 0.9,
     color: "#8B0000",
-    exp: 40,
+    exp: 5,
     size: 20,
     icon: Crown,
   },
   {
     type: "golem" as const,
-    hp: 500,
+    hp: 2500,
     speed: 0.6,
     color: "#A9A9A9",
-    exp: 60,
+    exp: 10,
     size: 25,
     icon: Shield, // 체력이 높고 느림
   },
   {
     type: "vampire" as const,
-    hp: 150,
-    speed: 1,
+    hp: 500,
+    speed: 1.5,
     color: "#800080",
-    exp: 50,
+    exp: 5,
     size: 17,
     icon: Heart, // 빠르고 회피형 (추후 특성 구현 가능)
   },
   {
     type: "mage" as const,
-    hp: 150,
+    hp: 450,
     speed: 0.9,
     color: "#1E90FF",
-    exp: 35,
+    exp: 5,
     size: 16,
     icon: Sparkles,
   },
