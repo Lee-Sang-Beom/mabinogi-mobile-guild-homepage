@@ -1,11 +1,8 @@
 import {
   Beef,
   BookOpen,
-  Copy,
   CandlestickChartIcon as Candle,
   Watch,
-  Sparkles,
-  Clover,
   Heart,
   Magnet,
   Crown,
@@ -33,16 +30,6 @@ export const PASSIVES: Record<PassiveId, PassiveData> = {
       projectileCount: [1, 1, 2, 2, 3],
     },
   },
-  duplicator: {
-    name: "복제기",
-    description: "투사체를 복제합니다",
-    icon: Copy,
-    color: "#4169E1",
-    maxLevel: 5,
-    effects: {
-      duplicateChance: [0.1, 0.15, 0.2, 0.25, 0.3],
-    },
-  },
   candelabrador: {
     name: "촛대",
     description: "공격 범위를 증가시킵니다",
@@ -61,26 +48,6 @@ export const PASSIVES: Record<PassiveId, PassiveData> = {
     maxLevel: 5,
     effects: {
       cooldownReduction: [0.1, 0.15, 0.2, 0.25, 0.3],
-    },
-  },
-  spellbinder: {
-    name: "주문서",
-    description: "지속시간을 증가시킵니다",
-    icon: Sparkles,
-    color: "#9370DB",
-    maxLevel: 5,
-    effects: {
-      durationMultiplier: [1.1, 1.2, 1.3, 1.4, 1.5],
-    },
-  },
-  clover: {
-    name: "클로버",
-    description: "행운을 증가시킵니다",
-    icon: Clover,
-    color: "#32CD32",
-    maxLevel: 5,
-    effects: {
-      luck: [0.1, 0.15, 0.2, 0.25, 0.3],
     },
   },
   pummarola: {

@@ -159,7 +159,7 @@ export function GameUI({
         </div>
 
         {/* Weapons */}
-        <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-slate-600/50 shadow-lg hover:border-yellow-400/50 transition-all duration-300 group">
+        <div className="max-h-[150px] overflow-y-auto bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-slate-600/50 shadow-lg hover:border-yellow-400/50 transition-all duration-300 group">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
               <Sword className="text-white" size={16} />
@@ -167,7 +167,7 @@ export function GameUI({
             <span className="text-white font-bold text-lg">무기</span>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap ">
             {player.weapons.map((weapon, index) => {
               const weaponData = WEAPONS[weapon.id];
               const IconComponent = weaponData.icon;

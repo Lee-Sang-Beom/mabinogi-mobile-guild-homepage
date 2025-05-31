@@ -21,6 +21,7 @@ interface GameCanvasProps {
   effects: Effect[];
   gameState: GameState;
   selectedCharacter: Character | null;
+  orbitalWeapons: any[];
 }
 
 export function GameCanvas({
@@ -31,6 +32,7 @@ export function GameCanvas({
   effects,
   gameState,
   selectedCharacter,
+  orbitalWeapons,
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -218,6 +220,19 @@ export function GameCanvas({
             ctx.arc(effect.x, effect.y, 8 * progress, 0, Math.PI * 2);
             ctx.fill();
             break;
+          case "orbital-hit":
+            // 궤도 무기 타격 이펙트
+            ctx.strokeStyle = effect.color;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(effect.x, effect.y, 15 * progress, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = effect.color;
+            ctx.beginPath();
+            ctx.arc(effect.x, effect.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            break;
           case "death":
             ctx.strokeStyle = effect.color;
             ctx.lineWidth = 3;
@@ -226,26 +241,10 @@ export function GameCanvas({
             ctx.stroke();
             break;
           case "melee":
-            // 근접 무기 - 플레이어 중심 원형 공격 표시
             ctx.strokeStyle = effect.color;
             ctx.lineWidth = 5;
-            ctx.globalAlpha = alpha * 0.7;
             ctx.beginPath();
             ctx.arc(effect.x, effect.y, effect.radius, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // 추가 시각 효과 - 펄스 효과
-            ctx.strokeStyle = effect.color;
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = alpha * 0.3;
-            ctx.beginPath();
-            ctx.arc(
-              effect.x,
-              effect.y,
-              effect.radius * (1 + progress * 0.5),
-              0,
-              Math.PI * 2
-            );
             ctx.stroke();
             break;
           case "area":
@@ -254,62 +253,12 @@ export function GameCanvas({
             ctx.beginPath();
             ctx.arc(effect.x, effect.y, effect.radius, 0, Math.PI * 2);
             ctx.fill();
-
-            // 테두리 효과
-            ctx.strokeStyle = effect.color;
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = alpha * 0.6;
-            ctx.beginPath();
-            ctx.arc(effect.x, effect.y, effect.radius, 0, Math.PI * 2);
-            ctx.stroke();
             break;
           case "lightning":
-            // 번개 효과 - 여러 개의 번쩍이는 원
-            for (let i = 0; i < 3; i++) {
-              ctx.fillStyle = effect.color;
-              ctx.globalAlpha = alpha * (0.8 - i * 0.2);
-              ctx.beginPath();
-              ctx.arc(effect.x, effect.y, 12 + i * 4, 0, Math.PI * 2);
-              ctx.fill();
-            }
-            break;
-          case "charging":
-            // 차징 효과 - 플레이어에서 타겟으로의 선
-            ctx.strokeStyle = effect.color;
-            ctx.lineWidth = 3;
-            ctx.setLineDash([5, 5]);
-            ctx.globalAlpha = alpha * 0.8;
-            ctx.beginPath();
-            ctx.moveTo(effect.x, effect.y);
-            ctx.lineTo(effect.targetX!, effect.targetY!);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            // 차징 포인트
             ctx.fillStyle = effect.color;
-            ctx.globalAlpha = alpha;
             ctx.beginPath();
-            ctx.arc(effect.x, effect.y, 8 * (1 - progress), 0, Math.PI * 2);
+            ctx.arc(effect.x, effect.y, 12, 0, Math.PI * 2);
             ctx.fill();
-            break;
-          case "beam":
-            // 레이저 빔 효과
-            ctx.strokeStyle = effect.color;
-            ctx.lineWidth = effect.width;
-            ctx.globalAlpha = alpha * 0.8;
-            ctx.beginPath();
-            ctx.moveTo(effect.x, effect.y);
-            ctx.lineTo(effect.targetX!, effect.targetY!);
-            ctx.stroke();
-
-            // 빔 중심선
-            ctx.strokeStyle = "#FFFFFF";
-            ctx.lineWidth = effect.width * 0.3;
-            ctx.globalAlpha = alpha;
-            ctx.beginPath();
-            ctx.moveTo(effect.x, effect.y);
-            ctx.lineTo(effect.targetX!, effect.targetY!);
-            ctx.stroke();
             break;
           case "damage":
             ctx.fillStyle = effect.color;
@@ -319,6 +268,57 @@ export function GameCanvas({
             break;
         }
 
+        ctx.restore();
+      });
+
+      // Orbital weapons 렌더링 - 게임 로직과 동일한 계산 사용
+      const currentTime = Date.now();
+      orbitalWeapons.forEach((orbital) => {
+        for (let i = 0; i < orbital.orbitCount; i++) {
+          // 게임 로직과 정확히 동일한 계산 사용
+          const orbitSpeed = orbital.weaponId === "kingBible" ? 1.5 : 2;
+          const angle =
+            currentTime * orbitSpeed * 0.001 +
+            (i * Math.PI * 2) / orbital.orbitCount;
+          const orbitalX = player.x + Math.cos(angle) * orbital.range;
+          const orbitalY = player.y + Math.sin(angle) * orbital.range;
+
+          ctx.save();
+
+          // 궤도 무기 본체
+          ctx.fillStyle = orbital.color;
+          ctx.shadowColor = orbital.color;
+          ctx.shadowBlur = 15;
+          ctx.beginPath();
+          ctx.arc(orbitalX, orbitalY, 12, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 궤도 무기 테두리
+          ctx.strokeStyle = "white";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(orbitalX, orbitalY, 12, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // 히트박스 시각화 (디버깅용)
+          const hitboxSize = orbital.weaponId === "kingBible" ? 50 : 35;
+          ctx.strokeStyle = "rgba(255, 0, 0, 0.2)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(orbitalX, orbitalY, hitboxSize, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.restore();
+        }
+
+        // 궤도 경로 표시
+        ctx.save();
+        ctx.strokeStyle = `${orbital.color}40`;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, orbital.range, 0, Math.PI * 2);
+        ctx.stroke();
         ctx.restore();
       });
 
@@ -350,6 +350,7 @@ export function GameCanvas({
     effects,
     gameState,
     selectedCharacter,
+    orbitalWeapons,
   ]);
 
   return (
@@ -365,7 +366,7 @@ export function GameCanvas({
         <div className="absolute top-1 left-1 w-3 h-3 border-l-2 border-t-2 border-blue-400/60 rounded-tl-lg"></div>
         <div className="absolute top-1 right-1 w-3 h-3 border-r-2 border-t-2 border-blue-400/60 rounded-tr-lg"></div>
         <div className="absolute bottom-1 left-1 w-3 h-3 border-l-2 border-b-2 border-blue-400/60 rounded-bl-lg"></div>
-        <div className="absolute bottom-1 right-1 w-3 h-3 border-r-2 border-b-2 border-blue-400/60 rounded-br-lg"></div>
+        <div className="absolute bottom-1 right-1 w-3 h-3 border-r-2 border-b-2 border-blue-400/60 rounded-bl-lg"></div>
       </div>
     </div>
   );

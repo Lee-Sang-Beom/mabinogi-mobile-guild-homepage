@@ -213,11 +213,8 @@ export type WeaponId =
 export type PassiveId =
   | "spinach"
   | "emptyTome"
-  | "duplicator"
   | "candelabrador"
   | "bracer"
-  | "spellbinder"
-  | "clover"
   | "pummarola"
   | "attractorb"
   | "crown";

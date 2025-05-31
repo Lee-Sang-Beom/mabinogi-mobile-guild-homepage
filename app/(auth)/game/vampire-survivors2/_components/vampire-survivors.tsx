@@ -24,6 +24,7 @@ import { GameOverScreen } from "./game-over-screen";
 import { MenuScreen } from "./menu-screen";
 import { useGetGamesByGameType } from "../../hooks/use-get-games-by-game-type";
 import { useCreateGame } from "../../hooks/use-create-game";
+import { getRandomAudio } from "../../util";
 
 export default function VampireSurvivalGame({ user }: GameProps) {
   // API Hooks
@@ -36,6 +37,10 @@ export default function VampireSurvivalGame({ user }: GameProps) {
   const keysRef = useRef<Record<string, boolean>>({});
   const lastUpdateRef = useRef<number>(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const orbitalHitCooldownRef = useRef<Map<string, number>>(new Map());
+  const areaEffectsRef = useRef<
+    Map<string, { x: number; y: number; damage: number; lastHit: number }[]>
+  >(new Map());
 
   // Game State
   const [gameState, setGameState] = useState<GameState>({
@@ -51,7 +56,6 @@ export default function VampireSurvivalGame({ user }: GameProps) {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null
   );
-  const [selectedAudio, setSelectedAudio] = useState<string | null>(null);
 
   // Player State
   const [player, setPlayer] = useState<Player>({
@@ -76,8 +80,48 @@ export default function VampireSurvivalGame({ user }: GameProps) {
   const [expOrbs, setExpOrbs] = useState<ExpOrb[]>([]);
   const [effects, setEffects] = useState<Effect[]>([]);
   const [levelUpOptions, setLevelUpOptions] = useState<LevelUpOption[]>([]);
+  const [orbitalWeapons, setOrbitalWeapons] = useState<any[]>([]);
 
-  // Computed values
+  // 배경음악 재생 함수
+  const playBackgroundMusic = useCallback(() => {
+    // audioRef가 null이 아닌지 확인
+    if (!audioRef.current) {
+      console.error("Audio element not found");
+      return;
+    }
+
+    const randomAudio = getRandomAudio();
+
+    audioRef.current.src = randomAudio;
+    audioRef.current.volume = 0.3;
+    audioRef.current.loop = true;
+
+    // 오디오 로드 후 재생 시도
+    audioRef.current.load();
+    audioRef.current.play().catch((error) => {
+      console.error("Audio play failed:", error);
+    });
+  }, []);
+
+  // 배경음악 정지 함수
+  const stopBackgroundMusic = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, []);
+
+  // Get high score from ranking data
+  useEffect(() => {
+    if (rankingData?.success && rankingData.data) {
+      const userBestScore = rankingData.data
+        .filter((game) => game.userId === user.id)
+        .reduce((max, game) => Math.max(max, game.score), 0);
+      setGameState((prev) => ({ ...prev, highScore: userBestScore }));
+    }
+  }, [rankingData, user.id]);
+
+  // Computed values - 패시브 효과 계산 (삭제된 패시브 제거)
   const playerStats = useMemo(() => {
     let damageMultiplier = 1;
     let cooldownReduction = 0;
@@ -85,40 +129,79 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     let expMultiplier = 1;
     let magnetRange = GAME_CONFIG.EXP_MAGNET_BASE_RANGE;
     let healthRegen = 0;
+    let projectileCount = 0;
 
     player.passives.forEach((passive) => {
       const passiveData = PASSIVES[passive.id];
       const level = passive.level - 1;
 
       if (passiveData.effects.damageMultiplier) {
-        damageMultiplier *= passiveData.effects.damageMultiplier[level] || 1;
+        const multiplier = passiveData.effects.damageMultiplier[level] || 1;
+        damageMultiplier *= multiplier;
       }
       if (passiveData.effects.cooldownReduction) {
-        cooldownReduction += passiveData.effects.cooldownReduction[level] || 0;
+        const reduction = passiveData.effects.cooldownReduction[level] || 0;
+        cooldownReduction += reduction;
       }
       if (passiveData.effects.rangeMultiplier) {
-        rangeMultiplier *= passiveData.effects.rangeMultiplier[level] || 1;
+        const multiplier = passiveData.effects.rangeMultiplier[level] || 1;
+        rangeMultiplier *= multiplier;
       }
       if (passiveData.effects.expMultiplier) {
-        expMultiplier *= passiveData.effects.expMultiplier[level] || 1;
+        const multiplier = passiveData.effects.expMultiplier[level] || 1;
+        expMultiplier *= multiplier;
       }
       if (passiveData.effects.magnetRange) {
-        magnetRange *= passiveData.effects.magnetRange[level] || 1;
+        const multiplier = passiveData.effects.magnetRange[level] || 1;
+        magnetRange *= multiplier;
       }
       if (passiveData.effects.healthRegen) {
-        healthRegen += passiveData.effects.healthRegen[level] || 0;
+        const regen = passiveData.effects.healthRegen[level] || 0;
+        healthRegen += regen;
+      }
+      if (passiveData.effects.projectileCount) {
+        const count = passiveData.effects.projectileCount[level] || 0;
+        projectileCount += count;
       }
     });
 
-    return {
+    const stats = {
       damageMultiplier,
       cooldownReduction,
       rangeMultiplier,
       expMultiplier,
       magnetRange,
       healthRegen,
+      projectileCount,
     };
+
+    return stats;
   }, [player.passives]);
+
+  // Utility functions
+  const checkCollision = useCallback(
+    (
+      obj1: { x: number; y: number },
+      obj2: { x: number; y: number },
+      size1: number = GAME_CONFIG.PLAYER_SIZE,
+      size2 = 15
+    ) => {
+      const dx = obj1.x - obj2.x;
+      const dy = obj1.y - obj2.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      return distance < (size1 + size2) / 2;
+    },
+    []
+  );
+
+  const getDistance = useCallback(
+    (obj1: { x: number; y: number }, obj2: { x: number; y: number }) => {
+      const dx = obj1.x - obj2.x;
+      const dy = obj1.y - obj2.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    },
+    []
+  );
 
   const createEffect = useCallback(
     (
@@ -143,69 +226,6 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       setTimeout(() => {
         setEffects((prev) => prev.filter((e) => e.id !== effectId));
       }, effect.duration);
-    },
-    []
-  );
-
-  const handleEnemyDeath = useCallback(
-    (enemy: Enemy) => {
-      const expGain = Math.floor(enemy.exp * playerStats.expMultiplier);
-
-      setExpOrbs((prev) => [
-        ...prev,
-        {
-          id: Math.random(),
-          x: enemy.x,
-          y: enemy.y,
-          exp: expGain,
-        },
-      ]);
-
-      setGameState((prev) => ({
-        ...prev,
-        score: prev.score + expGain,
-        enemiesKilled: prev.enemiesKilled + 1,
-      }));
-
-      createEffect("death", enemy.x, enemy.y, {
-        color: enemy.color,
-        duration: 500,
-      });
-    },
-    [playerStats.expMultiplier, createEffect]
-  );
-
-  // Get high score from ranking data
-  useEffect(() => {
-    if (rankingData?.success && rankingData.data) {
-      const userBestScore = rankingData.data
-        .filter((game) => game.userId === user.id)
-        .reduce((max, game) => Math.max(max, game.score), 0);
-      setGameState((prev) => ({ ...prev, highScore: userBestScore }));
-    }
-  }, [rankingData, user.id]);
-
-  // Utility functions
-  const checkCollision = useCallback(
-    (
-      obj1: { x: number; y: number },
-      obj2: { x: number; y: number },
-      size1: number = GAME_CONFIG.PLAYER_SIZE,
-      size2 = 15
-    ) => {
-      const dx = obj1.x - obj2.x;
-      const dy = obj1.y - obj2.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      return distance < (size1 + size2) / 2;
-    },
-    []
-  );
-
-  const getDistance = useCallback(
-    (obj1: { x: number; y: number }, obj2: { x: number; y: number }) => {
-      const dx = obj1.x - obj2.x;
-      const dy = obj1.y - obj2.y;
-      return Math.sqrt(dx * dx + dy * dy);
     },
     []
   );
@@ -351,72 +371,36 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     });
   }, [player.speed]);
 
-  const attackWithWeapons = useCallback(() => {
-    const currentTime = Date.now();
+  // handleEnemyDeath 함수를 먼저 선언
+  const handleEnemyDeath = useCallback(
+    (enemy: Enemy) => {
+      const expGain = Math.floor(enemy.exp * playerStats.expMultiplier);
 
-    player.weapons.forEach((weapon) => {
-      const weaponData = WEAPONS[weapon.id];
-      const level = weapon.level;
+      setExpOrbs((prev) => [
+        ...prev,
+        {
+          id: Math.random(),
+          x: enemy.x,
+          y: enemy.y,
+          exp: expGain,
+        },
+      ]);
 
-      // 레벨에 따른 스탯 계산
-      const damage = Math.floor(
-        (weaponData.baseDamage + (level - 1) * weaponData.levelScaling.damage) *
-          playerStats.damageMultiplier
-      );
+      setGameState((prev) => ({
+        ...prev,
+        score: prev.score + expGain,
+        enemiesKilled: prev.enemiesKilled + 1,
+      }));
 
-      const cooldown =
-        Math.max(
-          100,
-          weaponData.baseCooldown +
-            (level - 1) * weaponData.levelScaling.cooldown
-        ) *
-        (1 - playerStats.cooldownReduction);
+      createEffect("death", enemy.x, enemy.y, {
+        color: enemy.color,
+        duration: 500,
+      });
+    },
+    [playerStats.expMultiplier, createEffect]
+  );
 
-      const range = Math.floor(
-        (weaponData.baseRange +
-          (level - 1) * (weaponData.levelScaling.range || 0)) *
-          playerStats.rangeMultiplier
-      );
-
-      if (currentTime - weapon.lastAttack > cooldown) {
-        // 무기 타입별 공격 로직
-        switch (weaponData.type) {
-          case "melee":
-            // 근접 무기 - 플레이어 주변 원형 공격
-            attackMelee(weapon, weaponData, damage, range, level);
-            break;
-          case "orbital":
-            // 궤도 무기는 지속적으로 작동하므로 별도 처리하지 않음
-            break;
-          case "area":
-            // 지역 공격
-            attackArea(weapon, weaponData, damage, range, level);
-            break;
-          case "multi":
-            // 다중 타겟 공격
-            attackMulti(weapon, weaponData, damage, range, level);
-            break;
-          case "beam":
-            // 레이저 공격
-            attackBeam(weapon, weaponData, damage, range, level);
-            break;
-          default:
-            // 투사체 무기들
-            attackProjectile(weapon, weaponData, damage, range, level);
-            break;
-        }
-
-        // 공격 시간 업데이트
-        setPlayer((prev) => ({
-          ...prev,
-          weapons: prev.weapons.map((w) =>
-            w.id === weapon.id ? { ...w, lastAttack: currentTime } : w
-          ),
-        }));
-      }
-    });
-  }, [player.weapons, player.x, player.y, playerStats, enemies]);
-
+  // 그 다음 attackMelee 함수 선언
   const attackMelee = useCallback(
     (
       weapon: any,
@@ -468,6 +452,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     [player, enemies, getDistance, createEffect, handleEnemyDeath]
   );
 
+  // attackProjectile 함수 개선 - 패시브 효과 적용
   const attackProjectile = useCallback(
     (
       weapon: any,
@@ -493,14 +478,20 @@ export default function VampireSurvivalGame({ user }: GameProps) {
           (closestEnemy as Enemy).y - player.y,
           (closestEnemy as Enemy).x - player.x
         );
-        const projectileCount = Math.floor(
+
+        // 기본 투사체 개수 + 패시브 효과
+        const baseProjectileCount = Math.floor(
           (weaponData.special?.projectileCount || 1) +
             (level - 1) * (weaponData.levelScaling.projectileCount || 0)
         );
+        const totalProjectileCount =
+          baseProjectileCount + Math.floor(playerStats.projectileCount);
 
-        for (let i = 0; i < projectileCount; i++) {
+        for (let i = 0; i < totalProjectileCount; i++) {
           const spreadAngle =
-            projectileCount > 1 ? (i - (projectileCount - 1) / 2) * 0.2 : 0;
+            totalProjectileCount > 1
+              ? (i - (totalProjectileCount - 1) / 2) * 0.2
+              : 0;
           const finalAngle = angle + spreadAngle;
 
           setBullets((prev) => [
@@ -517,15 +508,16 @@ export default function VampireSurvivalGame({ user }: GameProps) {
               traveled: 0,
               weaponId: weapon.id,
               weaponLevel: level,
-              targetId: (closestEnemy as Enemy).id,
+              targetId: closestEnemy!.id,
             },
           ]);
         }
       }
     },
-    [player, enemies, getDistance]
+    [player, enemies, getDistance, playerStats.projectileCount]
   );
 
+  // attackArea 함수 개선 - 성수 문제 해결
   const attackArea = useCallback(
     (
       weapon: any,
@@ -537,49 +529,114 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       const areaCount = Math.floor(
         (weaponData.special?.areaCount || 1) + (level - 1) * 0.5
       );
+      const duration = weaponData.special?.duration || 3000;
 
       for (let i = 0; i < areaCount; i++) {
-        const angle = (Math.PI * 2 * i) / areaCount;
-        const distance = range * 0.8;
-        const x = player.x + Math.cos(angle) * distance;
-        const y = player.y + Math.sin(angle) * distance;
+        let x: number, y: number;
+
+        // 성수는 캐릭터 근처 랜덤 위치에 생성
+        if (weapon.id === "santaWater") {
+          // 캐릭터 주변 랜덤 위치 (range 범위 내)
+          const randomAngle = Math.random() * Math.PI * 2;
+          const randomDistance = Math.random() * range * 0.8 + range * 0.2; // 20%~100% 거리
+          x = player.x + Math.cos(randomAngle) * randomDistance;
+          y = player.y + Math.sin(randomAngle) * randomDistance;
+
+          // 화면 경계 체크
+          x = Math.max(60, Math.min(GAME_CONFIG.CANVAS_WIDTH - 60, x));
+          y = Math.max(60, Math.min(GAME_CONFIG.CANVAS_HEIGHT - 60, y));
+        } else {
+          // 다른 지역 무기는 기존 방식 (원형 배치)
+          const angle = (Math.PI * 2 * i) / areaCount;
+          const distance = range * 0.8;
+          x = player.x + Math.cos(angle) * distance;
+          y = player.y + Math.sin(angle) * distance;
+        }
+
+        // 지역 효과 생성
+        const areaId = `${weapon.id}-${Date.now()}-${i}`;
+        const areaRadius = range * 0.6;
 
         createEffect("area", x, y, {
-          radius: range * 0.6,
+          radius: areaRadius,
           color: weaponData.color,
-          duration: weaponData.special?.duration || 3000,
+          duration: duration,
           damage,
           weaponId: weapon.id,
+          areaId: areaId,
         });
 
-        // 지역 데미지 처리
+        // 지속적인 데미지를 위한 영역 등록
+        const currentAreas = areaEffectsRef.current.get(weapon.id) || [];
+        currentAreas.push({
+          x,
+          y,
+          damage,
+          lastHit: Date.now(),
+        });
+        areaEffectsRef.current.set(weapon.id, currentAreas);
+
+        // 지속시간 후 영역 제거
         setTimeout(() => {
-          const enemiesInArea = enemies.filter(
-            (enemy) => getDistance({ x, y }, enemy) <= range * 0.6
+          const areas = areaEffectsRef.current.get(weapon.id) || [];
+          const filteredAreas = areas.filter(
+            (area) => !(area.x === x && area.y === y)
           );
-          enemiesInArea.forEach((enemy) => {
-            setEnemies((prev) =>
-              prev.reduce<Enemy[]>((acc, e) => {
-                if (e.id === enemy.id) {
-                  const newHp = e.hp - damage;
-                  if (newHp > 0) {
-                    acc.push({ ...e, hp: newHp });
-                  } else {
-                    handleEnemyDeath(e);
-                  }
-                } else {
-                  acc.push(e);
-                }
-                return acc;
-              }, [])
-            );
-          });
-        }, 100);
+          if (filteredAreas.length > 0) {
+            areaEffectsRef.current.set(weapon.id, filteredAreas);
+          } else {
+            areaEffectsRef.current.delete(weapon.id);
+          }
+        }, duration);
       }
     },
-    [player, enemies, getDistance, createEffect, handleEnemyDeath]
+    [player, createEffect]
   );
 
+  // 지역 효과 데미지 처리 함수 추가
+  const processAreaDamage = useCallback(() => {
+    const currentTime = Date.now();
+
+    areaEffectsRef.current.forEach((areas, weaponId) => {
+      areas.forEach((area) => {
+        // 0.5초마다 데미지 적용
+        if (currentTime - area.lastHit > 500) {
+          const enemiesInArea = enemies.filter(
+            (enemy) => getDistance({ x: area.x, y: area.y }, enemy) <= 60 // 영역 반지름
+          );
+
+          if (enemiesInArea.length > 0) {
+            enemiesInArea.forEach((enemy) => {
+              setEnemies((prev) =>
+                prev.reduce<Enemy[]>((acc, e) => {
+                  if (e.id === enemy.id) {
+                    const newHp = e.hp - area.damage;
+                    if (newHp > 0) {
+                      acc.push({ ...e, hp: newHp });
+                    } else {
+                      handleEnemyDeath(e);
+                    }
+                  } else {
+                    acc.push(e);
+                  }
+                  return acc;
+                }, [])
+              );
+
+              createEffect("hit", enemy.x, enemy.y, {
+                color: "#87CEEB",
+                duration: 200,
+              });
+            });
+
+            area.lastHit = currentTime;
+          }
+        }
+      });
+    });
+  }, [enemies, getDistance, createEffect, handleEnemyDeath]);
+
+  // attackMulti 함수 선언
   const attackMulti = useCallback(
     (
       weapon: any,
@@ -627,6 +684,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     [player, enemies, getDistance, createEffect, handleEnemyDeath]
   );
 
+  // attackBeam 함수 선언
   const attackBeam = useCallback(
     (
       weapon: any,
@@ -661,8 +719,8 @@ export default function VampireSurvivalGame({ user }: GameProps) {
         // 차징 후 레이저 발사
         setTimeout(() => {
           createEffect("beam", player.x, player.y, {
-            targetX: (closestEnemy as Enemy)!.x,
-            targetY: (closestEnemy as Enemy)!.y,
+            targetX: closestEnemy!.x,
+            targetY: closestEnemy!.y,
             width: weaponData.special?.beamWidth || 20,
             color: weaponData.color,
             duration: 800,
@@ -699,6 +757,210 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     },
     [player, enemies, getDistance, createEffect, handleEnemyDeath]
   );
+
+  // updateOrbitalWeapon 함수 - 캔버스와 동일한 계산 사용
+  const updateOrbitalWeapon = useCallback(
+    (
+      weapon: any,
+      weaponData: any,
+      damage: number,
+      range: number,
+      level: number
+    ) => {
+      const orbitCount = Math.floor(
+        (weaponData.special?.orbitCount || 1) +
+          (level - 1) * (weaponData.levelScaling.orbitCount || 0)
+      );
+      // 무기별 궤도 속도 설정 (캔버스와 동일)
+      const orbitSpeed = weapon.id === "kingBible" ? 1.5 : 2;
+      const currentTime = Date.now();
+
+      // 궤도 무기 상태 업데이트
+      setOrbitalWeapons((prev) => {
+        const existing = prev.find((o) => o.weaponId === weapon.id);
+
+        if (existing) {
+          return prev.map((o) =>
+            o.weaponId === weapon.id
+              ? {
+                  ...o,
+                  damage,
+                  range,
+                  orbitCount,
+                }
+              : o
+          );
+        } else {
+          return [
+            ...prev,
+            {
+              weaponId: weapon.id,
+              damage,
+              range,
+              orbitCount,
+              color: weaponData.color,
+            },
+          ];
+        }
+      });
+
+      // 충돌 검사 - 캔버스와 정확히 동일한 계산
+      const hitboxSize = weapon.id === "kingBible" ? 50 : 35;
+
+      for (let i = 0; i < orbitCount; i++) {
+        // 캔버스와 정확히 동일한 각도 계산
+        const angle =
+          currentTime * orbitSpeed * 0.001 + (i * Math.PI * 2) / orbitCount;
+        const orbitalX = player.x + Math.cos(angle) * range;
+        const orbitalY = player.y + Math.sin(angle) * range;
+
+        // 현재 궤도 위치 근처의 적들 찾기
+        enemies.forEach((enemy) => {
+          const distance = getDistance({ x: orbitalX, y: orbitalY }, enemy);
+
+          if (distance < hitboxSize) {
+            const hitKey = `${weapon.id}-${i}-${enemy.id}`;
+            const lastHitTime = orbitalHitCooldownRef.current.get(hitKey) || 0;
+            const hitCooldown = weapon.id === "kingBible" ? 150 : 250;
+
+            if (currentTime - lastHitTime > hitCooldown) {
+              orbitalHitCooldownRef.current.set(hitKey, currentTime);
+
+              // 즉시 적 상태 업데이트
+              setEnemies((prevEnemies) => {
+                return prevEnemies.reduce<Enemy[]>((acc, e) => {
+                  if (e.id === enemy.id) {
+                    const newHp = e.hp - damage;
+
+                    if (newHp > 0) {
+                      acc.push({ ...e, hp: newHp });
+                    } else {
+                      // 적 사망 처리
+                      const expGain = Math.floor(
+                        e.exp * playerStats.expMultiplier
+                      );
+
+                      setExpOrbs((prevOrbs) => [
+                        ...prevOrbs,
+                        {
+                          id: Math.random(),
+                          x: e.x,
+                          y: e.y,
+                          exp: expGain,
+                        },
+                      ]);
+
+                      setGameState((prevState) => ({
+                        ...prevState,
+                        score: prevState.score + expGain,
+                        enemiesKilled: prevState.enemiesKilled + 1,
+                      }));
+
+                      createEffect("death", e.x, e.y, {
+                        color: e.color,
+                        duration: 500,
+                      });
+                    }
+                  } else {
+                    acc.push(e);
+                  }
+                  return acc;
+                }, []);
+              });
+
+              // 타격 이펙트 - 적의 위치에 생성
+              createEffect("hit", enemy.x, enemy.y, {
+                color: weaponData.color,
+                duration: 300,
+              });
+
+              // 궤도 무기 타격 이펙트 - 궤도 무기의 위치에 생성
+              createEffect("orbital-hit", orbitalX, orbitalY, {
+                color: weaponData.color,
+                duration: 200,
+              });
+            }
+          }
+        });
+      }
+    },
+    [player, enemies, getDistance, createEffect, playerStats.expMultiplier]
+  );
+
+  // attackWithWeapons 함수에서 이제 모든 함수들이 정의되어 있으므로 정상 작동
+  // attackWithWeapons 함수에서 궤도 무기 부분 수정
+  const attackWithWeapons = useCallback(() => {
+    const currentTime = Date.now();
+
+    player.weapons.forEach((weapon) => {
+      const weaponData = WEAPONS[weapon.id];
+      const level = weapon.level;
+
+      // 레벨에 따른 스탯 계산
+      const damage = Math.floor(
+        (weaponData.baseDamage + (level - 1) * weaponData.levelScaling.damage) *
+          playerStats.damageMultiplier
+      );
+
+      const cooldown =
+        Math.max(
+          100,
+          weaponData.baseCooldown +
+            (level - 1) * weaponData.levelScaling.cooldown
+        ) *
+        (1 - playerStats.cooldownReduction);
+
+      const range = Math.floor(
+        (weaponData.baseRange +
+          (level - 1) * (weaponData.levelScaling.range || 0)) *
+          playerStats.rangeMultiplier
+      );
+
+      // 궤도 무기는 매 프레임마다 업데이트
+      if (weaponData.type === "orbital") {
+        updateOrbitalWeapon(weapon, weaponData, damage, range, level);
+        return;
+      }
+
+      // 다른 무기들은 쿨다운 체크
+      if (currentTime - weapon.lastAttack > cooldown) {
+        switch (weaponData.type) {
+          case "melee":
+            attackMelee(weapon, weaponData, damage, range, level);
+            break;
+          case "area":
+            attackArea(weapon, weaponData, damage, range, level);
+            break;
+          case "multi":
+            attackMulti(weapon, weaponData, damage, range, level);
+            break;
+          case "beam":
+            attackBeam(weapon, weaponData, damage, range, level);
+            break;
+          default:
+            attackProjectile(weapon, weaponData, damage, range, level);
+            break;
+        }
+
+        // 공격 시간 업데이트
+        setPlayer((prev) => ({
+          ...prev,
+          weapons: prev.weapons.map((w) =>
+            w.id === weapon.id ? { ...w, lastAttack: currentTime } : w
+          ),
+        }));
+      }
+    });
+  }, [
+    player.weapons,
+    playerStats,
+    attackMelee,
+    attackArea,
+    attackMulti,
+    attackBeam,
+    attackProjectile,
+    updateOrbitalWeapon,
+  ]);
 
   // 유틸리티 함수: 점과 선분 사이의 거리 계산 (레이저용)
   const getDistanceToLine = useCallback(
@@ -924,19 +1186,22 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     createEffect,
   ]);
 
+  // generateLevelUpOptions 함수 개선 (더 다양한 무기 선택)
   const generateLevelUpOptions = useCallback(() => {
     const options: LevelUpOption[] = [];
 
-    // 새로운 무기 옵션
+    // 새로운 무기 옵션 (더 많이 추가)
     const availableWeapons = Object.entries(WEAPONS).filter(
       ([weaponId, _]) =>
         !player.weapons.some((w) => w.id === weaponId) &&
         player.weapons.length < player.weaponSlots
     );
 
-    if (availableWeapons.length > 0) {
-      const [weaponId, weaponData] =
-        availableWeapons[Math.floor(Math.random() * availableWeapons.length)];
+    // 새로운 무기 2개까지 추가 가능
+    const newWeaponCount = Math.min(2, availableWeapons.length);
+    for (let i = 0; i < newWeaponCount; i++) {
+      const randomIndex = Math.floor(Math.random() * availableWeapons.length);
+      const [weaponId, weaponData] = availableWeapons.splice(randomIndex, 1)[0];
       options.push({
         type: "weapon",
         id: weaponId,
@@ -947,13 +1212,14 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       });
     }
 
-    // 무기 업그레이드 옵션
+    // 무기 업그레이드 옵션 (더 많이 추가)
     const upgradableWeapons = player.weapons.filter(
       (w) => w.level < WEAPONS[w.id].maxLevel
     );
-    if (upgradableWeapons.length > 0) {
-      const weapon =
-        upgradableWeapons[Math.floor(Math.random() * upgradableWeapons.length)];
+    const upgradeCount = Math.min(2, upgradableWeapons.length);
+    for (let i = 0; i < upgradeCount; i++) {
+      const randomIndex = Math.floor(Math.random() * upgradableWeapons.length);
+      const weapon = upgradableWeapons.splice(randomIndex, 1)[0];
       const weaponData = WEAPONS[weapon.id];
       options.push({
         type: "weapon",
@@ -986,7 +1252,62 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       });
     }
 
-    // 3개 옵션 선택
+    // 패시브 업그레이드 옵션
+    const upgradablePassives = player.passives.filter(
+      (p) => p.level < PASSIVES[p.id].maxLevel
+    );
+    if (upgradablePassives.length > 0) {
+      const passive =
+        upgradablePassives[
+          Math.floor(Math.random() * upgradablePassives.length)
+        ];
+      const passiveData = PASSIVES[passive.id];
+      options.push({
+        type: "passive",
+        id: passive.id,
+        name: `${passiveData.name} 강화`,
+        description: `레벨 ${passive.level} → ${passive.level + 1}`,
+        icon: passiveData.icon,
+        currentLevel: passive.level,
+        maxLevel: passiveData.maxLevel,
+      });
+    }
+
+    // 옵션이 부족하면 랜덤하게 더 추가
+    while (
+      options.length < 3 &&
+      (availableWeapons.length > 0 || availablePassives.length > 0)
+    ) {
+      if (availableWeapons.length > 0 && Math.random() > 0.5) {
+        const [weaponId, weaponData] = availableWeapons.splice(
+          Math.floor(Math.random() * availableWeapons.length),
+          1
+        )[0];
+        options.push({
+          type: "weapon",
+          id: weaponId,
+          name: weaponData.name,
+          description: weaponData.description,
+          icon: weaponData.icon,
+          isNew: true,
+        });
+      } else if (availablePassives.length > 0) {
+        const [passiveId, passiveData] = availablePassives.splice(
+          Math.floor(Math.random() * availablePassives.length),
+          1
+        )[0];
+        options.push({
+          type: "passive",
+          id: passiveId,
+          name: passiveData.name,
+          description: passiveData.description,
+          icon: passiveData.icon,
+          isNew: true,
+        });
+      }
+    }
+
+    // 3개 옵션 선택 (셔플 후)
     const shuffled = options.sort(() => Math.random() - 0.5);
     setLevelUpOptions(shuffled.slice(0, 3));
   }, [
@@ -1049,6 +1370,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     spawnEnemies();
     moveEnemies();
     attackWithWeapons();
+    processAreaDamage(); // 지역 효과 데미지 처리 추가
     moveBullets();
     handleCollisions();
 
@@ -1087,6 +1409,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
     spawnEnemies,
     moveEnemies,
     attackWithWeapons,
+    processAreaDamage,
     moveBullets,
     handleCollisions,
     playerStats.healthRegen,
@@ -1194,15 +1517,32 @@ export default function VampireSurvivalGame({ user }: GameProps) {
       setExpOrbs([]);
       setEffects([]);
       setLevelUpOptions([]);
+      setOrbitalWeapons([]);
+      orbitalHitCooldownRef.current.clear();
+      areaEffectsRef.current.clear(); // 지역 효과 초기화
       lastUpdateRef.current = 0;
+
+      // 게임 시작 시 배경음악 재생 - setTimeout으로 지연시켜 DOM이 렌더링된 후 실행
+      setTimeout(() => {
+        playBackgroundMusic();
+      }, 100);
     },
-    [gameState.highScore]
+    [gameState.highScore, playBackgroundMusic]
   );
 
   const restartGame = useCallback(() => {
+    // 게임 종료 시 배경음악 정지
+    stopBackgroundMusic();
     setGameState((prev) => ({ ...prev, state: "menu" }));
     setSelectedCharacter(null);
-  }, []);
+  }, [stopBackgroundMusic]);
+
+  // 게임 오버 시 음악 정지
+  useEffect(() => {
+    if (gameState.state === "gameover") {
+      stopBackgroundMusic();
+    }
+  }, [gameState.state, stopBackgroundMusic]);
 
   // Render based on game state
   if (gameState.state === "menu") {
@@ -1241,9 +1581,8 @@ export default function VampireSurvivalGame({ user }: GameProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {selectedAudio && (
-        <audio ref={audioRef} src={selectedAudio} preload="auto" loop />
-      )}
+      {/* 오디오 엘리먼트 */}
+      <audio ref={audioRef} preload="auto" loop />
 
       {/* 배경 효과 */}
       <div className="absolute inset-0 opacity-10">
@@ -1273,6 +1612,7 @@ export default function VampireSurvivalGame({ user }: GameProps) {
         effects={effects}
         gameState={gameState}
         selectedCharacter={selectedCharacter}
+        orbitalWeapons={orbitalWeapons}
       />
     </div>
   );
