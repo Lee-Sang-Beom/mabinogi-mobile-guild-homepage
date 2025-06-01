@@ -521,7 +521,7 @@ class GameScene extends Phaser.Scene {
   private handleInput() {
     const { cursors, wasd } = this.gameData;
     const currentTime = this.time.now;
-    const moveSpeed = 0.14; // 0.15 -> 0.14로 약간 감소 (플레이어 속도 조정)
+    const moveSpeed = 0.12; // 0.15 -> 0.14로 약간 감소 (플레이어 속도 조정)
 
     let moved = false;
 
