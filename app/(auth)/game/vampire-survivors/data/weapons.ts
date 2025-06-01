@@ -76,8 +76,8 @@ export const WEAPONS: Record<WeaponId, WeaponData> = {
     color: "#DBDBDB",
     type: "projectile",
     baseDamage: 100,
-    baseCooldown: 1500,
-    baseRange: 800,
+    baseCooldown: 900,
+    baseRange: 600,
     maxLevel: 8,
     levelScaling: {
       damage: 5,
