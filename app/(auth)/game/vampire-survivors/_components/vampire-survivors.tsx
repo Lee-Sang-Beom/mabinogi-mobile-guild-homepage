@@ -1410,6 +1410,10 @@ export default function VampireSurvivalGame({ user }: GameProps) {
 
     setLevelUpOptions([]);
     setGameState((prev) => ({ ...prev, state: "playing" }));
+
+    setTimeout(() => {
+      playBackgroundMusic();
+    }, 100);
   }, []);
 
   // Game loop

@@ -36,7 +36,7 @@ export const WEAPONS: Record<WeaponId, WeaponData> = {
     icon: Wand2,
     color: "#4A90E2",
     type: "projectile",
-    baseDamage: 25,
+    baseDamage: 35,
     baseCooldown: 1200,
     baseRange: 150,
     maxLevel: 8,
@@ -76,7 +76,7 @@ export const WEAPONS: Record<WeaponId, WeaponData> = {
     color: "#DBDBDB",
     type: "projectile",
     baseDamage: 100,
-    baseCooldown: 2000,
+    baseCooldown: 1500,
     baseRange: 800,
     maxLevel: 8,
     levelScaling: {
