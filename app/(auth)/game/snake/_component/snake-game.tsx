@@ -38,7 +38,7 @@ const generateRandomFood = (snake: Position[]): Position => {
     attempts++;
   } while (
     snake.some(
-      (segment) => segment.x === newFood.x && segment.y === newFood.y,
+      (segment) => segment.x === newFood.x && segment.y === newFood.y
     ) &&
     attempts < 100
   );
@@ -178,7 +178,7 @@ export default function SnakeGame({ user }: GameProps) {
         // 다음 게임을 위해 플래그 리셋은 게임 재시작 시에 수행
       }
     },
-    [createGameMutation, rankingData, refetchRanking, user.id, highScore],
+    [createGameMutation, rankingData, refetchRanking, user.id, highScore]
   );
 
   // 게임 초기화 - 플래그들도 함께 리셋
@@ -250,7 +250,7 @@ export default function SnakeGame({ user }: GameProps) {
       nextDirectionRef.current = newDirection;
       setDirection(newDirection);
     },
-    [gameState],
+    [gameState]
   );
 
   // 게임 오버 처리 함수 분리
@@ -275,7 +275,7 @@ export default function SnakeGame({ user }: GameProps) {
       // 점수 저장
       saveScore(currentScore);
     },
-    [saveScore, gameState],
+    [saveScore, gameState]
   );
 
   // 개선된 게임 루프 (더 빠른 방향 처리)

@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/AuthOptions";
 import { redirect } from "next/navigation";
-import VampireSurvivalGame from "@/app/(auth)/game/vampire-survivors/_component/vampire-survivors";
+import VampireSurvivalGame from "./_components/vampire-survivors";
 
 export default async function Page() {
   const session = await getServerSession(authOptions);
