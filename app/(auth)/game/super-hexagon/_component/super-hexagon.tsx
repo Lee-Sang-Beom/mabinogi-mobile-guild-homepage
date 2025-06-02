@@ -20,34 +20,34 @@ const GAME_CONFIG = {
   wallThickness: 25,
   // 난이도 단계별 설정
   difficulty: {
-    // 초급 (0-15초)
+    // 초급 (0-15초) - 벽 사이 간격을 훨씬 더 넓게
     beginner: {
-      wallSpeed: 2.5,
-      spawnInterval: 140,
+      wallSpeed: 4, // 2.5 → 1.5로 감소 (벽이 더 천천히 이동)
+      spawnInterval: 300, // 200 → 300으로 증가 (생성 간격 더 넓게)
       wallCount: { min: 1, max: 2 },
       safeZoneMin: 3,
       rotationChance: 0.001,
     },
-    // 중급 (15-45초)
+    // 중급 (15-45초) - 점진적으로 간격 줄이기 시작
     intermediate: {
       wallSpeed: 5,
-      spawnInterval: 100,
+      spawnInterval: 150,
       wallCount: { min: 1, max: 3 },
       safeZoneMin: 2,
       rotationChance: 0.004,
     },
-    // 고급 (45-90초)
+    // 고급 (45-90초) - 중간 정도 간격
     advanced: {
-      wallSpeed: 8,
-      spawnInterval: 70,
+      wallSpeed: 5,
+      spawnInterval: 130,
       wallCount: { min: 2, max: 4 },
       safeZoneMin: 2,
       rotationChance: 0.007,
     },
-    // 전문가 (90초+)
+    // 전문가 (90초+) - 원래 의도한 빠른 간격
     expert: {
-      wallSpeed: 12,
-      spawnInterval: 50,
+      wallSpeed: 6,
+      spawnInterval: 80,
       wallCount: { min: 2, max: 4 },
       safeZoneMin: 1,
       rotationChance: 0.01,
@@ -55,7 +55,7 @@ const GAME_CONFIG = {
   },
   maxWallSpeed: 15,
   minSpawnInterval: 40,
-  mazeSpawnInterval: 25,
+  mazeSpawnInterval: 80,
   pulseFrequency: 3,
   pulseIntensity: 0.3,
   rotationDelay: 600, // 10초 지연
@@ -295,6 +295,9 @@ class GameScene extends Phaser.Scene {
       lastPatterns: [],
       patternCounter: 0,
       consecutivePatternCount: 0,
+      // 패턴 모드에서의 연속 안전지대 방지
+      lastPatternSafeZones: [], // 마지막 3개 패턴의 안전지대 기록
+      consecutiveSameCount: 0, // 연속으로 같은 안전지대가 나온 횟수
       // 난이도 시스템
       currentDifficulty: "beginner",
       difficultyTransition: 0,
@@ -970,7 +973,7 @@ class GameScene extends Phaser.Scene {
     const pattern = new Array(6).fill(true);
     let safeZones: number[] = [];
 
-    // 패턴별 안전지대 생성 로직 (기존과 동일)
+    // 패턴별 안전지대 생성 로직
     switch (this.gameData.currentWallPattern) {
       case "solo":
         safeZones = [this.gameData.patternDirection];
@@ -980,7 +983,6 @@ class GameScene extends Phaser.Scene {
           (this.gameData.patternDirection + this.gameData.patternProgress) % 6;
         safeZones = [basePos, (basePos + 1) % 6, (basePos + 2) % 6];
         break;
-      // ... 다른 패턴들도 동일하게 구현
       case "whirlpool":
         safeZones = this.generateWhirlpoolPattern();
         break;
@@ -1009,6 +1011,43 @@ class GameScene extends Phaser.Scene {
         safeZones = [this.gameData.patternDirection];
     }
 
+    // 연속 안전지대 방지 로직
+    if (this.gameData.lastPatternSafeZones.length > 0) {
+      const lastSafeZone =
+        this.gameData.lastPatternSafeZones[
+          this.gameData.lastPatternSafeZones.length - 1
+        ];
+
+      // 현재 안전지대가 이전과 같은지 확인
+      const currentMainSafeZone = safeZones[0]; // 주요 안전지대
+
+      if (currentMainSafeZone === lastSafeZone) {
+        this.gameData.consecutiveSameCount++;
+
+        // 3번 이상 연속으로 같은 안전지대가 나오면 강제로 변경
+        if (this.gameData.consecutiveSameCount >= 3) {
+          // 다른 안전지대로 변경
+          const availableZones = [0, 1, 2, 3, 4, 5].filter(
+            (zone) => zone !== lastSafeZone,
+          );
+          const newSafeZone =
+            availableZones[Math.floor(Math.random() * availableZones.length)];
+          safeZones = [newSafeZone];
+          this.gameData.consecutiveSameCount = 0;
+        }
+      } else {
+        this.gameData.consecutiveSameCount = 0;
+      }
+    }
+
+    // 안전지대 기록 (최대 5개까지만 보관)
+    if (safeZones.length > 0) {
+      this.gameData.lastPatternSafeZones.push(safeZones[0]);
+      if (this.gameData.lastPatternSafeZones.length > 5) {
+        this.gameData.lastPatternSafeZones.shift();
+      }
+    }
+
     safeZones.forEach((zone) => {
       if (zone >= 0 && zone < 6) {
         pattern[zone] = false;
@@ -1018,6 +1057,8 @@ class GameScene extends Phaser.Scene {
     this.gameData.patternProgress++;
     if (this.gameData.patternProgress >= this.gameData.patternLength) {
       this.gameData.isPatternMode = false;
+      // 패턴 종료 시 연속 카운트 리셋
+      this.gameData.consecutiveSameCount = 0;
     }
 
     return pattern;
