@@ -11,43 +11,43 @@ import type { GameCreateRequest } from "../../api";
 
 // 게임 상수 - 점진적 난이도 증가 시스템
 const GAME_CONFIG = {
-  width: 800,
-  height: 600,
-  centerX: 400,
-  centerY: 300,
+  width: 1000, // 800 → 1000으로 확대
+  height: 750, // 600 → 750으로 확대
+  centerX: 500, // 400 → 500으로 조정
+  centerY: 375, // 300 → 375로 조정
   innerRadius: 35,
   playerRadius: 8,
   wallThickness: 25,
   // 난이도 단계별 설정
   difficulty: {
-    // 초급 (0-15초) - 벽 사이 간격을 훨씬 더 넓게
+    // 초급 (0-15초) - 기본 속도 약간 증가
     beginner: {
-      wallSpeed: 4, // 2.5 → 1.5로 감소 (벽이 더 천천히 이동)
-      spawnInterval: 300, // 200 → 300으로 증가 (생성 간격 더 넓게)
+      wallSpeed: 5, // 4 → 5로 증가
+      spawnInterval: 250, // 300 → 250으로 감소 (더 빠른 생성)
       wallCount: { min: 1, max: 2 },
       safeZoneMin: 3,
       rotationChance: 0.001,
     },
-    // 중급 (15-45초) - 점진적으로 간격 줄이기 시작
+    // 중급 (15-45초)
     intermediate: {
-      wallSpeed: 5,
-      spawnInterval: 150,
+      wallSpeed: 6, // 5 → 6으로 증가
+      spawnInterval: 130, // 150 → 130으로 감소
       wallCount: { min: 1, max: 3 },
       safeZoneMin: 2,
       rotationChance: 0.004,
     },
-    // 고급 (45-90초) - 중간 정도 간격
+    // 고급 (45-90초)
     advanced: {
-      wallSpeed: 5,
-      spawnInterval: 130,
+      wallSpeed: 6.5, // 5 → 6.5로 증가
+      spawnInterval: 110, // 130 → 110으로 감소
       wallCount: { min: 2, max: 4 },
       safeZoneMin: 2,
       rotationChance: 0.007,
     },
-    // 전문가 (90초+) - 원래 의도한 빠른 간격
+    // 전문가 (90초+)
     expert: {
-      wallSpeed: 6,
-      spawnInterval: 80,
+      wallSpeed: 7.5, // 6 → 7.5로 증가
+      spawnInterval: 70, // 80 → 70으로 감소
       wallCount: { min: 2, max: 4 },
       safeZoneMin: 1,
       rotationChance: 0.01,
@@ -55,7 +55,7 @@ const GAME_CONFIG = {
   },
   maxWallSpeed: 15,
   minSpawnInterval: 40,
-  mazeSpawnInterval: 80,
+  mazeSpawnInterval: 60, // 80 → 60으로 감소 (패턴 모드 더 빠르게)
   pulseFrequency: 3,
   pulseIntensity: 0.3,
   rotationDelay: 600, // 10초 지연
@@ -101,33 +101,190 @@ const GAME_CONFIG = {
   },
   // 벽 패턴 타입들
   wallPatterns: [
+    // 기본 단계 (Hexagon/Hyper Hexagon)
     "solo",
-    "double_c",
     "triple_c",
-    "double_spiral",
+    "whirlpool",
     "bat",
     "ladder",
-    "multi_c",
-    "spin_2",
-    "spin_4",
-    "stair_2",
     "mode_changer",
-    "spiral_right",
-    "spiral_left",
-    "zigzag",
-    "wave",
-    "tunnel",
-    // 새로 추가되는 패턴들
-    "whirlpool", // 소용돌이 패턴
-    "rain", // 비 패턴
-    "double_turn", // 이중 회전 패턴
-    "alternating", // 교차 패턴
-    "pattern_321", // 3-2-1 패턴
-    "stair_1", // 계단 1 패턴 (새로 추가)
-    "mirror_spiral", // 미러 스파이럴
-    "box_with_cap", // 뚜껑 있는 상자 패턴
+    "stair_1", // Hyper 모드 한정
+    "pattern_321", // 3→2→1 M자형 패턴
+
+    // 중간 단계 (Pentagon/Square)
+    "double_c",
+    "box_with_cap",
+
+    // 고난도 단계 (Hexagoner/Hyper Hexagoner)
+    "multi_c",
+    "double_whirlpool",
+    "spin_2",
+    "spin_3",
+    "spin_4",
+    "rain",
+
+    // 최종 단계 (Hexagonest/Hyper Hexagonest)
+    "stair_2",
+
+    // 특별 모드
+    "black_white_mode",
   ],
-  // 배경음 파일들
+  // 난이도별 사용 가능한 패턴 정의
+  patternsByDifficulty: {
+    // 0-15초: 기본 패턴만
+    beginner: ["solo"],
+
+    // 15-30초: 기본 + 일부 중급
+    intermediate: ["solo", "triple_c", "bat", "ladder"],
+
+    // 30-60초: 중급 패턴 추가
+    advanced: [
+      "solo",
+      "triple_c",
+      "whirlpool",
+      "bat",
+      "ladder",
+      "double_c",
+      "spin_2",
+    ],
+
+    // 60-90초: 고급 패턴
+    expert: [
+      "triple_c",
+      "whirlpool",
+      "bat",
+      "ladder",
+      "double_c",
+      "box_with_cap",
+      "multi_c",
+      "double_whirlpool",
+      "spin_2",
+      "spin_3",
+      "rain",
+    ],
+
+    // 90-120초: 최고급 패턴
+    master: [
+      "multi_c",
+      "double_whirlpool",
+      "spin_3",
+      "spin_4",
+      "rain",
+      "stair_1",
+      "pattern_321",
+      "stair_2",
+    ],
+
+    // 120초+: 모든 패턴
+    grandmaster: [
+      "multi_c",
+      "double_whirlpool",
+      "spin_4",
+      "rain",
+      "stair_2",
+      "pattern_321",
+      "black_white_mode",
+    ],
+  },
+  // 패턴별 상세 설정 추가:
+  patternConfigs: {
+    solo: {
+      holes: [1, 2, 3],
+      duration: [4, 8],
+      description: "1-3홀 구성의 단일 파트",
+    },
+    triple_c: {
+      cCount: 3,
+      spacing: [2, 3],
+      duration: [8, 12],
+      description: "C자형 장애물 3개가 2-3단위 간격",
+    },
+    whirlpool: {
+      rotationSpeed: [1, 2],
+      duration: [12, 20],
+      description: "시계/반시계 방향 회전 소용돌이",
+    },
+    bat: {
+      alternateSpeed: 2,
+      duration: [6, 10],
+      description: "두 방향으로 빠르게 번갈아 움직임",
+    },
+    ladder: {
+      zigzagPattern: true,
+      duration: [8, 15],
+      description: "지그재그 형태로 구멍 위치 이동",
+    },
+    double_c: {
+      cCount: 2,
+      consecutive: true,
+      duration: [6, 10],
+      description: "C자형 장애물 2개 연속",
+    },
+    box_with_cap: {
+      cThenBlock: true,
+      duration: [8, 12],
+      description: "C 다음에 막힌 형태",
+    },
+    multi_c: {
+      cCount: [4, 5],
+      sameDirection: true,
+      duration: [12, 18],
+      description: "같은 방향으로 4-5번 연속 C자 회전",
+    },
+    double_whirlpool: {
+      bidirectional: true,
+      duration: [15, 25],
+      description: "양방향 회전 동시",
+    },
+    spin_2: {
+      units: 2,
+      alternating: true,
+      duration: [8, 12],
+      description: "2단위 좌우 반복",
+    },
+    spin_3: {
+      units: 3,
+      alternating: true,
+      duration: [10, 15],
+      description: "3단위 회전 반복",
+    },
+    spin_4: {
+      units: 4,
+      alternating: true,
+      duration: [12, 18],
+      description: "4단위 회전 반복",
+    },
+    rain: {
+      holes: 3,
+      irregular: true,
+      duration: [10, 16],
+      description: "3홀 구조와 막이 함께, 불규칙 위치",
+    },
+    stair_1: {
+      units: 3,
+      stairPattern: true,
+      duration: [8, 14],
+      description: "3단위 홀 이동이 계단형 반복",
+    },
+    pattern_321: {
+      sequence: [3, 2, 1],
+      mShape: true,
+      duration: [18, 18],
+      description: "3→2→1 유닛 순서 M자형",
+    },
+    stair_2: {
+      pattern: "RR LLL",
+      sequence: [2, 3],
+      duration: [10, 16],
+      description: "2단위 우→3단위 좌 반복",
+    },
+    black_white_mode: {
+      noRotation: true,
+      highSpeed: true,
+      duration: [20, 30],
+      description: "회전 없이 고속 직선 패턴",
+    },
+  },
   backgroundTracks: ["/audios/super-hexagon.mp3", "/audios/hexagon.mp3"],
 };
 
@@ -165,59 +322,79 @@ class GameScene extends Phaser.Scene {
   }
 
   async create() {
-    // Tone.js 초기화
-    await Tone.start();
+    try {
+      // Tone.js 초기화
+      await Tone.start();
 
-    // 네온 배경 설정
-    this.setupNeonBackground();
+      // 네온 배경 설정
+      this.setupNeonBackground();
 
-    // 게임 컨테이너 생성
-    this.gameContainer = this.add.container(
-      GAME_CONFIG.centerX,
-      GAME_CONFIG.centerY,
-    );
+      // 게임 컨테이너 생성
+      this.gameContainer = this.add.container(
+        GAME_CONFIG.centerX,
+        GAME_CONFIG.centerY,
+      );
 
-    // 배경음 설정
-    await this.setupAudio();
+      // 배경음 설정
+      await this.setupAudio();
 
-    // 디버그 그래픽
-    this.debugGraphics = this.add.graphics();
-    this.gameContainer.add(this.debugGraphics);
+      // 디버그 그래픽
+      this.debugGraphics = this.add.graphics();
+      this.gameContainer.add(this.debugGraphics);
 
-    // 게임 데이터 초기화
-    this.initializeGameData();
+      // 게임 데이터 초기화
+      this.initializeGameData();
 
-    this.setupPlayer();
-    this.setupInput();
-    this.setupCenterHexagon();
+      this.setupPlayer();
+      this.setupInput();
+      this.setupCenterHexagon();
 
-    // 게임 루프 시작
-    this.time.addEvent({
-      delay: 16, // 60 FPS
-      callback: this.updateGame,
-      callbackScope: this,
-      loop: true,
-    });
+      // 게임 루프 시작
+      this.time.addEvent({
+        delay: 16, // 60 FPS
+        callback: this.updateGame,
+        callbackScope: this,
+        loop: true,
+      });
+
+      // 1초 후 첫 벽 생성
+      this.time.delayedCall(1000, () => {
+        if (!this.gameData.isGameOver) {
+          this.createWallRing();
+        }
+      });
+    } catch (error) {
+      console.error("게임 초기화 중 오류:", error);
+      // 오류 발생 시 기본 설정으로 계속 진행
+      this.initializeGameData();
+      this.setupPlayer();
+      this.setupInput();
+      this.setupCenterHexagon();
+    }
   }
 
   private setupNeonBackground() {
-    // 동적 네온 배경 그라디언트
-    this.backgroundGradient = this.add.graphics();
-    this.backgroundGradient.setDepth(-100);
+    try {
+      // 동적 네온 배경 그라디언트
+      this.backgroundGradient = this.add.graphics();
+      this.backgroundGradient.setDepth(-100);
 
-    // 네온 효과용 그래픽
-    this.neonEffects = this.add.graphics();
-    this.neonEffects.setDepth(-50);
+      // 네온 효과용 그래픽
+      this.neonEffects = this.add.graphics();
+      this.neonEffects.setDepth(-50);
+    } catch (error) {
+      console.error("네온 배경 설정 오류:", error);
+    }
   }
 
   private async setupAudio() {
-    // 랜덤 배경음 선택
-    this.selectedTrack =
-      GAME_CONFIG.backgroundTracks[
-        Math.floor(Math.random() * GAME_CONFIG.backgroundTracks.length)
-      ];
-
     try {
+      // 랜덤 배경음 선택
+      this.selectedTrack =
+        GAME_CONFIG.backgroundTracks[
+          Math.floor(Math.random() * GAME_CONFIG.backgroundTracks.length)
+        ];
+
       this.backgroundMusic = new Tone.Player({
         url: this.selectedTrack,
         loop: true,
@@ -226,21 +403,22 @@ class GameScene extends Phaser.Scene {
 
       await this.backgroundMusic.load(this.selectedTrack);
       this.backgroundMusic.start();
+
+      // 사운드 이펙트 설정
+      this.hitSound = new Tone.Synth({
+        oscillator: { type: "sawtooth" },
+        envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.2 },
+      }).toDestination();
+
+      this.moveSound = new Tone.Synth({
+        oscillator: { type: "sine" },
+        envelope: { attack: 0.01, decay: 0.05, sustain: 0, release: 0.05 },
+      }).toDestination();
+      this.moveSound.volume.value = -25;
     } catch (error) {
-      console.warn("배경음 로드 실패:", error);
+      console.warn("오디오 설정 실패:", error);
+      // 오디오 실패 시에도 게임은 계속 진행
     }
-
-    // 사운드 이펙트 설정
-    this.hitSound = new Tone.Synth({
-      oscillator: { type: "sawtooth" },
-      envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.2 },
-    }).toDestination();
-
-    this.moveSound = new Tone.Synth({
-      oscillator: { type: "sine" },
-      envelope: { attack: 0.01, decay: 0.05, sustain: 0, release: 0.05 },
-    }).toDestination();
-    this.moveSound.volume.value = -25;
   }
 
   private initializeGameData() {
@@ -305,441 +483,518 @@ class GameScene extends Phaser.Scene {
   }
 
   private setupPlayer() {
-    const { innerRadius, playerRadius } = GAME_CONFIG;
+    try {
+      const { innerRadius, playerRadius } = GAME_CONFIG;
 
-    // 네온 스타일 플레이어 생성
-    this.gameData.player = this.add.graphics();
-    this.gameData.player.setPosition(0, -(innerRadius + playerRadius + 8));
+      // 네온 스타일 플레이어 생성
+      this.gameData.player = this.add.graphics();
+      this.gameData.player.setPosition(0, -(innerRadius + playerRadius + 8));
 
-    // 컨테이너에 추가
-    this.gameContainer?.add(this.gameData.player);
+      // 컨테이너에 추가
+      this.gameContainer?.add(this.gameData.player);
+    } catch (error) {
+      console.error("플레이어 설정 오류:", error);
+    }
   }
 
   private setupInput() {
-    this.gameData.cursors = this.input.keyboard?.createCursorKeys();
-    this.gameData.wasd = this.input.keyboard?.addKeys("W,S,A,D");
+    try {
+      this.gameData.cursors = this.input.keyboard?.createCursorKeys();
+      this.gameData.wasd = this.input.keyboard?.addKeys("W,S,A,D");
 
-    // 디버그 모드 토글 (스페이스바)
-    this.input.keyboard?.on("keydown-SPACE", () => {
-      this.gameData.debug = !this.gameData.debug;
-      console.log("디버그 모드:", this.gameData.debug);
-    });
+      // 디버그 모드 토글 (스페이스바)
+      this.input.keyboard?.on("keydown-SPACE", () => {
+        this.gameData.debug = !this.gameData.debug;
+        console.log("디버그 모드:", this.gameData.debug);
+      });
 
-    // 모바일 터치 입력 설정
-    this.setupTouchInput();
+      // 모바일 터치 입력 설정
+      this.setupTouchInput();
+    } catch (error) {
+      console.error("입력 설정 오류:", error);
+    }
   }
 
   private setupTouchInput() {
-    const { width } = GAME_CONFIG;
+    try {
+      const { width } = GAME_CONFIG;
 
-    // 터치 시작
-    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      if (pointer.x < width / 2) {
-        this.gameData.touchInput.leftPressed = true;
-      } else {
-        this.gameData.touchInput.rightPressed = true;
-      }
-    });
+      // 터치 시작
+      this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+        if (pointer.x < width / 2) {
+          this.gameData.touchInput.leftPressed = true;
+        } else {
+          this.gameData.touchInput.rightPressed = true;
+        }
+      });
 
-    // 터치 이동 (영역 변경 감지)
-    this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
-      if (pointer.isDown) {
-        this.gameData.touchInput.leftPressed = pointer.x < width / 2;
-        this.gameData.touchInput.rightPressed = pointer.x >= width / 2;
-      }
-    });
+      // 터치 이동 (영역 변경 감지)
+      this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+        if (pointer.isDown) {
+          this.gameData.touchInput.leftPressed = pointer.x < width / 2;
+          this.gameData.touchInput.rightPressed = pointer.x >= width / 2;
+        }
+      });
 
-    // 터치 종료
-    this.input.on("pointerup", () => {
-      this.gameData.touchInput.leftPressed = false;
-      this.gameData.touchInput.rightPressed = false;
-    });
+      // 터치 종료
+      this.input.on("pointerup", () => {
+        this.gameData.touchInput.leftPressed = false;
+        this.gameData.touchInput.rightPressed = false;
+      });
+    } catch (error) {
+      console.error("터치 입력 설정 오류:", error);
+    }
   }
 
   private setupCenterHexagon() {
-    this.centerHexagon = this.add.graphics();
-    this.gameContainer?.add(this.centerHexagon);
+    try {
+      this.centerHexagon = this.add.graphics();
+      this.gameContainer?.add(this.centerHexagon);
+    } catch (error) {
+      console.error("중심 헥사곤 설정 오류:", error);
+    }
   }
 
   private updateGame() {
-    if (this.gameData.isGameOver) return;
+    try {
+      if (this.gameData.isGameOver) return;
 
-    this.gameData.gameTime++;
-    const currentScore = Math.floor(this.gameData.gameTime / 60);
+      this.gameData.gameTime++;
+      const currentScore = Math.floor(this.gameData.gameTime / 60);
 
-    if (this.onScoreUpdate) {
-      this.onScoreUpdate(currentScore);
-    }
+      if (this.onScoreUpdate) {
+        this.onScoreUpdate(currentScore);
+      }
 
-    this.updateDifficulty();
-    this.updateNeonBackground();
-    this.updateVisuals();
-    this.updateRotation();
-    this.handleInput();
-    this.updatePlayer();
-    this.updateCenterHexagon();
-    this.spawnWalls();
-    this.updateWalls();
+      this.updateDifficulty();
+      this.updateNeonBackground();
+      this.updateVisuals();
+      this.updateRotation();
+      this.handleInput();
+      this.updatePlayer();
+      this.updateCenterHexagon();
+      this.spawnWalls();
+      this.updateWalls();
 
-    if (this.gameData.debug) {
-      this.updateDebugInfo();
-    } else {
-      this.debugGraphics?.clear();
+      if (this.gameData.debug) {
+        this.updateDebugInfo();
+      } else {
+        this.debugGraphics?.clear();
+      }
+    } catch (error) {
+      console.error("게임 업데이트 오류:", error);
+      // 치명적 오류 시 게임 종료
+      this.triggerGameOver();
     }
   }
 
   private updateDifficulty() {
-    const timeInSeconds = this.gameData.gameTime / 60;
-    const { difficulty } = GAME_CONFIG;
+    try {
+      const timeInSeconds = this.gameData.gameTime / 60;
 
-    let targetDifficulty = "beginner";
-    let difficultyConfig = difficulty.beginner;
+      let targetDifficulty = "beginner";
+      let difficultyConfig = GAME_CONFIG.difficulty.beginner;
 
-    if (timeInSeconds >= 90) {
-      targetDifficulty = "expert";
-      difficultyConfig = difficulty.expert;
-    } else if (timeInSeconds >= 45) {
-      targetDifficulty = "advanced";
-      difficultyConfig = difficulty.advanced;
-    } else if (timeInSeconds >= 15) {
-      targetDifficulty = "intermediate";
-      difficultyConfig = difficulty.intermediate;
-    }
+      if (timeInSeconds >= 120) {
+        targetDifficulty = "grandmaster";
+        difficultyConfig = GAME_CONFIG.difficulty.expert; // 최고 설정 사용
+      } else if (timeInSeconds >= 90) {
+        targetDifficulty = "master";
+        difficultyConfig = GAME_CONFIG.difficulty.expert;
+      } else if (timeInSeconds >= 60) {
+        targetDifficulty = "expert";
+        difficultyConfig = GAME_CONFIG.difficulty.expert;
+      } else if (timeInSeconds >= 30) {
+        targetDifficulty = "advanced";
+        difficultyConfig = GAME_CONFIG.difficulty.advanced;
+      } else if (timeInSeconds >= 15) {
+        targetDifficulty = "intermediate";
+        difficultyConfig = GAME_CONFIG.difficulty.intermediate;
+      }
 
-    // 부드러운 난이도 전환
-    if (this.gameData.currentDifficulty !== targetDifficulty) {
-      this.gameData.currentDifficulty = targetDifficulty;
-      this.gameData.difficultyTransition = 0;
+      // 부드러운 난이도 전환
+      if (this.gameData.currentDifficulty !== targetDifficulty) {
+        this.gameData.currentDifficulty = targetDifficulty;
+        this.gameData.difficultyTransition = 0;
 
-      if (this.gameData.debug) {
+        if (this.gameData.debug) {
+          console.log(
+            `난이도 변경: ${targetDifficulty} (${timeInSeconds.toFixed(1)}초)`,
+          );
+        }
+      }
+
+      // 점진적 수치 조정
+      const transitionSpeed = 0.02;
+      this.gameData.difficultyTransition = Math.min(
+        1,
+        this.gameData.difficultyTransition + transitionSpeed,
+      );
+
+      // 현재 설정과 목표 설정 사이의 보간
+      this.gameData.wallSpeed = Phaser.Math.Linear(
+        this.gameData.wallSpeed,
+        difficultyConfig.wallSpeed,
+        transitionSpeed,
+      );
+
+      this.gameData.spawnInterval = Phaser.Math.Linear(
+        this.gameData.spawnInterval,
+        difficultyConfig.spawnInterval,
+        transitionSpeed,
+      );
+
+      // 디버그 정보 (5초마다)
+      if (this.gameData.debug && this.gameData.gameTime % 300 === 0) {
         console.log(
-          `난이도 변경: ${targetDifficulty} (${timeInSeconds.toFixed(1)}초)`,
+          `현재 난이도: ${targetDifficulty}, 벽속도: ${this.gameData.wallSpeed.toFixed(2)}, 생성간격: ${this.gameData.spawnInterval.toFixed(0)}`,
         );
       }
-    }
-
-    // 점진적 수치 조정
-    const transitionSpeed = 0.02;
-    this.gameData.difficultyTransition = Math.min(
-      1,
-      this.gameData.difficultyTransition + transitionSpeed,
-    );
-
-    // 현재 설정과 목표 설정 사이의 보간
-    this.gameData.wallSpeed = Phaser.Math.Linear(
-      this.gameData.wallSpeed,
-      difficultyConfig.wallSpeed,
-      transitionSpeed,
-    );
-
-    this.gameData.spawnInterval = Phaser.Math.Linear(
-      this.gameData.spawnInterval,
-      difficultyConfig.spawnInterval,
-      transitionSpeed,
-    );
-
-    // 디버그 정보 (5초마다)
-    if (this.gameData.debug && this.gameData.gameTime % 300 === 0) {
-      console.log(
-        `현재 난이도: ${targetDifficulty}, 벽속도: ${this.gameData.wallSpeed.toFixed(2)}, 생성간격: ${this.gameData.spawnInterval.toFixed(0)}`,
-      );
+    } catch (error) {
+      console.error("난이도 업데이트 오류:", error);
     }
   }
 
   private updateNeonBackground() {
-    if (!this.backgroundGradient || !this.neonEffects) return;
+    try {
+      if (!this.backgroundGradient || !this.neonEffects) return;
 
-    this.gameData.neonPulse += GAME_CONFIG.neon.pulseSpeed;
-    this.gameData.currentHue = (this.gameData.currentHue + 0.5) % 360;
+      this.gameData.neonPulse += GAME_CONFIG.neon.pulseSpeed;
+      this.gameData.currentHue = (this.gameData.currentHue + 0.5) % 360;
 
-    // 동적 배경 그라디언트
-    this.backgroundGradient.clear();
+      // 동적 배경 그라디언트
+      this.backgroundGradient.clear();
 
-    // 메인 배경 색상 (어두운 사이버 톤)
-    const bgColor1 = Phaser.Display.Color.HSVToRGB(
-      this.gameData.currentHue / 360,
-      0.8,
-      0.05,
-    );
-
-    // 방사형 그라디언트 효과
-    for (let i = 0; i < 5; i++) {
-      const radius = 100 + i * 80;
-      const alpha = 0.3 - i * 0.05;
-      const pulseOffset = Math.sin(this.gameData.neonPulse + i * 0.5) * 0.1;
-
-      this.backgroundGradient.fillStyle(bgColor1.color, alpha + pulseOffset);
-      this.backgroundGradient.fillCircle(
-        GAME_CONFIG.centerX,
-        GAME_CONFIG.centerY,
-        radius,
+      // 메인 배경 색상 (어두운 사이버 톤)
+      const bgColor1 = Phaser.Display.Color.HSVToRGB(
+        this.gameData.currentHue / 360,
+        0.8,
+        0.05,
       );
-    }
 
-    // 네온 링 효과
-    this.neonEffects.clear();
-    for (let i = 0; i < 3; i++) {
-      const ringRadius = 150 + i * 100;
-      const glowIntensity =
-        Math.sin(this.gameData.neonPulse * 2 + (i * Math.PI) / 3) * 0.3 + 0.7;
-      const ringColor = Phaser.Display.Color.HSVToRGB(
-        (this.gameData.currentHue + i * 40) / 360,
+      // 방사형 그라디언트 효과
+      for (let i = 0; i < 5; i++) {
+        const radius = 100 + i * 80;
+        const alpha = 0.3 - i * 0.05;
+        const pulseOffset = Math.sin(this.gameData.neonPulse + i * 0.5) * 0.1;
+
+        this.backgroundGradient.fillStyle(bgColor1.color, alpha + pulseOffset);
+        this.backgroundGradient.fillCircle(
+          GAME_CONFIG.centerX,
+          GAME_CONFIG.centerY,
+          radius,
+        );
+      }
+
+      // 네온 링 효과
+      this.neonEffects.clear();
+      for (let i = 0; i < 3; i++) {
+        const ringRadius = 150 + i * 100;
+        const glowIntensity =
+          Math.sin(this.gameData.neonPulse * 2 + (i * Math.PI) / 3) * 0.3 + 0.7;
+        const ringColor = Phaser.Display.Color.HSVToRGB(
+          (this.gameData.currentHue + i * 40) / 360,
+          0.9,
+          glowIntensity,
+        );
+
+        this.neonEffects.lineStyle(2, ringColor.color, 0.3);
+        this.neonEffects.strokeCircle(
+          GAME_CONFIG.centerX,
+          GAME_CONFIG.centerY,
+          ringRadius,
+        );
+      }
+
+      // 전체 배경 색상 설정
+      const mainBgColor = Phaser.Display.Color.HSVToRGB(
+        this.gameData.currentHue / 360,
         0.9,
-        glowIntensity,
+        0.02,
       );
-
-      this.neonEffects.lineStyle(2, ringColor.color, 0.3);
-      this.neonEffects.strokeCircle(
-        GAME_CONFIG.centerX,
-        GAME_CONFIG.centerY,
-        ringRadius,
-      );
+      this.cameras.main.setBackgroundColor(mainBgColor.color);
+    } catch (error) {
+      console.error("네온 배경 업데이트 오류:", error);
     }
-
-    // 전체 배경 색상 설정
-    const mainBgColor = Phaser.Display.Color.HSVToRGB(
-      this.gameData.currentHue / 360,
-      0.9,
-      0.02,
-    );
-    this.cameras.main.setBackgroundColor(mainBgColor.color);
   }
 
   private updateVisuals() {
-    // 전체적인 화면 펄스 효과
-    this.gameData.globalPulse += 0.08;
-    const globalPulseIntensity = Math.sin(this.gameData.globalPulse) * 0.8;
+    try {
+      // 전체적인 화면 펄스 효과
+      this.gameData.globalPulse += 0.08;
+      const globalPulseIntensity = Math.sin(this.gameData.globalPulse) * 0.8;
 
-    // 네온 스타일 화면 흔들림
-    const { screenShake } = GAME_CONFIG;
-    this.gameData.screenShakeOffset.x =
-      (Math.random() - 0.5) * screenShake.intensity +
-      globalPulseIntensity * 0.5;
-    this.gameData.screenShakeOffset.y =
-      (Math.random() - 0.5) * screenShake.intensity +
-      globalPulseIntensity * 0.5;
+      // 네온 스타일 화면 흔들림
+      const { screenShake } = GAME_CONFIG;
+      this.gameData.screenShakeOffset.x =
+        (Math.random() - 0.5) * screenShake.intensity +
+        globalPulseIntensity * 0.5;
+      this.gameData.screenShakeOffset.y =
+        (Math.random() - 0.5) * screenShake.intensity +
+        globalPulseIntensity * 0.5;
 
-    // 게임 컨테이너에 흔들림 적용
-    if (this.gameContainer) {
-      this.gameContainer.x =
-        GAME_CONFIG.centerX + this.gameData.screenShakeOffset.x;
-      this.gameContainer.y =
-        GAME_CONFIG.centerY + this.gameData.screenShakeOffset.y;
-    }
+      // 게임 컨테이너에 흔들림 적용
+      if (this.gameContainer) {
+        this.gameContainer.x =
+          GAME_CONFIG.centerX + this.gameData.screenShakeOffset.x;
+        this.gameContainer.y =
+          GAME_CONFIG.centerY + this.gameData.screenShakeOffset.y;
+      }
 
-    // 카메라 흔들림 효과 (게임오버 시)
-    if (this.gameData.cameraShake > 0) {
-      this.cameras.main.shake(150, 0.02);
-      this.gameData.cameraShake--;
+      // 카메라 흔들림 효과 (게임오버 시)
+      if (this.gameData.cameraShake > 0) {
+        this.cameras.main.shake(150, 0.02);
+        this.gameData.cameraShake--;
+      }
+    } catch (error) {
+      console.error("비주얼 업데이트 오류:", error);
     }
   }
 
   private updateRotation() {
-    const currentDifficultyConfig =
-      GAME_CONFIG.difficulty[
-        this.gameData.currentDifficulty as keyof typeof GAME_CONFIG.difficulty
-      ];
+    try {
+      // 현재 난이도에 따른 설정 가져오기 (안전한 방식)
+      const difficultyKeys = Object.keys(GAME_CONFIG.difficulty) as Array<
+        keyof typeof GAME_CONFIG.difficulty
+      >;
+      const currentDifficultyKey = difficultyKeys.includes(
+        this.gameData.currentDifficulty as any,
+      )
+        ? (this.gameData
+            .currentDifficulty as keyof typeof GAME_CONFIG.difficulty)
+        : "beginner";
 
-    // 시작 지연 시간 감소
-    if (this.gameData.rotationStartDelay > 0) {
-      this.gameData.rotationStartDelay--;
-      return;
-    }
+      const currentDifficultyConfig =
+        GAME_CONFIG.difficulty[currentDifficultyKey];
 
-    // 난이도에 따른 회전 확률
-    if (
-      !this.gameData.isRotating &&
-      Math.random() < currentDifficultyConfig.rotationChance
-    ) {
-      this.gameData.isRotating = true;
-      this.gameData.rotationDirection = Math.random() < 0.5 ? -1 : 1;
-
-      const pattern =
-        GAME_CONFIG.rotationPatterns[
-          Math.floor(Math.random() * GAME_CONFIG.rotationPatterns.length)
-        ];
-      const minDuration = pattern.durationRange[0];
-      const maxDuration = pattern.durationRange[1];
-      const randomDuration =
-        Math.floor(Math.random() * (maxDuration - minDuration + 1)) +
-        minDuration;
-
-      this.gameData.currentRotationPattern = {
-        ...pattern,
-        duration: randomDuration,
-      };
-      this.gameData.rotationTimer = randomDuration;
-
-      if (this.gameData.debug) {
-        console.log(`회전 시작: ${pattern.type} (${randomDuration}프레임)`);
+      // 시작 지연 시간 감소
+      if (this.gameData.rotationStartDelay > 0) {
+        this.gameData.rotationStartDelay--;
+        return;
       }
-    }
 
-    // 회전 실행
-    if (this.gameData.isRotating && this.gameData.currentRotationPattern) {
-      this.gameData.rotationTimer--;
-      const pattern = this.gameData.currentRotationPattern;
-      const progress = 1 - this.gameData.rotationTimer / pattern.duration;
-      let currentAngle = 0;
-
+      // 난이도에 따른 회전 확률
       if (
-        pattern.reverses &&
-        (pattern.type === "short" || pattern.type === "ultra_fast")
+        !this.gameData.isRotating &&
+        Math.random() < currentDifficultyConfig.rotationChance
       ) {
-        if (progress < 0.5) {
-          currentAngle =
-            progress * 2 * pattern.angle * this.gameData.rotationDirection;
+        this.gameData.isRotating = true;
+        this.gameData.rotationDirection = Math.random() < 0.5 ? -1 : 1;
+
+        const pattern =
+          GAME_CONFIG.rotationPatterns[
+            Math.floor(Math.random() * GAME_CONFIG.rotationPatterns.length)
+          ];
+        const minDuration = pattern.durationRange[0];
+        const maxDuration = pattern.durationRange[1];
+        const randomDuration =
+          Math.floor(Math.random() * (maxDuration - minDuration + 1)) +
+          minDuration;
+
+        this.gameData.currentRotationPattern = {
+          ...pattern,
+          duration: randomDuration,
+        };
+        this.gameData.rotationTimer = randomDuration;
+
+        if (this.gameData.debug) {
+          console.log(`회전 시작: ${pattern.type} (${randomDuration}프레임)`);
+        }
+      }
+
+      // 회전 실행
+      if (this.gameData.isRotating && this.gameData.currentRotationPattern) {
+        this.gameData.rotationTimer--;
+        const pattern = this.gameData.currentRotationPattern;
+        const progress = 1 - this.gameData.rotationTimer / pattern.duration;
+        let currentAngle = 0;
+
+        if (
+          pattern.reverses &&
+          (pattern.type === "short" || pattern.type === "ultra_fast")
+        ) {
+          if (progress < 0.5) {
+            currentAngle =
+              progress * 2 * pattern.angle * this.gameData.rotationDirection;
+          } else {
+            const reverseProgress = (progress - 0.5) * 2;
+            currentAngle =
+              (1 - reverseProgress) *
+              pattern.angle *
+              this.gameData.rotationDirection;
+          }
         } else {
-          const reverseProgress = (progress - 0.5) * 2;
           currentAngle =
-            (1 - reverseProgress) *
-            pattern.angle *
-            this.gameData.rotationDirection;
+            progress * pattern.angle * this.gameData.rotationDirection;
         }
-      } else {
-        currentAngle =
-          progress * pattern.angle * this.gameData.rotationDirection;
-      }
 
-      if (this.gameContainer) {
-        this.gameContainer.setRotation(
-          this.gameData.totalRotation + currentAngle,
-        );
-      }
-
-      if (this.gameData.rotationTimer <= 0) {
-        this.gameData.isRotating = false;
-        if (!pattern.reverses) {
-          this.gameData.totalRotation =
-            (this.gameData.totalRotation +
-              pattern.angle * this.gameData.rotationDirection) %
-            (Math.PI * 2);
-        }
         if (this.gameContainer) {
-          this.gameContainer.setRotation(this.gameData.totalRotation);
+          this.gameContainer.setRotation(
+            this.gameData.totalRotation + currentAngle,
+          );
+        }
+
+        if (this.gameData.rotationTimer <= 0) {
+          this.gameData.isRotating = false;
+          if (!pattern.reverses) {
+            this.gameData.totalRotation =
+              (this.gameData.totalRotation +
+                pattern.angle * this.gameData.rotationDirection) %
+              (Math.PI * 2);
+          }
+          if (this.gameContainer) {
+            this.gameContainer.setRotation(this.gameData.totalRotation);
+          }
         }
       }
+    } catch (error) {
+      console.error("회전 업데이트 오류:", error);
     }
   }
 
   private handleInput() {
-    const { cursors, wasd, touchInput } = this.gameData;
-    const currentTime = this.time.now;
-    const moveSpeed = 0.13;
+    try {
+      const { cursors, wasd, touchInput } = this.gameData;
+      const currentTime = this.time.now;
+      const moveSpeed = 0.13;
 
-    let moved = false;
+      let moved = false;
 
-    // 키보드 입력
-    if (cursors?.left.isDown || wasd?.A.isDown || touchInput.leftPressed) {
-      this.gameData.playerAngle -= moveSpeed;
-      moved = true;
-    }
-    if (cursors?.right.isDown || wasd?.D.isDown || touchInput.rightPressed) {
-      this.gameData.playerAngle += moveSpeed;
-      moved = true;
-    }
+      // 키보드 입력
+      if (cursors?.left.isDown || wasd?.A.isDown || touchInput.leftPressed) {
+        this.gameData.playerAngle -= moveSpeed;
+        moved = true;
+      }
+      if (cursors?.right.isDown || wasd?.D.isDown || touchInput.rightPressed) {
+        this.gameData.playerAngle += moveSpeed;
+        moved = true;
+      }
 
-    // 이동 사운드
-    if (moved && currentTime - this.gameData.lastMoveTime > 80) {
-      this.moveSound?.triggerAttackRelease("C6", "64n");
-      this.gameData.lastMoveTime = currentTime;
+      // 이동 사운드
+      if (moved && currentTime - this.gameData.lastMoveTime > 80) {
+        try {
+          this.moveSound?.triggerAttackRelease("C6", "64n");
+        } catch (soundError) {
+          // 사운드 오류는 무시하고 계속 진행
+        }
+        this.gameData.lastMoveTime = currentTime;
+      }
+    } catch (error) {
+      console.error("입력 처리 오류:", error);
     }
   }
 
   private updatePlayer() {
-    const { innerRadius, playerRadius } = GAME_CONFIG;
-    const { playerAngle } = this.gameData;
+    try {
+      const { innerRadius, playerRadius } = GAME_CONFIG;
+      const { playerAngle } = this.gameData;
 
-    if (!this.gameData.player) return;
+      if (!this.gameData.player) return;
 
-    // 플레이어 위치 계산
-    const playerDistance = innerRadius + playerRadius + 10;
-    const playerX = Math.cos(playerAngle) * playerDistance;
-    const playerY = Math.sin(playerAngle) * playerDistance;
+      // 플레이어 위치 계산
+      const playerDistance = innerRadius + playerRadius + 10;
+      const playerX = Math.cos(playerAngle) * playerDistance;
+      const playerY = Math.sin(playerAngle) * playerDistance;
 
-    // 네온 스타일 플레이어 렌더링
-    this.gameData.player.clear();
+      // 네온 스타일 플레이어 렌더링
+      this.gameData.player.clear();
 
-    // 플레이어 색상 (현재 색상의 보색)
-    const playerHue = (this.gameData.currentHue + 180) % 360;
-    const coreColor = Phaser.Display.Color.HSVToRGB(playerHue / 360, 1, 1);
-    const glowColor = Phaser.Display.Color.HSVToRGB(playerHue / 360, 0.8, 0.6);
+      // 플레이어 색상 (현재 색상의 보색)
+      const playerHue = (this.gameData.currentHue + 180) % 360;
+      const coreColor = Phaser.Display.Color.HSVToRGB(playerHue / 360, 1, 1);
+      const glowColor = Phaser.Display.Color.HSVToRGB(
+        playerHue / 360,
+        0.8,
+        0.6,
+      );
 
-    // 외부 글로우
-    this.gameData.player.fillStyle(glowColor.color, 0.3);
-    this.gameData.player.fillTriangle(
-      0,
-      -playerRadius * 1.8,
-      -playerRadius * 1.4,
-      playerRadius * 1.2,
-      playerRadius * 1.4,
-      playerRadius * 1.2,
-    );
+      // 외부 글로우
+      this.gameData.player.fillStyle(glowColor.color, 0.3);
+      this.gameData.player.fillTriangle(
+        0,
+        -playerRadius * 1.8,
+        -playerRadius * 1.4,
+        playerRadius * 1.2,
+        playerRadius * 1.4,
+        playerRadius * 1.2,
+      );
 
-    // 메인 삼각형
-    this.gameData.player.fillStyle(coreColor.color, 1);
-    this.gameData.player.fillTriangle(
-      0,
-      -playerRadius,
-      -playerRadius * 0.8,
-      playerRadius,
-      playerRadius * 0.8,
-      playerRadius,
-    );
+      // 메인 삼각형
+      this.gameData.player.fillStyle(coreColor.color, 1);
+      this.gameData.player.fillTriangle(
+        0,
+        -playerRadius,
+        -playerRadius * 0.8,
+        playerRadius,
+        playerRadius * 0.8,
+        playerRadius,
+      );
 
-    // 네온 테두리
-    this.gameData.player.lineStyle(2, coreColor.color, 1);
-    this.gameData.player.strokeTriangle(
-      0,
-      -playerRadius,
-      -playerRadius * 0.8,
-      playerRadius,
-      playerRadius * 0.8,
-      playerRadius,
-    );
+      // 네온 테두리
+      this.gameData.player.lineStyle(2, coreColor.color, 1);
+      this.gameData.player.strokeTriangle(
+        0,
+        -playerRadius,
+        -playerRadius * 0.8,
+        playerRadius,
+        playerRadius * 0.8,
+        playerRadius,
+      );
 
-    // 위치 및 회전 설정
-    this.gameData.player.setPosition(playerX, playerY);
-    this.gameData.player.setRotation(playerAngle + Math.PI / 2);
+      // 위치 및 회전 설정
+      this.gameData.player.setPosition(playerX, playerY);
+      this.gameData.player.setRotation(playerAngle + Math.PI / 2);
+    } catch (error) {
+      console.error("플레이어 업데이트 오류:", error);
+    }
   }
 
   private updateCenterHexagon() {
-    const { innerRadius, pulseFrequency, pulseIntensity } = GAME_CONFIG;
+    try {
+      const { innerRadius, pulseFrequency, pulseIntensity } = GAME_CONFIG;
 
-    if (!this.centerHexagon) return;
+      if (!this.centerHexagon) return;
 
-    this.gameData.beatTime += 0.02;
-    const beatPhase = Math.sin(
-      this.gameData.beatTime * Math.PI * 2 * pulseFrequency,
-    );
-    const scaleFactor = 1 + beatPhase * pulseIntensity;
-    const currentRadius = innerRadius * scaleFactor;
+      this.gameData.beatTime += 0.02;
 
-    // 네온 스타일 중심 도형
-    this.centerHexagon.clear();
+      const beatPhase = Math.sin(
+        this.gameData.beatTime * Math.PI * 2 * pulseFrequency,
+      );
 
-    const centerColor = Phaser.Display.Color.HSVToRGB(
-      this.gameData.currentHue / 360,
-      0.9,
-      0.9,
-    );
-    const glowColor = Phaser.Display.Color.HSVToRGB(
-      this.gameData.currentHue / 360,
-      0.7,
-      0.5,
-    );
+      const scaleFactor = 1 + beatPhase * pulseIntensity;
 
-    // 외부 글로우
-    this.centerHexagon.lineStyle(8, glowColor.color, 0.4);
-    this.drawCenterShape(this.centerHexagon, 0, 0, currentRadius + 4);
+      const currentRadius = innerRadius * scaleFactor;
 
-    // 메인 라인
-    this.centerHexagon.lineStyle(3, centerColor.color, 1);
-    this.drawCenterShape(this.centerHexagon, 0, 0, currentRadius);
+      // 네온 스타일 중심 도형
+      this.centerHexagon.clear();
 
-    // 내부 글로우
-    this.centerHexagon.lineStyle(1, 0xffffff, 0.8);
-    this.drawCenterShape(this.centerHexagon, 0, 0, currentRadius - 2);
+      const centerColor = Phaser.Display.Color.HSVToRGB(
+        this.gameData.currentHue / 360,
+        0.9,
+        0.9,
+      );
+
+      const glowColor = Phaser.Display.Color.HSVToRGB(
+        this.gameData.currentHue / 360,
+        0.7,
+        0.5,
+      );
+
+      // 외부 글로우
+      this.centerHexagon.lineStyle(8, glowColor.color, 0.4);
+
+      this.drawCenterShape(this.centerHexagon, 0, 0, currentRadius + 4);
+
+      // 메인 라인
+      this.centerHexagon.lineStyle(3, centerColor.color, 1);
+      this.drawCenterShape(this.centerHexagon, 0, 0, currentRadius);
+
+      // 내부 글로우
+      this.centerHexagon.lineStyle(1, 0xffffff, 0.8);
+      this.drawCenterShape(this.centerHexagon, 0, 0, currentRadius - 2);
+    } catch (error) {
+      console.error("중심 헥사곤 업데이트 오류:", error);
+    }
   }
 
   private drawCenterShape(
@@ -748,816 +1003,905 @@ class GameScene extends Phaser.Scene {
     y: number,
     radius: number,
   ) {
-    let sides = 6;
-    switch (this.gameData.centerShape) {
-      case "pentagon":
-        sides = 5;
-        break;
-      case "square":
-        sides = 4;
-        break;
-      case "hexagon":
-      default:
-        sides = 6;
-        break;
-    }
-
-    graphics.beginPath();
-    for (let i = 0; i < sides; i++) {
-      const angle = (i * Math.PI * 2) / sides;
-      const pointX = x + Math.cos(angle) * radius;
-      const pointY = y + Math.sin(angle) * radius;
-
-      if (i === 0) {
-        graphics.moveTo(pointX, pointY);
-      } else {
-        graphics.lineTo(pointX, pointY);
+    try {
+      let sides = 6;
+      switch (this.gameData.centerShape) {
+        case "pentagon":
+          sides = 5;
+          break;
+        case "square":
+          sides = 4;
+          break;
+        case "hexagon":
+        default:
+          sides = 6;
+          break;
       }
+
+      graphics.beginPath();
+      for (let i = 0; i < sides; i++) {
+        const angle = (i * Math.PI * 2) / sides;
+        const pointX = x + Math.cos(angle) * radius;
+        const pointY = y + Math.sin(angle) * radius;
+
+        if (i === 0) {
+          graphics.moveTo(pointX, pointY);
+        } else {
+          graphics.lineTo(pointX, pointY);
+        }
+      }
+      graphics.closePath();
+      graphics.strokePath();
+    } catch (error) {
+      console.error("중심 도형 그리기 오류:", error);
     }
-    graphics.closePath();
-    graphics.strokePath();
   }
 
   private spawnWalls() {
-    this.gameData.spawnTimer++;
-    const currentInterval = this.gameData.isPatternMode
-      ? GAME_CONFIG.mazeSpawnInterval
-      : this.gameData.spawnInterval;
+    try {
+      this.gameData.spawnTimer++;
 
-    if (this.gameData.spawnTimer >= currentInterval) {
-      this.createWallRing();
-      this.gameData.spawnTimer = 0;
+      // 패턴 모드일 때는 더 빠른 간격으로 생성
+      const currentInterval = this.gameData.isPatternMode
+        ? Math.max(30, GAME_CONFIG.mazeSpawnInterval * 0.5) // 더 빠르게 조정
+        : this.gameData.spawnInterval;
+
+      if (this.gameData.spawnTimer >= currentInterval) {
+        this.createWallRing();
+        this.gameData.spawnTimer = 0;
+      }
+    } catch (error) {
+      console.error("벽 생성 오류:", error);
     }
   }
 
   private createWallRing() {
-    const startRadius = 450;
-    const wallPattern = this.generateWallPattern();
+    try {
+      const startRadius = 550; // 450 → 550으로 증가 (화면 확대에 맞춤)
+      const wallPattern = this.generateWallPattern();
 
-    const wallRing = this.add.graphics();
-    this.gameContainer?.add(wallRing);
+      const wallRing = this.add.graphics();
+      this.gameContainer?.add(wallRing);
 
-    wallRing.setData("radius", startRadius);
-    wallRing.setData("wallPattern", [...wallPattern]);
-    wallRing.setData("originalPattern", [...wallPattern]);
-    wallRing.setData("collisionChecked", false);
-    wallRing.setData("wallId", Date.now() + Math.random());
+      wallRing.setData("radius", startRadius);
+      wallRing.setData("wallPattern", [...wallPattern]);
+      wallRing.setData("originalPattern", [...wallPattern]);
+      wallRing.setData("collisionChecked", false);
+      wallRing.setData("wallId", Date.now() + Math.random());
 
-    this.updateWallRing(wallRing);
-    this.gameData.walls.push(wallRing);
+      this.updateWallRing(wallRing);
+      this.gameData.walls.push(wallRing);
+    } catch (error) {
+      console.error("벽 링 생성 오류:", error);
+    }
   }
 
   private generateWallPattern(): boolean[] {
-    const timeInSeconds = this.gameData.gameTime / 60;
-    const difficultyFactor = Math.min(timeInSeconds / 30, 1);
-    const patternChance = 0.15 + difficultyFactor * 0.25;
+    try {
+      const timeInSeconds = this.gameData.gameTime / 60;
+      const difficultyFactor = Math.min(timeInSeconds / 30, 1);
+      const patternChance = 0.15 + difficultyFactor * 0.25;
 
-    if (!this.gameData.isPatternMode && Math.random() < patternChance) {
-      this.startNewPattern();
-    }
+      if (!this.gameData.isPatternMode && Math.random() < patternChance) {
+        this.startNewPattern();
+      }
 
-    if (this.gameData.isPatternMode) {
-      return this.generatePatternWalls();
-    } else {
+      if (this.gameData.isPatternMode) {
+        return this.generatePatternWalls();
+      } else {
+        return this.generateBasicWalls();
+      }
+    } catch (error) {
+      console.error("벽 패턴 생성 오류:", error);
+      // 오류 시 기본 패턴 반환
       return this.generateBasicWalls();
     }
   }
 
   private startNewPattern() {
-    const timeInSeconds = this.gameData.gameTime / 60;
+    try {
+      const timeInSeconds = this.gameData.gameTime / 60;
 
-    // 시간대별 사용 가능한 패턴 정의
-    let availablePatterns: string[] = [];
+      // 시간대별 사용 가능한 패턴 정의
+      let availablePatterns: string[] = [];
 
-    if (timeInSeconds < 10) {
-      // 0-10초: 초급 패턴만
-      availablePatterns = ["solo", "double_c", "stair_1"];
-    } else if (timeInSeconds < 25) {
-      // 10-25초: 초급 + 중급 패턴
-      availablePatterns = [
-        "solo",
-        "double_c",
-        "triple_c",
-        "stair_1",
-        "stair_2",
-        "ladder",
-        "alternating",
-        "bat",
-      ];
-    } else if (timeInSeconds < 45) {
-      // 25-45초: 중급 + 고급 패턴
-      availablePatterns = [
-        "double_c",
-        "triple_c",
-        "double_spiral",
-        "bat",
-        "ladder",
-        "multi_c",
-        "spin_2",
-        "alternating",
-        "pattern_321",
-        "spiral_right",
-        "spiral_left",
-        "zigzag",
-        "wave",
-      ];
-    } else if (timeInSeconds < 75) {
-      // 45-75초: 고급 패턴
-      availablePatterns = [
-        "triple_c",
-        "double_spiral",
-        "multi_c",
-        "spin_2",
-        "spin_4",
-        "whirlpool",
-        "rain",
-        "double_turn",
-        "mirror_spiral",
-        "spiral_right",
-        "spiral_left",
-        "zigzag",
-        "wave",
-        "tunnel",
-      ];
-    } else {
-      // 75초+: 모든 패턴 (최고 난이도)
-      availablePatterns = GAME_CONFIG.wallPatterns;
-    }
+      if (timeInSeconds < 15) {
+        availablePatterns = GAME_CONFIG.patternsByDifficulty.beginner;
+      } else if (timeInSeconds < 30) {
+        availablePatterns = GAME_CONFIG.patternsByDifficulty.intermediate;
+      } else if (timeInSeconds < 60) {
+        availablePatterns = GAME_CONFIG.patternsByDifficulty.advanced;
+      } else if (timeInSeconds < 90) {
+        availablePatterns = GAME_CONFIG.patternsByDifficulty.expert;
+      } else if (timeInSeconds < 120) {
+        availablePatterns = GAME_CONFIG.patternsByDifficulty.master;
+      } else {
+        availablePatterns = GAME_CONFIG.patternsByDifficulty.grandmaster;
+      }
 
-    // 연속 패턴 방지 (최대 2회)
-    if (this.gameData.consecutivePatternCount >= 2) {
-      availablePatterns = availablePatterns.filter(
-        (pattern) => pattern !== this.gameData.currentWallPattern,
-      );
-      this.gameData.consecutivePatternCount = 0;
-    }
+      // 연속 패턴 방지 로직
+      if (this.gameData.consecutivePatternCount >= 2) {
+        availablePatterns = availablePatterns.filter(
+          (pattern) => pattern !== this.gameData.currentWallPattern,
+        );
+        this.gameData.consecutivePatternCount = 0;
+      }
 
-    const selectedPattern =
-      availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+      const selectedPattern =
+        availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
 
-    if (selectedPattern === this.gameData.currentWallPattern) {
-      this.gameData.consecutivePatternCount++;
-    } else {
-      this.gameData.consecutivePatternCount = 1;
-    }
+      // 패턴 설정
+      this.gameData.currentWallPattern = selectedPattern;
+      this.gameData.isPatternMode = true;
+      this.gameData.patternProgress = 0;
+      this.gameData.patternDirection = Math.floor(Math.random() * 6);
 
-    this.gameData.currentWallPattern = selectedPattern;
-    this.gameData.isPatternMode = true;
-    this.gameData.patternProgress = 0;
-    this.gameData.patternDirection = Math.floor(Math.random() * 6);
-
-    // 패턴 길이 설정 (기존 코드와 동일)
-    const patternLengths: { [key: string]: [number, number] } = {
-      solo: [4, 8],
-      double_c: [6, 10],
-      triple_c: [8, 12],
-      double_spiral: [10, 15],
-      bat: [4, 8],
-      ladder: [6, 10],
-      multi_c: [8, 15],
-      spin_2: [8, 8],
-      spin_4: [16, 16],
-      stair_2: [5, 7],
-      mode_changer: [10, 20],
-      whirlpool: [12, 21],
-      rain: [8, 15],
-      double_turn: [10, 21],
-      alternating: [8, 15],
-      pattern_321: [18, 18],
-      stair_1: [6, 13],
-      mirror_spiral: [10, 21],
-      box_with_cap: [8, 17],
-    };
-
-    const [min, max] = patternLengths[selectedPattern] || [6, 12];
-
-    switch (selectedPattern) {
-      case "whirlpool":
-        this.gameData.patternLength = Math.floor(Math.random() * 10) + 12; // 12-21
-        break;
-      case "rain":
-        this.gameData.patternLength = Math.floor(Math.random() * 8) + 8; // 8-15
-        break;
-      case "double_turn":
-        this.gameData.patternLength = Math.floor(Math.random() * 12) + 10; // 10-21
-        break;
-      case "alternating":
-        this.gameData.patternLength = Math.floor(Math.random() * 8) + 8; // 8-15
-        break;
-      case "pattern_321":
-        this.gameData.patternLength = 18; // 고정 길이 (3+2+1) * 3 사이클
-        break;
-      case "stair_1":
-        this.gameData.patternLength = Math.floor(Math.random() * 8) + 6; // 6-13
-        break;
-      case "mirror_spiral":
-        this.gameData.patternLength = Math.floor(Math.random() * 12) + 10; // 10-21
-        break;
-      case "box_with_cap":
-        this.gameData.patternLength = Math.floor(Math.random() * 10) + 8; // 8-17
-        break;
-      default:
+      // 패턴별 길이 설정
+      const config =
+        GAME_CONFIG.patternConfigs[
+          selectedPattern as keyof typeof GAME_CONFIG.patternConfigs
+        ];
+      if (config && config.duration) {
+        const [min, max] = config.duration;
         this.gameData.patternLength =
           Math.floor(Math.random() * (max - min + 1)) + min;
-        break;
-    }
+      } else {
+        this.gameData.patternLength = 8; // 기본값
+      }
 
-    if (this.gameData.debug) {
-      console.log(
-        `패턴 시작: ${selectedPattern} (${timeInSeconds.toFixed(1)}초, 연속: ${this.gameData.consecutivePatternCount})`,
-      );
+      if (this.gameData.debug) {
+        console.log(
+          `패턴 시작: ${selectedPattern} (${config?.description}) - ${timeInSeconds.toFixed(1)}초`,
+        );
+      }
+    } catch (error) {
+      console.error("새 패턴 시작 오류:", error);
     }
   }
 
   private generatePatternWalls(): boolean[] {
-    const pattern = new Array(6).fill(true);
-    let safeZones: number[] = [];
+    try {
+      const pattern = new Array(6).fill(true);
+      let safeZones: number[] = [];
 
-    // 패턴별 안전지대 생성 로직
-    switch (this.gameData.currentWallPattern) {
-      case "solo":
-        safeZones = [this.gameData.patternDirection];
-        break;
-      case "double_c":
-        const basePos =
-          (this.gameData.patternDirection + this.gameData.patternProgress) % 6;
-        safeZones = [basePos, (basePos + 1) % 6, (basePos + 2) % 6];
-        break;
-      case "whirlpool":
-        safeZones = this.generateWhirlpoolPattern();
-        break;
-      case "rain":
-        safeZones = this.generateRainPattern();
-        break;
-      case "double_turn":
-        safeZones = this.generateDoubleTurnPattern();
-        break;
-      case "alternating":
-        safeZones = this.generateAlternatingPattern();
-        break;
-      case "pattern_321":
-        safeZones = this.generatePattern321();
-        break;
-      case "stair_1":
-        safeZones = this.generateStair1Pattern();
-        break;
-      case "mirror_spiral":
-        safeZones = this.generateMirrorSpiralPattern();
-        break;
-      case "box_with_cap":
-        safeZones = this.generateBoxWithCapPattern();
-        break;
-      default:
-        safeZones = [this.gameData.patternDirection];
-    }
-
-    // 연속 안전지대 방지 로직
-    if (this.gameData.lastPatternSafeZones.length > 0) {
-      const lastSafeZone =
-        this.gameData.lastPatternSafeZones[
-          this.gameData.lastPatternSafeZones.length - 1
-        ];
-
-      // 현재 안전지대가 이전과 같은지 확인
-      const currentMainSafeZone = safeZones[0]; // 주요 안전지대
-
-      if (currentMainSafeZone === lastSafeZone) {
-        this.gameData.consecutiveSameCount++;
-
-        // 3번 이상 연속으로 같은 안전지대가 나오면 강제로 변경
-        if (this.gameData.consecutiveSameCount >= 3) {
-          // 다른 안전지대로 변경
-          const availableZones = [0, 1, 2, 3, 4, 5].filter(
-            (zone) => zone !== lastSafeZone,
-          );
-          const newSafeZone =
-            availableZones[Math.floor(Math.random() * availableZones.length)];
-          safeZones = [newSafeZone];
-          this.gameData.consecutiveSameCount = 0;
-        }
-      } else {
-        this.gameData.consecutiveSameCount = 0;
+      switch (this.gameData.currentWallPattern) {
+        case "solo":
+          safeZones = this.generateSoloPattern();
+          break;
+        case "triple_c":
+          safeZones = this.generateTripleCPattern();
+          break;
+        case "whirlpool":
+          safeZones = this.generateWhirlpoolPattern();
+          break;
+        case "bat":
+          safeZones = this.generateBatPattern();
+          break;
+        case "ladder":
+          safeZones = this.generateLadderPattern();
+          break;
+        case "double_c":
+          safeZones = this.generateDoubleCPattern();
+          break;
+        case "box_with_cap":
+          safeZones = this.generateBoxWithCapPattern();
+          break;
+        case "multi_c":
+          safeZones = this.generateMultiCPattern();
+          break;
+        case "double_whirlpool":
+          safeZones = this.generateDoubleWhirlpoolPattern();
+          break;
+        case "spin_2":
+          safeZones = this.generateSpinPattern(2);
+          break;
+        case "spin_3":
+          safeZones = this.generateSpinPattern(3);
+          break;
+        case "spin_4":
+          safeZones = this.generateSpinPattern(4);
+          break;
+        case "rain":
+          safeZones = this.generateRainPattern();
+          break;
+        case "stair_1":
+          safeZones = this.generateStair1Pattern();
+          break;
+        case "pattern_321":
+          safeZones = this.generatePattern321();
+          break;
+        case "stair_2":
+          safeZones = this.generateStair2Pattern();
+          break;
+        case "black_white_mode":
+          safeZones = this.generateBlackWhitePattern();
+          break;
+        default:
+          safeZones = [this.gameData.patternDirection];
       }
-    }
 
-    // 안전지대 기록 (최대 5개까지만 보관)
-    if (safeZones.length > 0) {
-      this.gameData.lastPatternSafeZones.push(safeZones[0]);
-      if (this.gameData.lastPatternSafeZones.length > 5) {
-        this.gameData.lastPatternSafeZones.shift();
-      }
-    }
-
-    safeZones.forEach((zone) => {
-      if (zone >= 0 && zone < 6) {
-        pattern[zone] = false;
-      }
-    });
-
-    this.gameData.patternProgress++;
-    if (this.gameData.patternProgress >= this.gameData.patternLength) {
-      this.gameData.isPatternMode = false;
-      // 패턴 종료 시 연속 카운트 리셋
-      this.gameData.consecutiveSameCount = 0;
-    }
-
-    return pattern;
-  }
-
-  private generateBasicWalls(): boolean[] {
-    const pattern = new Array(6).fill(false);
-    const currentDifficultyConfig =
-      GAME_CONFIG.difficulty[
-        this.gameData.currentDifficulty as keyof typeof GAME_CONFIG.difficulty
-      ];
-
-    // 난이도에 따른 벽 개수 및 안전지대 설정
-    const wallCount =
-      Math.floor(
-        Math.random() *
-          (currentDifficultyConfig.wallCount.max -
-            currentDifficultyConfig.wallCount.min +
-            1),
-      ) + currentDifficultyConfig.wallCount.min;
-    const minSafeZones = currentDifficultyConfig.safeZoneMin;
-
-    let availablePositions = [0, 1, 2, 3, 4, 5];
-
-    // 연속 방지 로직
-    if (this.gameData.lastSafeZones.length > 0) {
-      const recentSafeZones = this.gameData.lastSafeZones;
-      const forbiddenPositions = new Set<number>();
-
-      recentSafeZones.forEach((recentZone: number) => {
-        forbiddenPositions.add(recentZone);
-        if (
-          this.gameData.currentDifficulty === "beginner" ||
-          this.gameData.currentDifficulty === "intermediate"
-        ) {
-          forbiddenPositions.add((recentZone - 1 + 6) % 6);
-          forbiddenPositions.add((recentZone + 1) % 6);
+      // 안전지대 설정
+      safeZones.forEach((zone) => {
+        if (zone >= 0 && zone < 6) {
+          pattern[zone] = false;
         }
       });
 
-      availablePositions = availablePositions.filter(
-        (pos) => !forbiddenPositions.has(pos),
-      );
-    }
-
-    // 최소 안전지대 보장
-    if (availablePositions.length < minSafeZones) {
-      availablePositions = [0, 1, 2, 3, 4, 5];
-    }
-
-    const wallsToPlace = Math.min(
-      wallCount,
-      Math.max(0, availablePositions.length - minSafeZones),
-    );
-
-    for (let i = 0; i < wallsToPlace; i++) {
-      if (availablePositions.length <= minSafeZones) break;
-
-      const randomIndex = Math.floor(Math.random() * availablePositions.length);
-      const position = availablePositions[randomIndex];
-      pattern[position] = true;
-      availablePositions.splice(randomIndex, 1);
-    }
-
-    // 안전지대 기록
-    const newSafeZones = [];
-    for (let i = 0; i < 6; i++) {
-      if (!pattern[i]) {
-        newSafeZones.push(i);
+      this.gameData.patternProgress++;
+      if (this.gameData.patternProgress >= this.gameData.patternLength) {
+        this.gameData.isPatternMode = false;
+        this.gameData.consecutiveSameCount = 0;
       }
-    }
 
-    if (newSafeZones.length > 0) {
-      this.gameData.lastSafeZones.push(newSafeZones[0]);
-      if (this.gameData.lastSafeZones.length > 3) {
-        this.gameData.lastSafeZones.shift();
-      }
-    }
-
-    return pattern;
-  }
-
-  private updateWallRing(wallRing: Phaser.GameObjects.Graphics) {
-    const { wallThickness } = GAME_CONFIG;
-    const radius = wallRing.getData("radius");
-    const wallPattern = wallRing.getData("wallPattern");
-
-    if (
-      !wallPattern ||
-      !Array.isArray(wallPattern) ||
-      wallPattern.length !== 6
-    ) {
-      wallRing.destroy();
-      return;
-    }
-
-    wallRing.clear();
-
-    // 거리에 따른 원근감 및 네온 효과 계산
-    const distanceFromCenter = Math.abs(radius - 200);
-    const perspectiveFactor = Math.max(
-      0.3,
-      1 - (distanceFromCenter / 400) * 0.7,
-    );
-    const currentThickness = wallThickness * perspectiveFactor;
-
-    // 네온 색상 계산
-    const wallHue = (this.gameData.currentHue + 30) % 360;
-    const coreColor = Phaser.Display.Color.HSVToRGB(
-      wallHue / 360,
-      0.9,
-      perspectiveFactor,
-    );
-    const glowColor = Phaser.Display.Color.HSVToRGB(
-      wallHue / 360,
-      0.7,
-      perspectiveFactor * 0.6,
-    );
-
-    // 6개의 육각형 변을 네온 스타일로 그리기
-    for (let i = 0; i < 6; i++) {
-      if (wallPattern[i]) {
-        const segmentStartAngle = (i * Math.PI) / 3;
-        const segmentEndAngle = ((i + 1) * Math.PI) / 3;
-
-        // 외부 및 내부 좌표
-        const outerStartX = Math.cos(segmentStartAngle) * radius;
-        const outerStartY = Math.sin(segmentStartAngle) * radius;
-        const outerEndX = Math.cos(segmentEndAngle) * radius;
-        const outerEndY = Math.sin(segmentEndAngle) * radius;
-
-        const innerRadius = radius - currentThickness;
-        const innerStartX = Math.cos(segmentStartAngle) * innerRadius;
-        const innerStartY = Math.sin(segmentStartAngle) * innerRadius;
-        const innerEndX = Math.cos(segmentEndAngle) * innerRadius;
-        const innerEndY = Math.sin(segmentEndAngle) * innerRadius;
-
-        // 외부 글로우 (가장 넓은 범위)
-        wallRing.fillStyle(glowColor.color, 0.2);
-        wallRing.beginPath();
-        wallRing.moveTo(outerStartX + 6, outerStartY + 6);
-        wallRing.lineTo(outerEndX + 6, outerEndY + 6);
-        wallRing.lineTo(innerEndX + 6, innerEndY + 6);
-        wallRing.lineTo(innerStartX + 6, innerStartY + 6);
-        wallRing.closePath();
-        wallRing.fillPath();
-
-        // 중간 글로우
-        wallRing.fillStyle(glowColor.color, 0.4);
-        wallRing.beginPath();
-        wallRing.moveTo(outerStartX + 3, outerStartY + 3);
-        wallRing.lineTo(outerEndX + 3, outerEndY + 3);
-        wallRing.lineTo(innerEndX + 3, innerEndY + 3);
-        wallRing.lineTo(innerStartX + 3, innerStartY + 3);
-        wallRing.closePath();
-        wallRing.fillPath();
-
-        // 메인 벽 면
-        wallRing.fillStyle(coreColor.color, 0.9);
-        wallRing.beginPath();
-        wallRing.moveTo(outerStartX, outerStartY);
-        wallRing.lineTo(outerEndX, outerEndY);
-        wallRing.lineTo(innerEndX, innerEndY);
-        wallRing.lineTo(innerStartX, innerStartY);
-        wallRing.closePath();
-        wallRing.fillPath();
-
-        // 네온 테두리 (외부)
-        wallRing.lineStyle(2, coreColor.color, 1);
-        wallRing.beginPath();
-        wallRing.moveTo(outerStartX, outerStartY);
-        wallRing.lineTo(outerEndX, outerEndY);
-        wallRing.strokePath();
-
-        // 내부 하이라이트
-        wallRing.lineStyle(1, 0xffffff, 0.8);
-        wallRing.beginPath();
-        wallRing.moveTo(innerStartX, innerStartY);
-        wallRing.lineTo(innerEndX, innerEndY);
-        wallRing.strokePath();
-      }
+      return pattern;
+    } catch (error) {
+      console.error("패턴 벽 생성 오류:", error);
+      return this.generateBasicWalls();
     }
   }
 
-  private updateWalls() {
-    const { innerRadius } = GAME_CONFIG;
+  private generateBasicWalls(): boolean[] {
+    try {
+      // 안전한 난이도 설정 접근
+      const difficultyKeys = Object.keys(GAME_CONFIG.difficulty) as Array<
+        keyof typeof GAME_CONFIG.difficulty
+      >;
+      const currentDifficultyKey = difficultyKeys.includes(
+        this.gameData.currentDifficulty as any,
+      )
+        ? (this.gameData
+            .currentDifficulty as keyof typeof GAME_CONFIG.difficulty)
+        : "beginner";
 
-    for (let i = this.gameData.walls.length - 1; i >= 0; i--) {
-      const wall = this.gameData.walls[i];
+      const currentDifficultyConfig =
+        GAME_CONFIG.difficulty[currentDifficultyKey];
 
-      if (!wall || !wall.active) {
-        this.gameData.walls.splice(i, 1);
-        continue;
-      }
+      const pattern = new Array(6).fill(true);
+      const minSafeZones = currentDifficultyConfig.safeZoneMin;
+      const maxSafeZones = Math.min(4, minSafeZones + 2);
+      const safeZoneCount =
+        Math.floor(Math.random() * (maxSafeZones - minSafeZones + 1)) +
+        minSafeZones;
 
-      const currentRadius = wall.getData("radius");
-      const newRadius = currentRadius - this.gameData.wallSpeed;
+      // 연속 안전지대 방지를 위한 로직
+      let attempts = 0;
+      let safeZones: number[] = [];
 
-      if (newRadius < innerRadius - 20) {
-        wall.destroy();
-        this.gameData.walls.splice(i, 1);
-        continue;
-      }
+      while (attempts < 10) {
+        safeZones = [];
+        const startPosition = Math.floor(Math.random() * 6);
 
-      wall.setData("radius", newRadius);
-      this.updateWallRing(wall);
-
-      // 충돌 검사
-      const playerDistance = innerRadius + 15;
-      if (Math.abs(newRadius - playerDistance) < 5) {
-        if (!wall.getData("collisionChecked")) {
-          if (this.checkCollision(wall)) {
-            this.triggerGameOver();
-            return;
-          }
-          wall.setData("collisionChecked", true);
+        for (let i = 0; i < safeZoneCount; i++) {
+          safeZones.push((startPosition + i) % 6);
         }
-      } else {
-        wall.setData("collisionChecked", false);
-      }
-    }
-  }
 
-  private checkCollision(wall: Phaser.GameObjects.Graphics): boolean {
-    const { playerAngle } = this.gameData;
-    const wallPattern = wall.getData("wallPattern");
-
-    if (
-      !wallPattern ||
-      !Array.isArray(wallPattern) ||
-      wallPattern.length !== 6
-    ) {
-      return false;
-    }
-
-    const normalizeAngle = (angle: number) => {
-      let normalized = angle % (Math.PI * 2);
-      if (normalized < 0) normalized += Math.PI * 2;
-      return normalized;
-    };
-
-    const normalizedPlayerAngle = normalizeAngle(playerAngle);
-    const segmentIndex = Math.floor(normalizedPlayerAngle / (Math.PI / 3));
-    const clampedSegmentIndex = Math.max(0, Math.min(5, segmentIndex));
-
-    return wallPattern[clampedSegmentIndex];
-  }
-
-  private updateDebugInfo() {
-    if (!this.debugGraphics) return;
-
-    const { innerRadius } = GAME_CONFIG;
-    this.debugGraphics.clear();
-
-    // 플레이어 위치 표시
-    const playerDistance = innerRadius + 15;
-    const playerAngle = this.gameData.playerAngle;
-    const playerX = Math.cos(playerAngle) * playerDistance;
-    const playerY = Math.sin(playerAngle) * playerDistance;
-
-    this.debugGraphics.fillStyle(0xff0000, 0.7);
-    this.debugGraphics.fillCircle(playerX, playerY, 8);
-
-    // 플레이어 세그먼트 하이라이트
-    const normalizeAngle = (angle: number) => {
-      let normalized = angle % (Math.PI * 2);
-      if (normalized < 0) normalized += Math.PI * 2;
-      return normalized;
-    };
-
-    const normalizedPlayerAngle = normalizeAngle(playerAngle);
-    const segmentIndex = Math.floor(normalizedPlayerAngle / (Math.PI / 3));
-    const clampedSegmentIndex = Math.max(0, Math.min(5, segmentIndex));
-
-    const segmentStartAngle = clampedSegmentIndex * (Math.PI / 3);
-    const segmentEndAngle = (clampedSegmentIndex + 1) * (Math.PI / 3);
-
-    this.debugGraphics.lineStyle(4, 0x00ff00, 0.8);
-    this.debugGraphics.beginPath();
-    this.debugGraphics.arc(
-      0,
-      0,
-      playerDistance,
-      segmentStartAngle,
-      segmentEndAngle,
-    );
-    this.debugGraphics.strokePath();
-
-    // 터치 영역 표시
-    if (
-      this.gameData.touchInput.leftPressed ||
-      this.gameData.touchInput.rightPressed
-    ) {
-      this.debugGraphics.fillStyle(0xffff00, 0.3);
-      if (this.gameData.touchInput.leftPressed) {
-        this.debugGraphics.fillRect(
-          -GAME_CONFIG.centerX,
-          -GAME_CONFIG.centerY,
-          GAME_CONFIG.width / 2,
-          GAME_CONFIG.height,
+        // 이전 패턴과 너무 유사한지 확인
+        const similarity = this.calculateSimilarity(
+          safeZones,
+          this.gameData.lastSafeZones,
         );
+        if (similarity < 0.7) break;
+
+        attempts++;
       }
-      if (this.gameData.touchInput.rightPressed) {
-        this.debugGraphics.fillRect(
-          0,
-          -GAME_CONFIG.centerY,
-          GAME_CONFIG.width / 2,
-          GAME_CONFIG.height,
-        );
-      }
+
+      // 안전지대 설정
+      safeZones.forEach((zone) => {
+        pattern[zone] = false;
+      });
+
+      // 기록 업데이트
+      this.gameData.lastSafeZones = [...safeZones];
+
+      return pattern;
+    } catch (error) {
+      console.error("기본 벽 생성 오류:", error);
+      // 오류 시 최소한의 안전 패턴 반환
+      const pattern = new Array(6).fill(true);
+      pattern[0] = false;
+      pattern[1] = false;
+      return pattern;
     }
   }
 
-  private triggerGameOver() {
-    this.gameData.isGameOver = true;
-    this.gameData.cameraShake = 15;
+  private calculateSimilarity(zones1: number[], zones2: number[]): number {
+    try {
+      if (!zones2 || zones2.length === 0) return 0;
 
-    // 강화된 게임오버 사운드
-    this.hitSound?.triggerAttackRelease("C1", "2n");
-
-    if (this.backgroundMusic) {
-      this.backgroundMusic.stop();
-    }
-
-    const finalScore = Math.floor(this.gameData.gameTime / 60);
-    if (this.onGameOver) {
-      this.onGameOver(finalScore);
+      const matches = zones1.filter((zone) => zones2.includes(zone)).length;
+      return matches / Math.max(zones1.length, zones2.length);
+    } catch (error) {
+      console.error("유사도 계산 오류:", error);
+      return 0;
     }
   }
 
-  destroy() {
-    if (this.backgroundMusic) {
-      this.backgroundMusic.stop();
-      this.backgroundMusic.dispose();
-    }
-    if (this.hitSound) {
-      this.hitSound.dispose();
-    }
-    if (this.moveSound) {
-      this.moveSound.dispose();
-    }
-    Tone.Transport.stop();
-  }
-
+  // 패턴 생성 메서드들 (오류 처리 추가)
   private generateWhirlpoolPattern(): number[] {
-    // 소용돌이 패턴: 회전 방향에 따라 벽이 소용돌이처럼 등장
-    const progress = this.gameData.patternProgress;
-    const whirlDirection = this.gameData.spinDirection;
-    const basePosition = this.gameData.patternDirection;
+    try {
+      const progress = this.gameData.patternProgress;
+      const basePosition = this.gameData.patternDirection;
+      const rotationSpeed = Math.floor(Math.random() * 2) + 1;
 
-    // 소용돌이 속도 (점점 빨라짐)
-    const whirlSpeed = Math.floor(progress / 3) + 1;
-    const currentPosition =
-      (basePosition + progress * whirlSpeed * whirlDirection) % 6;
+      if (progress === 0) {
+        this.gameData.spinDirection = Math.random() < 0.5 ? 1 : -1;
+      }
 
-    return [currentPosition, (currentPosition + 3) % 6]; // 대각선 위치에 안전지대
+      const currentPosition =
+        (basePosition +
+          progress * rotationSpeed * this.gameData.spinDirection +
+          6) %
+        6;
+      const holeCount = Math.floor(Math.random() * 2) + 2;
+      const safeZones = [];
+
+      for (let i = 0; i < holeCount; i++) {
+        safeZones.push((currentPosition + i) % 6);
+      }
+
+      return safeZones;
+    } catch (error) {
+      console.error("소용돌이 패턴 생성 오류:", error);
+      return [0, 1];
+    }
+  }
+
+  private generateBatPattern(): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const basePosition = this.gameData.patternDirection;
+
+      if (progress % 4 < 2) {
+        return [(basePosition - 2 + 6) % 6, (basePosition - 1 + 6) % 6];
+      } else {
+        return [(basePosition + 1) % 6, (basePosition + 2) % 6];
+      }
+    } catch (error) {
+      console.error("박쥐 패턴 생성 오류:", error);
+      return [0, 1];
+    }
+  }
+
+  private generateLadderPattern(): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const basePosition = this.gameData.patternDirection;
+
+      const zigzagOffset = Math.sin(progress * 0.5) * 2;
+      const currentPosition = (basePosition + Math.floor(zigzagOffset) + 6) % 6;
+
+      return [currentPosition, (currentPosition + 1) % 6];
+    } catch (error) {
+      console.error("사다리 패턴 생성 오류:", error);
+      return [0, 1];
+    }
+  }
+
+  private generateDoubleCPattern(): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const cIndex = Math.floor(progress / 3) % 2;
+      const basePosition = (this.gameData.patternDirection + cIndex * 3) % 6;
+
+      return [basePosition, (basePosition + 1) % 6, (basePosition + 2) % 6];
+    } catch (error) {
+      console.error("더블 C 패턴 생성 오류:", error);
+      return [0, 1, 2];
+    }
+  }
+
+  private generateBoxWithCapPattern(): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const basePosition = this.gameData.patternDirection;
+      const cycleLength = 8;
+      const cyclePosition = progress % cycleLength;
+
+      if (cyclePosition < 4) {
+        return [basePosition, (basePosition + 1) % 6, (basePosition + 2) % 6];
+      } else {
+        return [basePosition];
+      }
+    } catch (error) {
+      console.error("박스 캡 패턴 생성 오류:", error);
+      return [0];
+    }
+  }
+
+  private generateMultiCPattern(): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const cCount = Math.floor(Math.random() * 2) + 4;
+      const cIndex = Math.floor(progress / 3) % cCount;
+
+      const direction = this.gameData.spinDirection;
+      const basePosition =
+        (this.gameData.patternDirection + cIndex * direction + 6) % 6;
+
+      return [basePosition, (basePosition + 1) % 6, (basePosition + 2) % 6];
+    } catch (error) {
+      console.error("멀티 C 패턴 생성 오류:", error);
+      return [0, 1, 2];
+    }
+  }
+
+  private generateDoubleWhirlpoolPattern(): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const basePosition = this.gameData.patternDirection;
+
+      const clockwise = (basePosition + progress) % 6;
+      const counterClockwise = (basePosition - progress + 6) % 6;
+
+      const safeZone1 = (clockwise + 2) % 6;
+      const safeZone2 = (counterClockwise + 2) % 6;
+
+      return [safeZone1, safeZone2].filter(
+        (zone, index, arr) => arr.indexOf(zone) === index,
+      );
+    } catch (error) {
+      console.error("더블 소용돌이 패턴 생성 오류:", error);
+      return [0, 3];
+    }
+  }
+
+  private generateSpinPattern(units: number): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const cycleLength = units * 2;
+      const cyclePosition = progress % cycleLength;
+
+      const basePosition = this.gameData.patternDirection;
+      let direction = 1;
+
+      if (cyclePosition >= units) {
+        direction = -1;
+      }
+
+      const moveAmount = (cyclePosition % units) * direction;
+      const currentPosition = (basePosition + moveAmount + 6) % 6;
+
+      return [currentPosition];
+    } catch (error) {
+      console.error("스핀 패턴 생성 오류:", error);
+      return [0];
+    }
+  }
+
+  private generateStair2Pattern(): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const cycleLength = 5;
+      const cyclePosition = progress % cycleLength;
+
+      const basePosition = this.gameData.patternDirection;
+      let moveAmount = 0;
+
+      if (cyclePosition < 2) {
+        moveAmount = cyclePosition;
+      } else {
+        moveAmount = -(cyclePosition - 2);
+      }
+
+      const currentPosition = (basePosition + moveAmount + 6) % 6;
+      return [currentPosition];
+    } catch (error) {
+      console.error("계단2 패턴 생성 오류:", error);
+      return [0];
+    }
+  }
+
+  private generateBlackWhitePattern(): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const basePosition = this.gameData.patternDirection;
+
+      const straightMove = Math.floor(progress / 2);
+      const currentPosition = (basePosition + straightMove) % 6;
+
+      return [currentPosition];
+    } catch (error) {
+      console.error("흑백 패턴 생성 오류:", error);
+      return [0];
+    }
   }
 
   private generateRainPattern(): number[] {
-    // 비 패턴: 벽이 위에서 아래로 떨어지는 형태
-    const progress = this.gameData.patternProgress;
-    const rainSpeed = 2; // 빠른 반응 속도 요구
+    try {
+      const progress = this.gameData.patternProgress;
+      const basePosition = this.gameData.patternDirection;
 
-    // 여러 개의 "빗방울"이 다른 속도로 떨어짐
-    const drop1 = (this.gameData.patternDirection + progress * rainSpeed) % 6;
-    const drop2 =
-      (this.gameData.patternDirection +
-        2 +
-        Math.floor(progress * rainSpeed * 0.7)) %
-      6;
-    const drop3 =
-      (this.gameData.patternDirection +
-        4 +
-        Math.floor(progress * rainSpeed * 1.3)) %
-      6;
+      const seed = Math.floor(progress / 3);
+      const irregularOffset = (seed * 7) % 6;
 
-    // 빗방울 사이의 안전지대
-    const allPositions = [0, 1, 2, 3, 4, 5];
-    const rainPositions = [drop1, drop2, drop3];
-    return allPositions.filter((pos) => !rainPositions.includes(pos));
-  }
+      if (progress % 6 < 3) {
+        const position = (basePosition + irregularOffset) % 6;
+        return [position, (position + 1) % 6, (position + 2) % 6];
+      } else {
+        const holeCount = (seed % 2) + 1;
+        const position = (basePosition + irregularOffset + 3) % 6;
+        const safeZones = [];
 
-  private generateDoubleTurnPattern(): number[] {
-    // 이중 회전 패턴: 연속적인 회전을 요구
-    const progress = this.gameData.patternProgress;
-    const cycleLength = 8;
-    const cyclePosition = progress % cycleLength;
+        for (let i = 0; i < holeCount; i++) {
+          safeZones.push((position + i) % 6);
+        }
 
-    let direction1 = this.gameData.spinDirection;
-    let direction2 = -this.gameData.spinDirection;
-
-    if (cyclePosition < 2) {
-      // 첫 번째 회전
-      direction1 = this.gameData.spinDirection;
-      direction2 = 0;
-    } else if (cyclePosition < 4) {
-      // 정지
-      direction1 = 0;
-      direction2 = 0;
-    } else if (cyclePosition < 6) {
-      // 두 번째 회전 (반대 방향)
-      direction1 = 0;
-      direction2 = -this.gameData.spinDirection;
-    } else {
-      // 정지
-      direction1 = 0;
-      direction2 = 0;
+        return safeZones;
+      }
+    } catch (error) {
+      console.error("비 패턴 생성 오류:", error);
+      return [0, 1, 2];
     }
-
-    const basePosition = this.gameData.patternDirection;
-    const offset1 = Math.floor(progress / 2) * direction1;
-    const offset2 = Math.floor(progress / 2) * direction2;
-
-    const safeZone1 = (basePosition + offset1 + 6) % 6;
-    const safeZone2 = (basePosition + offset2 + 6) % 6;
-
-    return [safeZone1, safeZone2].filter(
-      (zone, index, arr) => arr.indexOf(zone) === index,
-    );
   }
 
-  private generateAlternatingPattern(): number[] {
-    // 교차 패턴: 좌우로 교차하는 벽
-    const progress = this.gameData.patternProgress;
-    const basePosition = this.gameData.patternDirection;
+  private generateStair1Pattern(): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const basePosition = this.gameData.patternDirection;
+      const stairStep = Math.floor(progress / 3) % 3;
 
-    if (progress % 4 < 2) {
-      // 왼쪽으로 이동
-      return [(basePosition - 1 + 6) % 6, (basePosition - 2 + 6) % 6];
-    } else {
-      // 오른쪽으로 이동
-      return [(basePosition + 1) % 6, (basePosition + 2) % 6];
+      const currentPosition = (basePosition + stairStep) % 6;
+
+      return [
+        currentPosition,
+        (currentPosition + 1) % 6,
+        (currentPosition + 2) % 6,
+      ];
+    } catch (error) {
+      console.error("계단1 패턴 생성 오류:", error);
+      return [0, 1, 2];
     }
   }
 
   private generatePattern321(): number[] {
-    // 3-2-1 패턴: 세 번, 두 번, 한 번의 연속적인 이동
-    const progress = this.gameData.patternProgress;
-    const cycleLength = 6; // 3+2+1
-    const cyclePosition = progress % cycleLength;
+    try {
+      const progress = this.gameData.patternProgress;
+      const basePosition = this.gameData.patternDirection;
+      const totalLength = 18;
+      const cyclePosition = progress % totalLength;
 
-    const basePosition = this.gameData.patternDirection;
-    let moveCount = 0;
+      let holeCount = 3;
+      let phaseOffset = 0;
 
-    if (cyclePosition < 3) {
-      moveCount = 3; // 3번 이동
-    } else if (cyclePosition < 5) {
-      moveCount = 2; // 2번 이동
-    } else {
-      moveCount = 1; // 1번 이동
+      if (cyclePosition < 6) {
+        holeCount = 3;
+        phaseOffset = 0;
+      } else if (cyclePosition < 12) {
+        holeCount = 2;
+        phaseOffset = 1;
+      } else {
+        holeCount = 1;
+        phaseOffset = 2;
+      }
+
+      const mShapeOffset =
+        Math.sin((cyclePosition / totalLength) * Math.PI * 2) * 2;
+      const currentPosition =
+        (basePosition + phaseOffset + Math.floor(mShapeOffset) + 6) % 6;
+
+      const safeZones = [];
+      for (let i = 0; i < holeCount; i++) {
+        safeZones.push((currentPosition + i) % 6);
+      }
+
+      return safeZones;
+    } catch (error) {
+      console.error("321 패턴 생성 오류:", error);
+      return [0, 1, 2];
     }
+  }
 
-    const safeZones = [];
-    for (let i = 0; i < moveCount; i++) {
-      safeZones.push((basePosition + i) % 6);
+  private generateSoloPattern(): number[] {
+    try {
+      const holeCount = Math.floor(Math.random() * 3) + 1;
+      const basePosition = this.gameData.patternDirection;
+      const safeZones = [];
+
+      for (let i = 0; i < holeCount; i++) {
+        safeZones.push((basePosition + i) % 6);
+      }
+
+      return safeZones;
+    } catch (error) {
+      console.error("솔로 패턴 생성 오류:", error);
+      return [0];
     }
-
-    return safeZones;
   }
 
-  private generateStair1Pattern(): number[] {
-    // 계단 1 패턴: 일정한 간격으로 계단 형태
-    const progress = this.gameData.patternProgress;
-    const basePosition = this.gameData.patternDirection;
+  private generateTripleCPattern(): number[] {
+    try {
+      const progress = this.gameData.patternProgress;
+      const spacing = Math.floor(Math.random() * 2) + 2;
+      const cIndex = Math.floor(progress / 4) % 3;
 
-    // 간단한 계단 (한 칸씩 이동)
-    const stairStep = Math.floor(progress / 2) % 6;
-    return [(basePosition + stairStep) % 6];
-  }
+      const basePosition =
+        (this.gameData.patternDirection + cIndex * spacing) % 6;
 
-  private generateMirrorSpiralPattern(): number[] {
-    // 미러 스파이럴: 양쪽에서 대칭적으로 나선형
-    const progress = this.gameData.patternProgress;
-    const basePosition = this.gameData.patternDirection;
-
-    // 두 개의 대칭 나선
-    const spiral1 = (basePosition + Math.floor(progress / 2)) % 6;
-    const spiral2 = (basePosition - Math.floor(progress / 2) + 6) % 6;
-
-    // 나선 사이의 안전지대
-    const midPoint1 = (spiral1 + 2) % 6;
-    const midPoint2 = (spiral2 + 2) % 6;
-
-    return [midPoint1, midPoint2].filter(
-      (zone, index, arr) => arr.indexOf(zone) === index,
-    );
-  }
-
-  private generateBoxWithCapPattern(): number[] {
-    // 뚜껑 있는 상자 패턴: C자 형태 뒤에 막대기
-    const progress = this.gameData.patternProgress;
-    const basePosition = this.gameData.patternDirection;
-
-    if (progress % 6 < 3) {
-      // C자 형태 (3칸 열린 공간)
       return [basePosition, (basePosition + 1) % 6, (basePosition + 2) % 6];
-    } else {
-      // 뚜껑 (막대기) - 더 좁은 공간
-      return [basePosition];
+    } catch (error) {
+      console.error("트리플 C 패턴 생성 오류:", error);
+      return [0, 1, 2];
+    }
+  }
+
+  private updateWalls() {
+    try {
+      const { innerRadius } = GAME_CONFIG;
+
+      for (let i = this.gameData.walls.length - 1; i >= 0; i--) {
+        const wall = this.gameData.walls[i];
+
+        if (!wall || !wall.active) {
+          this.gameData.walls.splice(i, 1);
+          continue;
+        }
+
+        const currentRadius = wall.getData("radius");
+        const newRadius = currentRadius - this.gameData.wallSpeed;
+
+        if (newRadius < innerRadius - 20) {
+          wall.destroy();
+          this.gameData.walls.splice(i, 1);
+          continue;
+        }
+
+        wall.setData("radius", newRadius);
+        this.updateWallRing(wall);
+
+        // 충돌 검사
+        const playerDistance = innerRadius + 15;
+        if (Math.abs(newRadius - playerDistance) < 5) {
+          if (!wall.getData("collisionChecked")) {
+            if (this.checkCollision(wall)) {
+              this.triggerGameOver();
+              return;
+            }
+            wall.setData("collisionChecked", true);
+          }
+        } else {
+          wall.setData("collisionChecked", false);
+        }
+      }
+    } catch (error) {
+      console.error("벽 업데이트 오류:", error);
+    }
+  }
+
+  private updateWallRing(wallRing: Phaser.GameObjects.Graphics) {
+    try {
+      const { wallThickness } = GAME_CONFIG;
+      const radius = wallRing.getData("radius");
+      const wallPattern = wallRing.getData("wallPattern");
+
+      if (
+        !wallPattern ||
+        !Array.isArray(wallPattern) ||
+        wallPattern.length !== 6
+      ) {
+        wallRing.destroy();
+        return;
+      }
+
+      wallRing.clear();
+
+      // 거리에 따른 원근감 및 네온 효과 계산
+      const distanceFromCenter = Math.abs(radius - 200);
+      const perspectiveFactor = Math.max(
+        0.3,
+        1 - (distanceFromCenter / 400) * 0.7,
+      );
+      const currentThickness = wallThickness * perspectiveFactor;
+
+      // 네온 색상 계산
+      const wallHue = (this.gameData.currentHue + 30) % 360;
+      const coreColor = Phaser.Display.Color.HSVToRGB(
+        wallHue / 360,
+        0.9,
+        perspectiveFactor,
+      );
+      const glowColor = Phaser.Display.Color.HSVToRGB(
+        wallHue / 360,
+        0.7,
+        perspectiveFactor * 0.6,
+      );
+
+      // 6개의 육각형 변을 네온 스타일로 그리기
+      for (let i = 0; i < 6; i++) {
+        if (wallPattern[i]) {
+          const segmentStartAngle = (i * Math.PI) / 3;
+          const segmentEndAngle = ((i + 1) * Math.PI) / 3;
+
+          // 외부 및 내부 좌표
+          const outerStartX = Math.cos(segmentStartAngle) * radius;
+          const outerStartY = Math.sin(segmentStartAngle) * radius;
+          const outerEndX = Math.cos(segmentEndAngle) * radius;
+          const outerEndY = Math.sin(segmentEndAngle) * radius;
+
+          const innerRadius = radius - currentThickness;
+          const innerStartX = Math.cos(segmentStartAngle) * innerRadius;
+          const innerStartY = Math.sin(segmentStartAngle) * innerRadius;
+          const innerEndX = Math.cos(segmentEndAngle) * innerRadius;
+          const innerEndY = Math.sin(segmentEndAngle) * innerRadius;
+
+          // 외부 글로우 (가장 넓은 범위)
+          wallRing.fillStyle(glowColor.color, 0.2);
+          wallRing.beginPath();
+          wallRing.moveTo(outerStartX + 6, outerStartY + 6);
+          wallRing.lineTo(outerEndX + 6, outerEndY + 6);
+          wallRing.lineTo(innerEndX + 6, innerEndY + 6);
+          wallRing.lineTo(innerStartX + 6, innerStartY + 6);
+          wallRing.closePath();
+          wallRing.fillPath();
+
+          // 중간 글로우
+          wallRing.fillStyle(glowColor.color, 0.4);
+          wallRing.beginPath();
+          wallRing.moveTo(outerStartX + 3, outerStartY + 3);
+          wallRing.lineTo(outerEndX + 3, outerEndY + 3);
+          wallRing.lineTo(innerEndX + 3, innerEndY + 3);
+          wallRing.lineTo(innerStartX + 3, innerStartY + 3);
+          wallRing.closePath();
+          wallRing.fillPath();
+
+          // 메인 벽 면
+          wallRing.fillStyle(coreColor.color, 0.9);
+          wallRing.beginPath();
+          wallRing.moveTo(outerStartX, outerStartY);
+          wallRing.lineTo(outerEndX, outerEndY);
+          wallRing.lineTo(innerEndX, innerEndY);
+          wallRing.lineTo(innerStartX, innerStartY);
+          wallRing.closePath();
+          wallRing.fillPath();
+
+          // 네온 테두리 (외부)
+          wallRing.lineStyle(2, coreColor.color, 1);
+          wallRing.beginPath();
+          wallRing.moveTo(outerStartX, outerStartY);
+          wallRing.lineTo(outerEndX, outerEndY);
+          wallRing.strokePath();
+
+          // 내부 하이라이트
+          wallRing.lineStyle(1, 0xffffff, 0.8);
+          wallRing.beginPath();
+          wallRing.moveTo(innerStartX, innerStartY);
+          wallRing.lineTo(innerEndX, innerEndY);
+          wallRing.strokePath();
+        }
+      }
+    } catch (error) {
+      console.error("벽 링 업데이트 오류:", error);
+    }
+  }
+
+  private checkCollision(wall: Phaser.GameObjects.Graphics): boolean {
+    try {
+      const { playerAngle } = this.gameData;
+      const wallPattern = wall.getData("wallPattern");
+
+      if (
+        !wallPattern ||
+        !Array.isArray(wallPattern) ||
+        wallPattern.length !== 6
+      ) {
+        return false;
+      }
+
+      const normalizeAngle = (angle: number) => {
+        let normalized = angle % (Math.PI * 2);
+        if (normalized < 0) normalized += Math.PI * 2;
+        return normalized;
+      };
+
+      const normalizedPlayerAngle = normalizeAngle(playerAngle);
+      const segmentIndex = Math.floor(normalizedPlayerAngle / (Math.PI / 3));
+      const clampedSegmentIndex = Math.max(0, Math.min(5, segmentIndex));
+
+      return wallPattern[clampedSegmentIndex];
+    } catch (error) {
+      console.error("충돌 검사 오류:", error);
+      return false;
+    }
+  }
+
+  private triggerGameOver() {
+    try {
+      this.gameData.isGameOver = true;
+      this.gameData.cameraShake = 15;
+
+      // 강화된 게임오버 사운드
+      try {
+        this.hitSound?.triggerAttackRelease("C1", "2n");
+      } catch (soundError) {
+        // 사운드 오류는 무시
+      }
+
+      if (this.backgroundMusic) {
+        try {
+          this.backgroundMusic.stop();
+        } catch (musicError) {
+          // 음악 정지 오류는 무시
+        }
+      }
+
+      const finalScore = Math.floor(this.gameData.gameTime / 60);
+      if (this.onGameOver) {
+        this.onGameOver(finalScore);
+      }
+    } catch (error) {
+      console.error("게임 오버 처리 오류:", error);
+      // 최소한 콜백은 실행
+      if (this.onGameOver) {
+        this.onGameOver(0);
+      }
+    }
+  }
+
+  private updateDebugInfo() {
+    try {
+      if (!this.debugGraphics) return;
+
+      const { innerRadius } = GAME_CONFIG;
+      this.debugGraphics.clear();
+
+      // 플레이어 위치 표시
+      const playerDistance = innerRadius + 15;
+      const playerAngle = this.gameData.playerAngle;
+      const playerX = Math.cos(playerAngle) * playerDistance;
+      const playerY = Math.sin(playerAngle) * playerDistance;
+
+      this.debugGraphics.fillStyle(0xff0000, 0.7);
+      this.debugGraphics.fillCircle(playerX, playerY, 8);
+
+      // 플레이어 세그먼트 하이라이트
+      const normalizeAngle = (angle: number) => {
+        let normalized = angle % (Math.PI * 2);
+        if (normalized < 0) normalized += Math.PI * 2;
+        return normalized;
+      };
+
+      const normalizedPlayerAngle = normalizeAngle(playerAngle);
+      const segmentIndex = Math.floor(normalizedPlayerAngle / (Math.PI / 3));
+      const clampedSegmentIndex = Math.max(0, Math.min(5, segmentIndex));
+
+      const segmentStartAngle = clampedSegmentIndex * (Math.PI / 3);
+      const segmentEndAngle = (clampedSegmentIndex + 1) * (Math.PI / 3);
+
+      this.debugGraphics.lineStyle(4, 0x00ff00, 0.8);
+      this.debugGraphics.beginPath();
+      this.debugGraphics.arc(
+        0,
+        0,
+        playerDistance,
+        segmentStartAngle,
+        segmentEndAngle,
+      );
+      this.debugGraphics.strokePath();
+
+      // 터치 영역 표시
+      if (
+        this.gameData.touchInput.leftPressed ||
+        this.gameData.touchInput.rightPressed
+      ) {
+        this.debugGraphics.fillStyle(0xffff00, 0.3);
+        if (this.gameData.touchInput.leftPressed) {
+          this.debugGraphics.fillRect(
+            -GAME_CONFIG.centerX,
+            -GAME_CONFIG.centerY,
+            GAME_CONFIG.width / 2,
+            GAME_CONFIG.height,
+          );
+        }
+        if (this.gameData.touchInput.rightPressed) {
+          this.debugGraphics.fillRect(
+            0,
+            -GAME_CONFIG.centerY,
+            GAME_CONFIG.width / 2,
+            GAME_CONFIG.height,
+          );
+        }
+      }
+    } catch (error) {
+      console.error("디버그 정보 업데이트 오류:", error);
     }
   }
 }
@@ -1570,28 +1914,52 @@ export default function SuperHexagon({ user }: GameProps) {
   const [bestScore, setBestScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  // API Hooks
+  // API Hooks with error handling
   const createGameMutation = useCreateGame();
-  const { data: rankingData, refetch: refetchRanking } =
-    useGetGamesByGameType("super_hexagon");
+  const {
+    data: rankingData,
+    refetch: refetchRanking,
+    error: rankingError,
+  } = useGetGamesByGameType("super_hexagon");
 
   useEffect(() => {
-    if (!rankingData || !rankingData.data) {
-      setBestScore(0);
-      return;
-    }
+    try {
+      if (rankingError) {
+        console.error("랭킹 데이터 로드 오류:", rankingError);
+        setApiError("랭킹 정보를 불러올 수 없습니다.");
+        setIsLoading(false);
+        return;
+      }
 
-    const savedMyData = rankingData.data.find(
-      (item) => user.docId === item.userDocId,
-    );
-    setBestScore(savedMyData?.score || 0);
-    setIsLoading(false);
-  }, [rankingData]);
+      if (!rankingData || !rankingData.data) {
+        setBestScore(0);
+        setIsLoading(false);
+        return;
+      }
+
+      const savedMyData = rankingData.data.find(
+        (item) => user.docId === item.userDocId,
+      );
+      setBestScore(savedMyData?.score || 0);
+      setIsLoading(false);
+      setApiError(null);
+    } catch (error) {
+      console.error("랭킹 데이터 처리 오류:", error);
+      setApiError("데이터 처리 중 오류가 발생했습니다.");
+      setIsLoading(false);
+    }
+  }, [rankingData, user.docId, user.id, rankingError]);
 
   const saveScore = useCallback(
     async (finalScore: number) => {
       try {
+        if (!user?.docId || !user?.id) {
+          console.error("사용자 정보가 없습니다.");
+          return;
+        }
+
         let rank = 1;
         if (rankingData?.success && rankingData.data) {
           rank =
@@ -1610,76 +1978,96 @@ export default function SuperHexagon({ user }: GameProps) {
 
         await createGameMutation.mutateAsync(postData);
         await refetchRanking();
+        setApiError(null);
       } catch (error) {
         console.error("점수 저장 실패:", error);
+        setApiError("점수 저장에 실패했습니다.");
       }
     },
-    [rankingData, createGameMutation, refetchRanking, user],
+    [rankingData, createGameMutation, refetchRanking, user.docId, user.id],
   );
 
   const startGame = async () => {
-    if (phaserGameRef.current) {
-      phaserGameRef.current.destroy(true);
-    }
-
-    setGameStarted(true);
-    setGameOver(false);
-    setScore(0);
-
-    setTimeout(() => {
-      if (!gameRef.current) return;
-
-      const config: Phaser.Types.Core.GameConfig = {
-        type: Phaser.AUTO,
-        width: GAME_CONFIG.width,
-        height: GAME_CONFIG.height,
-        parent: gameRef.current,
-        backgroundColor: "#000000",
-        scene: GameScene,
-        physics: {
-          default: "arcade",
-          arcade: {
-            gravity: { x: 0, y: 0 },
-            debug: false,
-          },
-        },
-      };
-
-      try {
-        phaserGameRef.current = new Phaser.Game(config);
-
-        phaserGameRef.current.scene.start("GameScene", {
-          onScoreUpdate: (newScore: number) => setScore(newScore),
-          onGameOver: (finalScore: number) => {
-            setGameOver(true);
-            if (finalScore > bestScore) {
-              setBestScore(finalScore);
-            }
-            saveScore(finalScore);
-          },
-        });
-      } catch (error) {
-        console.error("Phaser 게임 초기화 실패:", error);
+    try {
+      if (phaserGameRef.current) {
+        phaserGameRef.current.destroy(true);
       }
-    }, 100);
+
+      setGameStarted(true);
+      setGameOver(false);
+      setScore(0);
+
+      setTimeout(() => {
+        if (!gameRef.current) return;
+
+        const config: Phaser.Types.Core.GameConfig = {
+          type: Phaser.AUTO,
+          width: GAME_CONFIG.width,
+          height: GAME_CONFIG.height,
+          parent: gameRef.current,
+          backgroundColor: "#000000",
+          scene: GameScene,
+          physics: {
+            default: "arcade",
+            arcade: {
+              gravity: { x: 0, y: 0 },
+              debug: false,
+            },
+          },
+        };
+
+        try {
+          phaserGameRef.current = new Phaser.Game(config);
+
+          phaserGameRef.current.scene.start("GameScene", {
+            onScoreUpdate: (newScore: number) => setScore(newScore),
+            onGameOver: (finalScore: number) => {
+              setGameOver(true);
+              if (finalScore > bestScore) {
+                setBestScore(finalScore);
+              }
+              saveScore(finalScore);
+            },
+          });
+        } catch (error) {
+          console.error("Phaser 게임 초기화 실패:", error);
+          setGameStarted(false);
+        }
+      }, 100);
+    } catch (error) {
+      console.error("게임 시작 오류:", error);
+      setGameStarted(false);
+    }
   };
 
   const restartGame = () => {
-    if (phaserGameRef.current) {
-      phaserGameRef.current.destroy(true);
+    try {
+      if (phaserGameRef.current) {
+        phaserGameRef.current.destroy(true);
+      }
+      startGame();
+    } catch (error) {
+      console.error("게임 재시작 오류:", error);
     }
-    startGame();
   };
 
   useEffect(() => {
     return () => {
-      if (phaserGameRef.current) {
-        phaserGameRef.current.destroy(true);
+      try {
+        if (phaserGameRef.current) {
+          phaserGameRef.current.destroy(true);
+        }
+      } catch (error) {
+        console.error("게임 정리 오류:", error);
       }
     };
   }, []);
 
   const renderRanking = () => {
+    if (apiError) {
+      return <div className="text-center text-red-400">{apiError}</div>;
+    }
+
     if (!rankingData?.success || !rankingData.data) {
       return (
         <div className="text-center text-slate-400">
@@ -1917,12 +2305,12 @@ export default function SuperHexagon({ user }: GameProps) {
         </div>
       </div>
 
-      {/* 게임 캔버스 */}
+      {/* 게임 캔버스 - 크기 확대 */}
       <div className="relative">
         <div className="absolute -inset-4 bg-gradient-to-r from-cyan-600/20 via-purple-600/20 to-pink-600/20 rounded-xl blur-lg animate-pulse shadow-2xl"></div>
         <div
           ref={gameRef}
-          className="relative border-2 border-purple-500/50 rounded-lg shadow-2xl w-[800px] h-[600px] bg-black/95 backdrop-blur-sm"
+          className="relative border-2 border-purple-500/50 rounded-lg shadow-2xl w-[1000px] h-[750px] bg-black/95 backdrop-blur-sm"
         />
       </div>
 
@@ -1958,6 +2346,12 @@ export default function SuperHexagon({ user }: GameProps) {
                   </div>
                 </div>
               )}
+
+              {apiError && (
+                <div className="bg-red-900/40 backdrop-blur-sm rounded-xl p-4 border border-red-500/30">
+                  <div className="text-red-400 text-sm">{apiError}</div>
+                </div>
+              )}
             </div>
 
             <div className="relative z-10 flex gap-4">
@@ -1974,10 +2368,14 @@ export default function SuperHexagon({ user }: GameProps) {
 
               <button
                 onClick={() => {
-                  setGameStarted(false);
-                  setGameOver(false);
-                  if (phaserGameRef.current) {
-                    phaserGameRef.current.destroy(true);
+                  try {
+                    setGameStarted(false);
+                    setGameOver(false);
+                    if (phaserGameRef.current) {
+                      phaserGameRef.current.destroy(true);
+                    }
+                  } catch (error) {
+                    console.error("메뉴 이동 오류:", error);
                   }
                 }}
                 className="flex-1 group relative overflow-hidden bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg transition-all duration-300 hover:scale-105 border border-gray-500/30"
