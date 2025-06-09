@@ -11,43 +11,39 @@ import type { GameCreateRequest } from "../../api";
 
 // 게임 상수 - 점진적 난이도 증가 시스템
 const GAME_CONFIG = {
-  width: 1000, // 800 → 1000으로 확대
-  height: 750, // 600 → 750으로 확대
-  centerX: 500, // 400 → 500으로 조정
-  centerY: 375, // 300 → 375로 조정
+  width: 1000,
+  height: 750,
+  centerX: 500,
+  centerY: 375,
   innerRadius: 35,
   playerRadius: 8,
   wallThickness: 25,
   // 난이도 단계별 설정
   difficulty: {
-    // 초급 (0-15초) - 기본 속도 약간 증가
     beginner: {
-      wallSpeed: 5, // 4 → 5로 증가
-      spawnInterval: 250, // 300 → 250으로 감소 (더 빠른 생성)
+      wallSpeed: 5,
+      spawnInterval: 250,
       wallCount: { min: 1, max: 2 },
       safeZoneMin: 3,
       rotationChance: 0.001,
     },
-    // 중급 (15-45초)
     intermediate: {
-      wallSpeed: 6, // 5 → 6으로 증가
-      spawnInterval: 130, // 150 → 130으로 감소
+      wallSpeed: 6,
+      spawnInterval: 130,
       wallCount: { min: 1, max: 3 },
       safeZoneMin: 2,
       rotationChance: 0.004,
     },
-    // 고급 (45-90초)
     advanced: {
-      wallSpeed: 6.5, // 5 → 6.5로 증가
-      spawnInterval: 110, // 130 → 110으로 감소
+      wallSpeed: 6.5,
+      spawnInterval: 110,
       wallCount: { min: 2, max: 4 },
       safeZoneMin: 2,
       rotationChance: 0.007,
     },
-    // 전문가 (90초+)
     expert: {
-      wallSpeed: 7.5, // 6 → 7.5로 증가
-      spawnInterval: 70, // 80 → 70으로 감소
+      wallSpeed: 7.5,
+      spawnInterval: 70,
       wallCount: { min: 2, max: 4 },
       safeZoneMin: 1,
       rotationChance: 0.01,
@@ -55,11 +51,10 @@ const GAME_CONFIG = {
   },
   maxWallSpeed: 15,
   minSpawnInterval: 40,
-  mazeSpawnInterval: 60, // 80 → 60으로 감소 (패턴 모드 더 빠르게)
+  mazeSpawnInterval: 60,
   pulseFrequency: 3,
   pulseIntensity: 0.3,
-  rotationDelay: 600, // 10초 지연
-  // 3D 네온 효과 설정
+  rotationDelay: 600,
   neon: {
     glowIntensity: 0.8,
     pulseSpeed: 0.05,
@@ -67,7 +62,6 @@ const GAME_CONFIG = {
     outerGlow: 25,
     coreIntensity: 1.2,
   },
-  // 회전 패턴들
   rotationPatterns: [
     {
       type: "short",
@@ -94,50 +88,33 @@ const GAME_CONFIG = {
       reverses: true,
     },
   ],
-  // 화면 흔들림 효과
   screenShake: {
     intensity: 3,
     frequency: 0.15,
   },
-  // 벽 패턴 타입들
   wallPatterns: [
-    // 기본 단계 (Hexagon/Hyper Hexagon)
     "solo",
     "triple_c",
     "whirlpool",
     "bat",
     "ladder",
     "mode_changer",
-    "stair_1", // Hyper 모드 한정
-    "pattern_321", // 3→2→1 M자형 패턴
-
-    // 중간 단계 (Pentagon/Square)
+    "stair_1",
+    "pattern_321",
     "double_c",
     "box_with_cap",
-
-    // 고난도 단계 (Hexagoner/Hyper Hexagoner)
     "multi_c",
     "double_whirlpool",
     "spin_2",
     "spin_3",
     "spin_4",
     "rain",
-
-    // 최종 단계 (Hexagonest/Hyper Hexagonest)
     "stair_2",
-
-    // 특별 모드
     "black_white_mode",
   ],
-  // 난이도별 사용 가능한 패턴 정의
   patternsByDifficulty: {
-    // 0-15초: 기본 패턴만
     beginner: ["solo"],
-
-    // 15-30초: 기본 + 일부 중급
     intermediate: ["solo", "triple_c", "bat", "ladder"],
-
-    // 30-60초: 중급 패턴 추가
     advanced: [
       "solo",
       "triple_c",
@@ -147,8 +124,6 @@ const GAME_CONFIG = {
       "double_c",
       "spin_2",
     ],
-
-    // 60-90초: 고급 패턴
     expert: [
       "triple_c",
       "whirlpool",
@@ -162,8 +137,6 @@ const GAME_CONFIG = {
       "spin_3",
       "rain",
     ],
-
-    // 90-120초: 최고급 패턴
     master: [
       "multi_c",
       "double_whirlpool",
@@ -174,8 +147,6 @@ const GAME_CONFIG = {
       "pattern_321",
       "stair_2",
     ],
-
-    // 120초+: 모든 패턴
     grandmaster: [
       "multi_c",
       "double_whirlpool",
@@ -186,7 +157,6 @@ const GAME_CONFIG = {
       "black_white_mode",
     ],
   },
-  // 패턴별 상세 설정 추가:
   patternConfigs: {
     solo: {
       holes: [1, 2, 3],
@@ -313,7 +283,6 @@ class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    // 기본 텍스처 생성
     this.add
       .graphics()
       .fillStyle(0xffffff)
@@ -323,41 +292,27 @@ class GameScene extends Phaser.Scene {
 
   async create() {
     try {
-      // Tone.js 초기화
       await Tone.start();
-
-      // 네온 배경 설정
       this.setupNeonBackground();
-
-      // 게임 컨테이너 생성
       this.gameContainer = this.add.container(
         GAME_CONFIG.centerX,
         GAME_CONFIG.centerY,
       );
-
-      // 배경음 설정
       await this.setupAudio();
-
-      // 디버그 그래픽
       this.debugGraphics = this.add.graphics();
       this.gameContainer.add(this.debugGraphics);
-
-      // 게임 데이터 초기화
       this.initializeGameData();
-
       this.setupPlayer();
       this.setupInput();
       this.setupCenterHexagon();
 
-      // 게임 루프 시작
       this.time.addEvent({
-        delay: 16, // 60 FPS
+        delay: 16,
         callback: this.updateGame,
         callbackScope: this,
         loop: true,
       });
 
-      // 1초 후 첫 벽 생성
       this.time.delayedCall(1000, () => {
         if (!this.gameData.isGameOver) {
           this.createWallRing();
@@ -365,7 +320,6 @@ class GameScene extends Phaser.Scene {
       });
     } catch (error) {
       console.error("게임 초기화 중 오류:", error);
-      // 오류 발생 시 기본 설정으로 계속 진행
       this.initializeGameData();
       this.setupPlayer();
       this.setupInput();
@@ -375,11 +329,8 @@ class GameScene extends Phaser.Scene {
 
   private setupNeonBackground() {
     try {
-      // 동적 네온 배경 그라디언트
       this.backgroundGradient = this.add.graphics();
       this.backgroundGradient.setDepth(-100);
-
-      // 네온 효과용 그래픽
       this.neonEffects = this.add.graphics();
       this.neonEffects.setDepth(-50);
     } catch (error) {
@@ -389,7 +340,6 @@ class GameScene extends Phaser.Scene {
 
   private async setupAudio() {
     try {
-      // 랜덤 배경음 선택
       this.selectedTrack =
         GAME_CONFIG.backgroundTracks[
           Math.floor(Math.random() * GAME_CONFIG.backgroundTracks.length)
@@ -404,7 +354,6 @@ class GameScene extends Phaser.Scene {
       await this.backgroundMusic.load(this.selectedTrack);
       this.backgroundMusic.start();
 
-      // 사운드 이펙트 설정
       this.hitSound = new Tone.Synth({
         oscillator: { type: "sawtooth" },
         envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.2 },
@@ -417,7 +366,6 @@ class GameScene extends Phaser.Scene {
       this.moveSound.volume.value = -25;
     } catch (error) {
       console.warn("오디오 설정 실패:", error);
-      // 오디오 실패 시에도 게임은 계속 진행
     }
   }
 
@@ -439,23 +387,19 @@ class GameScene extends Phaser.Scene {
       cameraShake: 0,
       beatTime: 0,
       debug: false,
-      // 터치 입력
       touchInput: {
         leftPressed: false,
         rightPressed: false,
       },
-      // 화면 회전 관련
       isRotating: false,
       rotationDirection: 0,
       rotationTimer: 0,
       rotationStartDelay: GAME_CONFIG.rotationDelay,
       totalRotation: 0,
       currentRotationPattern: null,
-      // 화면 효과
       screenShakeOffset: { x: 0, y: 0 },
       globalPulse: 0,
       neonPulse: 0,
-      // 벽 패턴 관련
       currentWallPattern: "basic",
       patternProgress: 0,
       patternLength: 0,
@@ -468,15 +412,12 @@ class GameScene extends Phaser.Scene {
       centerShape: "hexagon",
       centerShapeProgress: 0,
       isPatternMode: false,
-      // 연속 방지 시스템
       lastSafeZones: [],
       lastPatterns: [],
       patternCounter: 0,
       consecutivePatternCount: 0,
-      // 패턴 모드에서의 연속 안전지대 방지
-      lastPatternSafeZones: [], // 마지막 3개 패턴의 안전지대 기록
-      consecutiveSameCount: 0, // 연속으로 같은 안전지대가 나온 횟수
-      // 난이도 시스템
+      lastPatternSafeZones: [],
+      consecutiveSameCount: 0,
       currentDifficulty: "beginner",
       difficultyTransition: 0,
     };
@@ -485,12 +426,8 @@ class GameScene extends Phaser.Scene {
   private setupPlayer() {
     try {
       const { innerRadius, playerRadius } = GAME_CONFIG;
-
-      // 네온 스타일 플레이어 생성
       this.gameData.player = this.add.graphics();
       this.gameData.player.setPosition(0, -(innerRadius + playerRadius + 8));
-
-      // 컨테이너에 추가
       this.gameContainer?.add(this.gameData.player);
     } catch (error) {
       console.error("플레이어 설정 오류:", error);
@@ -502,13 +439,11 @@ class GameScene extends Phaser.Scene {
       this.gameData.cursors = this.input.keyboard?.createCursorKeys();
       this.gameData.wasd = this.input.keyboard?.addKeys("W,S,A,D");
 
-      // 디버그 모드 토글 (스페이스바)
       this.input.keyboard?.on("keydown-SPACE", () => {
         this.gameData.debug = !this.gameData.debug;
         console.log("디버그 모드:", this.gameData.debug);
       });
 
-      // 모바일 터치 입력 설정
       this.setupTouchInput();
     } catch (error) {
       console.error("입력 설정 오류:", error);
@@ -519,7 +454,6 @@ class GameScene extends Phaser.Scene {
     try {
       const { width } = GAME_CONFIG;
 
-      // 터치 시작
       this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
         if (pointer.x < width / 2) {
           this.gameData.touchInput.leftPressed = true;
@@ -528,7 +462,6 @@ class GameScene extends Phaser.Scene {
         }
       });
 
-      // 터치 이동 (영역 변경 감지)
       this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
         if (pointer.isDown) {
           this.gameData.touchInput.leftPressed = pointer.x < width / 2;
@@ -536,7 +469,6 @@ class GameScene extends Phaser.Scene {
         }
       });
 
-      // 터치 종료
       this.input.on("pointerup", () => {
         this.gameData.touchInput.leftPressed = false;
         this.gameData.touchInput.rightPressed = false;
@@ -583,7 +515,6 @@ class GameScene extends Phaser.Scene {
       }
     } catch (error) {
       console.error("게임 업데이트 오류:", error);
-      // 치명적 오류 시 게임 종료
       this.triggerGameOver();
     }
   }
@@ -597,7 +528,7 @@ class GameScene extends Phaser.Scene {
 
       if (timeInSeconds >= 120) {
         targetDifficulty = "grandmaster";
-        difficultyConfig = GAME_CONFIG.difficulty.expert; // 최고 설정 사용
+        difficultyConfig = GAME_CONFIG.difficulty.expert;
       } else if (timeInSeconds >= 90) {
         targetDifficulty = "master";
         difficultyConfig = GAME_CONFIG.difficulty.expert;
@@ -612,7 +543,6 @@ class GameScene extends Phaser.Scene {
         difficultyConfig = GAME_CONFIG.difficulty.intermediate;
       }
 
-      // 부드러운 난이도 전환
       if (this.gameData.currentDifficulty !== targetDifficulty) {
         this.gameData.currentDifficulty = targetDifficulty;
         this.gameData.difficultyTransition = 0;
@@ -624,14 +554,12 @@ class GameScene extends Phaser.Scene {
         }
       }
 
-      // 점진적 수치 조정
       const transitionSpeed = 0.02;
       this.gameData.difficultyTransition = Math.min(
         1,
         this.gameData.difficultyTransition + transitionSpeed,
       );
 
-      // 현재 설정과 목표 설정 사이의 보간
       this.gameData.wallSpeed = Phaser.Math.Linear(
         this.gameData.wallSpeed,
         difficultyConfig.wallSpeed,
@@ -644,7 +572,6 @@ class GameScene extends Phaser.Scene {
         transitionSpeed,
       );
 
-      // 디버그 정보 (5초마다)
       if (this.gameData.debug && this.gameData.gameTime % 300 === 0) {
         console.log(
           `현재 난이도: ${targetDifficulty}, 벽속도: ${this.gameData.wallSpeed.toFixed(2)}, 생성간격: ${this.gameData.spawnInterval.toFixed(0)}`,
@@ -662,17 +589,14 @@ class GameScene extends Phaser.Scene {
       this.gameData.neonPulse += GAME_CONFIG.neon.pulseSpeed;
       this.gameData.currentHue = (this.gameData.currentHue + 0.5) % 360;
 
-      // 동적 배경 그라디언트
       this.backgroundGradient.clear();
 
-      // 메인 배경 색상 (어두운 사이버 톤)
       const bgColor1 = Phaser.Display.Color.HSVToRGB(
         this.gameData.currentHue / 360,
         0.8,
         0.05,
       );
 
-      // 방사형 그라디언트 효과
       for (let i = 0; i < 5; i++) {
         const radius = 100 + i * 80;
         const alpha = 0.3 - i * 0.05;
@@ -686,7 +610,6 @@ class GameScene extends Phaser.Scene {
         );
       }
 
-      // 네온 링 효과
       this.neonEffects.clear();
       for (let i = 0; i < 3; i++) {
         const ringRadius = 150 + i * 100;
@@ -706,7 +629,6 @@ class GameScene extends Phaser.Scene {
         );
       }
 
-      // 전체 배경 색상 설정
       const mainBgColor = Phaser.Display.Color.HSVToRGB(
         this.gameData.currentHue / 360,
         0.9,
@@ -720,11 +642,9 @@ class GameScene extends Phaser.Scene {
 
   private updateVisuals() {
     try {
-      // 전체적인 화면 펄스 효과
       this.gameData.globalPulse += 0.08;
       const globalPulseIntensity = Math.sin(this.gameData.globalPulse) * 0.8;
 
-      // 네온 스타일 화면 흔들림
       const { screenShake } = GAME_CONFIG;
       this.gameData.screenShakeOffset.x =
         (Math.random() - 0.5) * screenShake.intensity +
@@ -733,7 +653,6 @@ class GameScene extends Phaser.Scene {
         (Math.random() - 0.5) * screenShake.intensity +
         globalPulseIntensity * 0.5;
 
-      // 게임 컨테이너에 흔들림 적용
       if (this.gameContainer) {
         this.gameContainer.x =
           GAME_CONFIG.centerX + this.gameData.screenShakeOffset.x;
@@ -741,7 +660,6 @@ class GameScene extends Phaser.Scene {
           GAME_CONFIG.centerY + this.gameData.screenShakeOffset.y;
       }
 
-      // 카메라 흔들림 효과 (게임오버 시)
       if (this.gameData.cameraShake > 0) {
         this.cameras.main.shake(150, 0.02);
         this.gameData.cameraShake--;
@@ -753,7 +671,6 @@ class GameScene extends Phaser.Scene {
 
   private updateRotation() {
     try {
-      // 현재 난이도에 따른 설정 가져오기 (안전한 방식)
       const difficultyKeys = Object.keys(GAME_CONFIG.difficulty) as Array<
         keyof typeof GAME_CONFIG.difficulty
       >;
@@ -767,13 +684,11 @@ class GameScene extends Phaser.Scene {
       const currentDifficultyConfig =
         GAME_CONFIG.difficulty[currentDifficultyKey];
 
-      // 시작 지연 시간 감소
       if (this.gameData.rotationStartDelay > 0) {
         this.gameData.rotationStartDelay--;
         return;
       }
 
-      // 난이도에 따른 회전 확률
       if (
         !this.gameData.isRotating &&
         Math.random() < currentDifficultyConfig.rotationChance
@@ -802,7 +717,6 @@ class GameScene extends Phaser.Scene {
         }
       }
 
-      // 회전 실행
       if (this.gameData.isRotating && this.gameData.currentRotationPattern) {
         this.gameData.rotationTimer--;
         const pattern = this.gameData.currentRotationPattern;
@@ -860,7 +774,6 @@ class GameScene extends Phaser.Scene {
 
       let moved = false;
 
-      // 키보드 입력
       if (cursors?.left.isDown || wasd?.A.isDown || touchInput.leftPressed) {
         this.gameData.playerAngle -= moveSpeed;
         moved = true;
@@ -870,7 +783,6 @@ class GameScene extends Phaser.Scene {
         moved = true;
       }
 
-      // 이동 사운드
       if (moved && currentTime - this.gameData.lastMoveTime > 80) {
         try {
           this.moveSound?.triggerAttackRelease("C6", "64n");
@@ -891,15 +803,12 @@ class GameScene extends Phaser.Scene {
 
       if (!this.gameData.player) return;
 
-      // 플레이어 위치 계산
       const playerDistance = innerRadius + playerRadius + 10;
       const playerX = Math.cos(playerAngle) * playerDistance;
       const playerY = Math.sin(playerAngle) * playerDistance;
 
-      // 네온 스타일 플레이어 렌더링
       this.gameData.player.clear();
 
-      // 플레이어 색상 (현재 색상의 보색)
       const playerHue = (this.gameData.currentHue + 180) % 360;
       const coreColor = Phaser.Display.Color.HSVToRGB(playerHue / 360, 1, 1);
       const glowColor = Phaser.Display.Color.HSVToRGB(
@@ -908,7 +817,6 @@ class GameScene extends Phaser.Scene {
         0.6,
       );
 
-      // 외부 글로우
       this.gameData.player.fillStyle(glowColor.color, 0.3);
       this.gameData.player.fillTriangle(
         0,
@@ -919,7 +827,6 @@ class GameScene extends Phaser.Scene {
         playerRadius * 1.2,
       );
 
-      // 메인 삼각형
       this.gameData.player.fillStyle(coreColor.color, 1);
       this.gameData.player.fillTriangle(
         0,
@@ -930,7 +837,6 @@ class GameScene extends Phaser.Scene {
         playerRadius,
       );
 
-      // 네온 테두리
       this.gameData.player.lineStyle(2, coreColor.color, 1);
       this.gameData.player.strokeTriangle(
         0,
@@ -941,7 +847,6 @@ class GameScene extends Phaser.Scene {
         playerRadius,
       );
 
-      // 위치 및 회전 설정
       this.gameData.player.setPosition(playerX, playerY);
       this.gameData.player.setRotation(playerAngle + Math.PI / 2);
     } catch (error) {
@@ -962,10 +867,8 @@ class GameScene extends Phaser.Scene {
       );
 
       const scaleFactor = 1 + beatPhase * pulseIntensity;
-
       const currentRadius = innerRadius * scaleFactor;
 
-      // 네온 스타일 중심 도형
       this.centerHexagon.clear();
 
       const centerColor = Phaser.Display.Color.HSVToRGB(
@@ -980,16 +883,12 @@ class GameScene extends Phaser.Scene {
         0.5,
       );
 
-      // 외부 글로우
       this.centerHexagon.lineStyle(8, glowColor.color, 0.4);
-
       this.drawCenterShape(this.centerHexagon, 0, 0, currentRadius + 4);
 
-      // 메인 라인
       this.centerHexagon.lineStyle(3, centerColor.color, 1);
       this.drawCenterShape(this.centerHexagon, 0, 0, currentRadius);
 
-      // 내부 글로우
       this.centerHexagon.lineStyle(1, 0xffffff, 0.8);
       this.drawCenterShape(this.centerHexagon, 0, 0, currentRadius - 2);
     } catch (error) {
@@ -1041,9 +940,8 @@ class GameScene extends Phaser.Scene {
     try {
       this.gameData.spawnTimer++;
 
-      // 패턴 모드일 때는 더 빠른 간격으로 생성
       const currentInterval = this.gameData.isPatternMode
-        ? Math.max(30, GAME_CONFIG.mazeSpawnInterval * 0.5) // 더 빠르게 조정
+        ? Math.max(30, GAME_CONFIG.mazeSpawnInterval * 0.5)
         : this.gameData.spawnInterval;
 
       if (this.gameData.spawnTimer >= currentInterval) {
@@ -1057,7 +955,7 @@ class GameScene extends Phaser.Scene {
 
   private createWallRing() {
     try {
-      const startRadius = 550; // 450 → 550으로 증가 (화면 확대에 맞춤)
+      const startRadius = 550;
       const wallPattern = this.generateWallPattern();
 
       const wallRing = this.add.graphics();
@@ -1076,6 +974,7 @@ class GameScene extends Phaser.Scene {
     }
   }
 
+  // 🔥 핵심 수정: 벽 패턴 생성 시 안전지대 보장
   private generateWallPattern(): boolean[] {
     try {
       const timeInSeconds = this.gameData.gameTime / 60;
@@ -1086,15 +985,35 @@ class GameScene extends Phaser.Scene {
         this.startNewPattern();
       }
 
+      let pattern: boolean[];
       if (this.gameData.isPatternMode) {
-        return this.generatePatternWalls();
+        pattern = this.generatePatternWalls();
       } else {
-        return this.generateBasicWalls();
+        pattern = this.generateBasicWalls();
       }
+
+      // 🔥 최종 안전장치: 모든 벽이 true인 경우 강제로 안전지대 생성
+      const safeZoneCount = pattern.filter((wall) => !wall).length;
+      if (safeZoneCount === 0) {
+        console.warn("⚠️ 안전지대가 없는 패턴 감지! 강제로 안전지대 생성");
+        // 랜덤한 위치에 최소 1개의 안전지대 생성
+        const safeIndex = Math.floor(Math.random() * 6);
+        pattern[safeIndex] = false;
+
+        // 디버그 모드에서 로그 출력
+        if (this.gameData.debug) {
+          console.log(`강제 안전지대 생성: 인덱스 ${safeIndex}`);
+        }
+      }
+
+      return pattern;
     } catch (error) {
       console.error("벽 패턴 생성 오류:", error);
-      // 오류 시 기본 패턴 반환
-      return this.generateBasicWalls();
+      // 오류 시 안전한 기본 패턴 반환
+      const safePattern = new Array(6).fill(true);
+      safePattern[0] = false; // 최소 1개 안전지대 보장
+      safePattern[1] = false; // 여유있게 2개 제공
+      return safePattern;
     }
   }
 
@@ -1102,7 +1021,6 @@ class GameScene extends Phaser.Scene {
     try {
       const timeInSeconds = this.gameData.gameTime / 60;
 
-      // 시간대별 사용 가능한 패턴 정의
       let availablePatterns: string[] = [];
 
       if (timeInSeconds < 15) {
@@ -1119,7 +1037,6 @@ class GameScene extends Phaser.Scene {
         availablePatterns = GAME_CONFIG.patternsByDifficulty.grandmaster;
       }
 
-      // 연속 패턴 방지 로직
       if (this.gameData.consecutivePatternCount >= 2) {
         availablePatterns = availablePatterns.filter(
           (pattern) => pattern !== this.gameData.currentWallPattern,
@@ -1130,13 +1047,11 @@ class GameScene extends Phaser.Scene {
       const selectedPattern =
         availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
 
-      // 패턴 설정
       this.gameData.currentWallPattern = selectedPattern;
       this.gameData.isPatternMode = true;
       this.gameData.patternProgress = 0;
       this.gameData.patternDirection = Math.floor(Math.random() * 6);
 
-      // 패턴별 길이 설정
       const config =
         GAME_CONFIG.patternConfigs[
           selectedPattern as keyof typeof GAME_CONFIG.patternConfigs
@@ -1146,7 +1061,7 @@ class GameScene extends Phaser.Scene {
         this.gameData.patternLength =
           Math.floor(Math.random() * (max - min + 1)) + min;
       } else {
-        this.gameData.patternLength = 8; // 기본값
+        this.gameData.patternLength = 8;
       }
 
       if (this.gameData.debug) {
@@ -1159,6 +1074,7 @@ class GameScene extends Phaser.Scene {
     }
   }
 
+  // 🔥 패턴 벽 생성 시 안전지대 보장
   private generatePatternWalls(): boolean[] {
     try {
       const pattern = new Array(6).fill(true);
@@ -1220,6 +1136,14 @@ class GameScene extends Phaser.Scene {
           safeZones = [this.gameData.patternDirection];
       }
 
+      // 🔥 안전지대가 없는 경우 강제로 생성
+      if (safeZones.length === 0) {
+        console.warn(
+          `⚠️ 패턴 ${this.gameData.currentWallPattern}에서 안전지대가 없음! 강제 생성`,
+        );
+        safeZones = [Math.floor(Math.random() * 6)];
+      }
+
       // 안전지대 설정
       safeZones.forEach((zone) => {
         if (zone >= 0 && zone < 6) {
@@ -1236,13 +1160,16 @@ class GameScene extends Phaser.Scene {
       return pattern;
     } catch (error) {
       console.error("패턴 벽 생성 오류:", error);
-      return this.generateBasicWalls();
+      // 오류 시 안전한 기본 패턴 반환
+      const safePattern = new Array(6).fill(true);
+      safePattern[0] = false;
+      return safePattern;
     }
   }
 
+  // 🔥 기본 벽 생성 시 안전지대 보장
   private generateBasicWalls(): boolean[] {
     try {
-      // 안전한 난이도 설정 접근
       const difficultyKeys = Object.keys(GAME_CONFIG.difficulty) as Array<
         keyof typeof GAME_CONFIG.difficulty
       >;
@@ -1257,13 +1184,13 @@ class GameScene extends Phaser.Scene {
         GAME_CONFIG.difficulty[currentDifficultyKey];
 
       const pattern = new Array(6).fill(true);
-      const minSafeZones = currentDifficultyConfig.safeZoneMin;
+      // 🔥 최소 안전지대 수 보장 (최소 1개)
+      const minSafeZones = Math.max(1, currentDifficultyConfig.safeZoneMin);
       const maxSafeZones = Math.min(4, minSafeZones + 2);
       const safeZoneCount =
         Math.floor(Math.random() * (maxSafeZones - minSafeZones + 1)) +
         minSafeZones;
 
-      // 연속 안전지대 방지를 위한 로직
       let attempts = 0;
       let safeZones: number[] = [];
 
@@ -1275,7 +1202,6 @@ class GameScene extends Phaser.Scene {
           safeZones.push((startPosition + i) % 6);
         }
 
-        // 이전 패턴과 너무 유사한지 확인
         const similarity = this.calculateSimilarity(
           safeZones,
           this.gameData.lastSafeZones,
@@ -1285,12 +1211,17 @@ class GameScene extends Phaser.Scene {
         attempts++;
       }
 
+      // 🔥 안전지대가 여전히 없는 경우 강제 생성
+      if (safeZones.length === 0) {
+        console.warn("⚠️ 기본 벽 생성에서 안전지대가 없음! 강제 생성");
+        safeZones = [Math.floor(Math.random() * 6)];
+      }
+
       // 안전지대 설정
       safeZones.forEach((zone) => {
         pattern[zone] = false;
       });
 
-      // 기록 업데이트
       this.gameData.lastSafeZones = [...safeZones];
 
       return pattern;
@@ -1316,7 +1247,7 @@ class GameScene extends Phaser.Scene {
     }
   }
 
-  // 패턴 생성 메서드들 (오류 처리 추가)
+  // 패턴 생성 메서드들 (각각 안전지대 보장)
   private generateWhirlpoolPattern(): number[] {
     try {
       const progress = this.gameData.patternProgress;
@@ -1332,7 +1263,7 @@ class GameScene extends Phaser.Scene {
           progress * rotationSpeed * this.gameData.spinDirection +
           6) %
         6;
-      const holeCount = Math.floor(Math.random() * 2) + 2;
+      const holeCount = Math.max(1, Math.floor(Math.random() * 2) + 2); // 최소 1개 보장
       const safeZones = [];
 
       for (let i = 0; i < holeCount; i++) {
@@ -1436,9 +1367,12 @@ class GameScene extends Phaser.Scene {
       const safeZone1 = (clockwise + 2) % 6;
       const safeZone2 = (counterClockwise + 2) % 6;
 
-      return [safeZone1, safeZone2].filter(
+      const uniqueZones = [safeZone1, safeZone2].filter(
         (zone, index, arr) => arr.indexOf(zone) === index,
       );
+
+      // 최소 1개 안전지대 보장
+      return uniqueZones.length > 0 ? uniqueZones : [0];
     } catch (error) {
       console.error("더블 소용돌이 패턴 생성 오류:", error);
       return [0, 3];
@@ -1518,7 +1452,7 @@ class GameScene extends Phaser.Scene {
         const position = (basePosition + irregularOffset) % 6;
         return [position, (position + 1) % 6, (position + 2) % 6];
       } else {
-        const holeCount = (seed % 2) + 1;
+        const holeCount = Math.max(1, (seed % 2) + 1); // 최소 1개 보장
         const position = (basePosition + irregularOffset + 3) % 6;
         const safeZones = [];
 
@@ -1570,7 +1504,7 @@ class GameScene extends Phaser.Scene {
         holeCount = 2;
         phaseOffset = 1;
       } else {
-        holeCount = 1;
+        holeCount = Math.max(1, 1); // 최소 1개 보장
         phaseOffset = 2;
       }
 
@@ -1593,7 +1527,7 @@ class GameScene extends Phaser.Scene {
 
   private generateSoloPattern(): number[] {
     try {
-      const holeCount = Math.floor(Math.random() * 3) + 1;
+      const holeCount = Math.max(1, Math.floor(Math.random() * 3) + 1); // 최소 1개 보장
       const basePosition = this.gameData.patternDirection;
       const safeZones = [];
 
@@ -1648,7 +1582,6 @@ class GameScene extends Phaser.Scene {
         wall.setData("radius", newRadius);
         this.updateWallRing(wall);
 
-        // 충돌 검사
         const playerDistance = innerRadius + 15;
         if (Math.abs(newRadius - playerDistance) < 5) {
           if (!wall.getData("collisionChecked")) {
@@ -1684,7 +1617,6 @@ class GameScene extends Phaser.Scene {
 
       wallRing.clear();
 
-      // 거리에 따른 원근감 및 네온 효과 계산
       const distanceFromCenter = Math.abs(radius - 200);
       const perspectiveFactor = Math.max(
         0.3,
@@ -1692,7 +1624,6 @@ class GameScene extends Phaser.Scene {
       );
       const currentThickness = wallThickness * perspectiveFactor;
 
-      // 네온 색상 계산
       const wallHue = (this.gameData.currentHue + 30) % 360;
       const coreColor = Phaser.Display.Color.HSVToRGB(
         wallHue / 360,
@@ -1705,13 +1636,11 @@ class GameScene extends Phaser.Scene {
         perspectiveFactor * 0.6,
       );
 
-      // 6개의 육각형 변을 네온 스타일로 그리기
       for (let i = 0; i < 6; i++) {
         if (wallPattern[i]) {
           const segmentStartAngle = (i * Math.PI) / 3;
           const segmentEndAngle = ((i + 1) * Math.PI) / 3;
 
-          // 외부 및 내부 좌표
           const outerStartX = Math.cos(segmentStartAngle) * radius;
           const outerStartY = Math.sin(segmentStartAngle) * radius;
           const outerEndX = Math.cos(segmentEndAngle) * radius;
@@ -1723,7 +1652,6 @@ class GameScene extends Phaser.Scene {
           const innerEndX = Math.cos(segmentEndAngle) * innerRadius;
           const innerEndY = Math.sin(segmentEndAngle) * innerRadius;
 
-          // 외부 글로우 (가장 넓은 범위)
           wallRing.fillStyle(glowColor.color, 0.2);
           wallRing.beginPath();
           wallRing.moveTo(outerStartX + 6, outerStartY + 6);
@@ -1733,7 +1661,6 @@ class GameScene extends Phaser.Scene {
           wallRing.closePath();
           wallRing.fillPath();
 
-          // 중간 글로우
           wallRing.fillStyle(glowColor.color, 0.4);
           wallRing.beginPath();
           wallRing.moveTo(outerStartX + 3, outerStartY + 3);
@@ -1743,7 +1670,6 @@ class GameScene extends Phaser.Scene {
           wallRing.closePath();
           wallRing.fillPath();
 
-          // 메인 벽 면
           wallRing.fillStyle(coreColor.color, 0.9);
           wallRing.beginPath();
           wallRing.moveTo(outerStartX, outerStartY);
@@ -1753,14 +1679,12 @@ class GameScene extends Phaser.Scene {
           wallRing.closePath();
           wallRing.fillPath();
 
-          // 네온 테두리 (외부)
           wallRing.lineStyle(2, coreColor.color, 1);
           wallRing.beginPath();
           wallRing.moveTo(outerStartX, outerStartY);
           wallRing.lineTo(outerEndX, outerEndY);
           wallRing.strokePath();
 
-          // 내부 하이라이트
           wallRing.lineStyle(1, 0xffffff, 0.8);
           wallRing.beginPath();
           wallRing.moveTo(innerStartX, innerStartY);
@@ -1808,7 +1732,6 @@ class GameScene extends Phaser.Scene {
       this.gameData.isGameOver = true;
       this.gameData.cameraShake = 15;
 
-      // 강화된 게임오버 사운드
       try {
         this.hitSound?.triggerAttackRelease("C1", "2n");
       } catch (soundError) {
@@ -1829,7 +1752,6 @@ class GameScene extends Phaser.Scene {
       }
     } catch (error) {
       console.error("게임 오버 처리 오류:", error);
-      // 최소한 콜백은 실행
       if (this.onGameOver) {
         this.onGameOver(0);
       }
@@ -1843,7 +1765,6 @@ class GameScene extends Phaser.Scene {
       const { innerRadius } = GAME_CONFIG;
       this.debugGraphics.clear();
 
-      // 플레이어 위치 표시
       const playerDistance = innerRadius + 15;
       const playerAngle = this.gameData.playerAngle;
       const playerX = Math.cos(playerAngle) * playerDistance;
@@ -1852,7 +1773,6 @@ class GameScene extends Phaser.Scene {
       this.debugGraphics.fillStyle(0xff0000, 0.7);
       this.debugGraphics.fillCircle(playerX, playerY, 8);
 
-      // 플레이어 세그먼트 하이라이트
       const normalizeAngle = (angle: number) => {
         let normalized = angle % (Math.PI * 2);
         if (normalized < 0) normalized += Math.PI * 2;
@@ -1877,7 +1797,6 @@ class GameScene extends Phaser.Scene {
       );
       this.debugGraphics.strokePath();
 
-      // 터치 영역 표시
       if (
         this.gameData.touchInput.leftPressed ||
         this.gameData.touchInput.rightPressed
@@ -1916,7 +1835,6 @@ export default function SuperHexagon({ user }: GameProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // API Hooks with error handling
   const createGameMutation = useCreateGame();
   const {
     data: rankingData,
@@ -2154,26 +2072,21 @@ export default function SuperHexagon({ user }: GameProps) {
   if (!gameStarted) {
     return (
       <div className="h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-pink-950 flex items-center justify-center p-4 relative overflow-hidden">
-        {/* 네온 배경 효과 */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-cyan-400 rounded-full animate-ping shadow-lg shadow-cyan-400/50"></div>
           <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-purple-400 rounded-full animate-ping delay-300 shadow-lg shadow-purple-400/50"></div>
           <div className="absolute bottom-1/3 left-1/3 w-2 h-2 bg-pink-400 rounded-full animate-ping delay-700 shadow-lg shadow-pink-400/50"></div>
           <div className="absolute bottom-1/4 right-1/3 w-3 h-3 bg-emerald-400 rounded-full animate-ping delay-1000 shadow-lg shadow-emerald-400/50"></div>
 
-          {/* 네온 그라디언트 배경 */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-gradient-to-r from-emerald-500/5 via-blue-500/5 to-purple-500/5 rounded-full blur-2xl animate-pulse delay-1000"></div>
         </div>
 
         <div className="relative z-10 max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 게임 시작 섹션 */}
           <div className="bg-black/90 backdrop-blur-xl rounded-2xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 p-8 text-center relative overflow-hidden">
-            {/* 내부 네온 효과 */}
             <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-pink-500/5 rounded-2xl"></div>
 
             <div className="relative z-10 mb-6">
-              {/* 네온 스타일 육각형 로고 */}
               <div className="relative mx-auto w-24 h-24 mb-4">
                 <div
                   className="absolute inset-0 border-4 border-cyan-500/60 transform rotate-0 animate-spin-slow shadow-lg shadow-cyan-500/30"
@@ -2220,7 +2133,7 @@ export default function SuperHexagon({ user }: GameProps) {
                     10초 후 화면 회전 시작!
                   </p>
                   <p className="text-emerald-400 font-semibold">
-                    점진적 난이도 증가 시스템!
+                    ✅ 안전지대 보장 시스템 적용!
                   </p>
                 </div>
               </div>
@@ -2249,9 +2162,7 @@ export default function SuperHexagon({ user }: GameProps) {
             </button>
           </div>
 
-          {/* 랭킹 섹션 */}
           <div className="bg-black/90 backdrop-blur-xl rounded-2xl border border-slate-600/30 shadow-2xl p-6 relative overflow-hidden">
-            {/* 내부 네온 효과 */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-blue-500/5 to-purple-500/5 rounded-2xl"></div>
 
             <div className="relative z-10">
@@ -2274,7 +2185,6 @@ export default function SuperHexagon({ user }: GameProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-pink-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* 네온 배경 효과 */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-cyan-400 rounded-full animate-ping shadow-lg shadow-cyan-400/50"></div>
         <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-purple-400 rounded-full animate-ping delay-300 shadow-lg shadow-purple-400/50"></div>
@@ -2282,7 +2192,6 @@ export default function SuperHexagon({ user }: GameProps) {
         <div className="absolute bottom-1/4 right-1/3 w-3 h-3 bg-emerald-400 rounded-full animate-ping delay-1000 shadow-lg shadow-emerald-400/50"></div>
       </div>
 
-      {/* 게임 UI */}
       <div className="absolute top-4 left-4 z-10 space-y-4">
         <div className="bg-black/90 backdrop-blur-xl px-6 py-3 rounded-xl border border-cyan-500/30 shadow-lg shadow-cyan-500/20">
           <div className="flex items-center gap-3">
@@ -2305,7 +2214,6 @@ export default function SuperHexagon({ user }: GameProps) {
         </div>
       </div>
 
-      {/* 게임 캔버스 - 크기 확대 */}
       <div className="relative">
         <div className="absolute -inset-4 bg-gradient-to-r from-cyan-600/20 via-purple-600/20 to-pink-600/20 rounded-xl blur-lg animate-pulse shadow-2xl"></div>
         <div
@@ -2314,11 +2222,9 @@ export default function SuperHexagon({ user }: GameProps) {
         />
       </div>
 
-      {/* 게임 오버 화면 */}
       {gameOver && (
         <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-20 backdrop-blur-sm">
           <div className="bg-gradient-to-br from-red-900/90 to-purple-900/90 backdrop-blur-xl rounded-3xl border border-red-500/30 shadow-2xl shadow-red-500/20 p-12 max-w-lg w-full text-center mx-4 relative overflow-hidden">
-            {/* 내부 네온 효과 */}
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-purple-500/10 to-pink-500/10 rounded-3xl"></div>
 
             <div className="relative z-10 mb-8">
@@ -2390,7 +2296,6 @@ export default function SuperHexagon({ user }: GameProps) {
         </div>
       )}
 
-      {/* 조작 안내 */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
         <div className="bg-black/90 backdrop-blur-xl px-6 py-3 rounded-xl border border-gray-500/30 shadow-lg">
           <div className="text-gray-300 text-sm text-center">
