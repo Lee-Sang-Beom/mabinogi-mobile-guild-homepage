@@ -21,6 +21,9 @@ export interface KeyValue {
   name: string;
   value: string;
 }
+export interface CategoryKeyValue extends KeyValue {
+  category: string;
+}
 
 /**
  * @name Range, ValuePiece, Value

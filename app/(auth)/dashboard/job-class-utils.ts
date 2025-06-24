@@ -22,6 +22,7 @@ import {
   Swords,
   Target,
   Wand,
+  Zap,
 } from "lucide-react";
 import {
   jobCategoryRepresentColors,
@@ -43,6 +44,7 @@ const iconMap: IconMap = {
   마법사: Wand,
   화염술사: Flame,
   빙결술사: Snowflake,
+  전격술사: Zap,
   힐러: Heart,
   사제: Cross,
   수도사: Lotus,
